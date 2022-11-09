@@ -1,0 +1,30 @@
+= Vert.x OpenAPI
+:toc: left
+
+Vert.x OpenAPI provides ...
+
+== Using Vert.x OpenAPI
+
+To use Vert.x OpenAPI, add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml,subs="+attributes"]
+----
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-json-schema</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+
+* Gradle (in your `build.gradle` file):
+
+[source,groovy,subs="+attributes"]
+----
+dependencies {
+  compile 'io.vertx:vertx-json-schema:${maven.version}'
+}
+----
+
+...
