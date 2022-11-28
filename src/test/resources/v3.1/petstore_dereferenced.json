@@ -2,12 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "version": "1.0.0",
-    "title": "Swagger Petstore",
-    "license": {
-      "identifier": "MIT",
-      "name": "MIT License",
-      "url": "https://opensource.org/licenses/MIT"
-    }
+    "title": "Swagger Petstore"
   },
   "servers": [
     {
