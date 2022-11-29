@@ -13,16 +13,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static io.vertx.json.schema.Draft.DRAFT202012;
+import static io.vertx.json.schema.Draft.DRAFT4;
 import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
 import static io.vertx.openapi.RouterBuilderException.createUnsupportedVersion;
-import static java.util.stream.Collectors.toList;
 
 public enum OpenAPIVersion {
-  V3_1("3.1.0", DRAFT202012,
+  V3_0("3.0.", DRAFT4, "https://spec.openapis.org/oas/3.0/schema/2021-09-28"),
+  V3_1("3.1.", DRAFT202012,
     "https://spec.openapis.org/oas/3.1/schema/2022-10-07",
     "https://spec.openapis.org/oas/3.1/dialect/base",
     "https://spec.openapis.org/oas/3.1/meta/base",
@@ -69,10 +68,12 @@ public enum OpenAPIVersion {
   }
 
   public static OpenAPIVersion fromContract(JsonObject contract) {
-    String version = Optional.ofNullable(contract.getString("openapi"))
+    String version = Optional.ofNullable(contract).map(spec -> spec.getString("openapi"))
       .orElseThrow(() -> createInvalidContract("Field \"openapi\" is missing"));
 
-    if (V3_1.schemaVersion.equals(version)) {
+    if (version.startsWith(V3_0.schemaVersion)) {
+      return V3_0;
+    } else if (version.startsWith(V3_1.schemaVersion)) {
       return V3_1;
     } else {
       throw createUnsupportedVersion(version);
