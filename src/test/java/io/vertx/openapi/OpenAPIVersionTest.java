@@ -13,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import static io.vertx.openapi.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.OpenAPIVersion.V3_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,30 +31,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(VertxExtension.class)
 class OpenAPIVersionTest {
   private static final Path RESOURCE_PATH = Paths.get("src", "test", "resources");
+  private static final Path CONTRACT_FILE_V30 = RESOURCE_PATH.resolve("v3.0").resolve("petstore.json");
   private static final Path CONTRACT_FILE_V31 = RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
 
   private static final String DUMMY_BASE_URI = "app://";
 
   private static Stream<Arguments> provideVersionAndSpec() {
     return Stream.of(
+      Arguments.of(V3_0, CONTRACT_FILE_V30),
       Arguments.of(V3_1, CONTRACT_FILE_V31)
     );
   }
 
-  @ParameterizedTest
+  @ParameterizedTest(name = "{index} should validate a contract against OpenAPI version {0}")
   @MethodSource(value = "provideVersionAndSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
   void testValidate(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> {
-      return V3_1.validate(vertx, repo, contract);
+      return version.validate(vertx, repo, contract);
     }).onComplete(testContext.succeeding(res -> {
       testContext.verify(() -> assertTrue(res.getValid()));
       testContext.completeNow();
     }));
   }
 
-  @ParameterizedTest
+  @ParameterizedTest(name = "{index} should resolve a contract of OpenAPI version {0}")
   @MethodSource(value = "provideVersionAndSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
   void testResolve(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
@@ -60,20 +64,20 @@ class OpenAPIVersionTest {
     JsonObject contractDereferenced = vertx.fileSystem().readFileBlocking(dereferencedContractFile).toJsonObject();
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
 
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> V3_1.resolve(vertx, repo, contract))
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.resolve(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
         testContext.verify(() -> assertEquals(contractDereferenced, res));
         testContext.completeNow();
       }));
   }
 
-  @Test
-  @DisplayName("should return a preloaded repository")
+  @ParameterizedTest(name = "{index} should return a preloaded repository for OpenAPIVersion {0}")
+  @EnumSource(OpenAPIVersion.class)
   @Timeout(value = 2, timeUnit = SECONDS)
-  void testGetRepository(Vertx vertx, VertxTestContext testContext) {
-    V3_1.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() ->  {
+  void testGetRepository(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
+    version.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() ->  {
       assertInstanceOf(SchemaRepository.class, repo);
-      for (String ref : V3_1.schemaFiles) {
+      for (String ref : version.schemaFiles) {
         assertInstanceOf(JsonSchema.class,  repo.find(ref));
       }
       testContext.completeNow();
@@ -88,9 +92,15 @@ class OpenAPIVersionTest {
   }
 
   @Test
-  @DisplayName("fromSpec should throw exception if field openapi doesn't exist")
+  @DisplayName("fromSpec should throw exception if field openapi doesn't exist or the version isn't supported")
   void testFromSpecException() {
+    String expectedInvalidMsg = "The passed OpenAPI contract is invalid: Field \"openapi\" is missing";
+    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(null), expectedInvalidMsg);
     JsonObject emptyContract = new JsonObject();
-    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(emptyContract));
+    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(emptyContract), expectedInvalidMsg);
+
+    String expectedUnsupportedMsg = "The version of the passed OpenAPI contract is not supported: 2.0.0";
+    JsonObject unsupportedContract = new JsonObject().put("openapi", "2.0.0");
+    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(unsupportedContract), expectedUnsupportedMsg);
   }
 }
