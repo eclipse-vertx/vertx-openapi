@@ -1,11 +1,12 @@
+package io.vertx.openapi;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.openapi.OpenAPIVersion;
-import io.vertx.openapi.RouterBuilderException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class OpenAPIVersionTest {
   private static final Path RESOURCE_PATH = Paths.get("src", "test", "resources");
   private static final Path CONTRACT_FILE_V31 = RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
 
-  private static final String DUMMY_BASE_URI = "http://example.org";
+  private static final String DUMMY_BASE_URI = "app://";
 
   private static Stream<Arguments> provideVersionAndSpec() {
     return Stream.of(
@@ -45,7 +46,10 @@ class OpenAPIVersionTest {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> {
       return V3_1.validate(vertx, repo, contract);
-    }).onComplete(testContext.succeeding(res -> testContext.verify(() -> assertTrue(res.getValid()))));
+    }).onComplete(testContext.succeeding(res -> {
+      testContext.verify(() -> assertTrue(res.getValid()));
+      testContext.completeNow();
+    }));
   }
 
   @ParameterizedTest
@@ -57,15 +61,23 @@ class OpenAPIVersionTest {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
 
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> V3_1.resolve(vertx, repo, contract))
-      .onComplete(testContext.succeeding(res -> testContext.verify(() -> assertEquals(contractDereferenced, res))));
+      .onComplete(testContext.succeeding(res -> {
+        testContext.verify(() -> assertEquals(contractDereferenced, res));
+        testContext.completeNow();
+      }));
   }
 
   @Test
-  @DisplayName("fromSpec should throw exception if field openapi doesn't exist")
+  @DisplayName("should return a preloaded repository")
+  @Timeout(value = 2, timeUnit = SECONDS)
   void testGetRepository(Vertx vertx, VertxTestContext testContext) {
-    V3_1.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> {
-      testContext.verify(() -> assertInstanceOf(SchemaRepository.class, repo));
-    }));
+    V3_1.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() ->  {
+      assertInstanceOf(SchemaRepository.class, repo);
+      for (String ref : V3_1.schemaFiles) {
+        assertInstanceOf(JsonSchema.class,  repo.find(ref));
+      }
+      testContext.completeNow();
+    })));
   }
 
   @ParameterizedTest(name = "{index} test testFromSpec with OpenAPIVersion {0}")
