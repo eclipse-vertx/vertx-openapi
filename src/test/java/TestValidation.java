@@ -25,7 +25,7 @@ class TestValidation {
 
     // get a repo ready
     SchemaRepository repo = SchemaRepository
-      .create(new JsonSchemaOptions().setDraft(Draft.DRAFT202012).setBaseUri("app://"))
+      .create(new JsonSchemaOptions().setDraft(Draft.DRAFT202012).setBaseUri("app12://"))
       .preloadMetaSchema(fs);
 
     // get a validator for the schema itself
