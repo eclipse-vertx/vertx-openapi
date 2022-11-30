@@ -8,6 +8,9 @@ import io.vertx.openapi.RouterBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @ExtendWith(VertxExtension.class)
 class TestValidation {
 
@@ -34,7 +37,7 @@ class TestValidation {
     // now load the openapi spec to the repo after validating that the fargments are valid
     for (String ref : new String[] {"https://spec.openapis.org/oas/3.1/dialect/base", "https://spec.openapis.org/oas/3.1/meta/base", "https://spec.openapis.org/oas/3.1/schema-base/2022-10-07", "https://spec.openapis.org/oas/3.1/schema/2022-10-07"}) {
       JsonObject raw = new JsonObject(fs.readFileBlocking(ref.substring("https://".length())));
-      System.out.println(draft202012.validate(raw));
+      assertTrue(draft202012.validate(raw).getValid());
       repo.dereference(ref, JsonSchema.of(raw));
     }
 
@@ -42,8 +45,12 @@ class TestValidation {
     Validator openapi31 = repo.validator("https://spec.openapis.org/oas/3.1/schema/2022-10-07");
 
     // load the petstore example
-    JsonObject petstore = new JsonObject(fs.readFileBlocking("v3.1/petstore_dereferenced.json"));
+    JsonObject petstore = new JsonObject(fs.readFileBlocking("v3.1/petstore.json"));
     // validate the user api document
-    System.out.println(openapi31.validate(petstore));
+    assertTrue(openapi31.validate(petstore).getValid());
+
+    JsonObject dereferencedPetstore = JsonSchema.of(petstore).resolve();
+
+    assertFalse(dereferencedPetstore.encodePrettily().contains("$ref"));
   }
 }
