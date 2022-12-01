@@ -1,0 +1,89 @@
+{
+  "0000_Test_Getters": {
+    "path": "/pets/{petId}",
+    "method": "get",
+    "operationModel": {
+      "operationId": "showPetById",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "0001_Filter_Path_Parameters": {
+    "path": "/pets/{petId}",
+    "method": "get",
+    "pathParams": [
+      {
+        "name": "petId",
+        "in": "path",
+        "required": true,
+        "explode": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "operationModel": {
+      "operationId": "showPetById",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true,
+          "explode": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "0002_Do_Not_Filter_Path_Parameters": {
+    "path": "/pets/{petId}",
+    "method": "get",
+    "pathParams": [
+      {
+        "name": "petId",
+        "in": "path",
+        "required": true,
+        "explode": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "operationModel": {
+      "operationId": "showPetById",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "query",
+          "required": true,
+          "explode": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

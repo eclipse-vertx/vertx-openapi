@@ -1,0 +1,22 @@
+{
+  "0000_Path_With_No_Name": {
+    "path": "/pets",
+    "parameterModel": {
+      "in": "path"
+    }
+  },
+  "0001_Path_With_Empty_Name": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "",
+      "in": "path"
+    }
+  },
+  "0002_Path_Without_Require": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "path"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "0000_Test_Getters": {
+    "name": "/pets/{petId}",
+    "pathModel": {
+      "get": {
+        "summary": "Info for a specific pet",
+        "operationId": "showPetById",
+        "tags": [
+          "pets"
+        ],
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "query",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

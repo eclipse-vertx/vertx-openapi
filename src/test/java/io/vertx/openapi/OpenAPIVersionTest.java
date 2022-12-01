@@ -17,11 +17,11 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import static io.vertx.openapi.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.OpenAPIVersion.V3_1;
+import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -30,9 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(VertxExtension.class)
 class OpenAPIVersionTest {
-  private static final Path RESOURCE_PATH = Paths.get("src", "test", "resources");
-  private static final Path CONTRACT_FILE_V30 = RESOURCE_PATH.resolve("v3.0").resolve("petstore.json");
-  private static final Path CONTRACT_FILE_V31 = RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
+  private static final Path CONTRACT_FILE_V30 = TEST_RESOURCE_PATH.resolve("v3.0").resolve("petstore.json");
+  private static final Path CONTRACT_FILE_V31 = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
 
   private static final String DUMMY_BASE_URI = "app://";
 
@@ -75,10 +74,10 @@ class OpenAPIVersionTest {
   @EnumSource(OpenAPIVersion.class)
   @Timeout(value = 2, timeUnit = SECONDS)
   void testGetRepository(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
-    version.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() ->  {
+    version.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() -> {
       assertInstanceOf(SchemaRepository.class, repo);
       for (String ref : version.schemaFiles) {
-        assertInstanceOf(JsonSchema.class,  repo.find(ref));
+        assertInstanceOf(JsonSchema.class, repo.find(ref));
       }
       testContext.completeNow();
     })));
@@ -101,6 +100,7 @@ class OpenAPIVersionTest {
 
     String expectedUnsupportedMsg = "The version of the passed OpenAPI contract is not supported: 2.0.0";
     JsonObject unsupportedContract = new JsonObject().put("openapi", "2.0.0");
-    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(unsupportedContract), expectedUnsupportedMsg);
+    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(unsupportedContract),
+      expectedUnsupportedMsg);
   }
 }

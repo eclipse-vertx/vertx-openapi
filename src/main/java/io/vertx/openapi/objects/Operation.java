@@ -1,4 +1,4 @@
-package io.vertx.openapi;
+package io.vertx.openapi.objects;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
@@ -7,8 +7,14 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.List;
+
 /**
- * Interface representing an <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operationObject">Operation</a>
+ * This interface represents the most important attributes of an OpenAPI Operation.
+ * <br>
+ * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operationObject">Operation V3.1</a>
+ * <br>
+ * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#operationObject">Operation V3.0</a>
  */
 @VertxGen
 public interface Operation {
@@ -19,7 +25,8 @@ public interface Operation {
    * @param handler
    * @return
    */
-  @Fluent Operation addHandler(Handler<RoutingContext> handler);
+  @Fluent
+  Operation addHandler(Handler<RoutingContext> handler);
 
   /**
    * Adds a failure handler for this operation
@@ -27,8 +34,8 @@ public interface Operation {
    * @param handler
    * @return
    */
-  @Fluent Operation addFailureHandler(Handler<RoutingContext> handler);
-
+  @Fluent
+  Operation addFailureHandler(Handler<RoutingContext> handler);
 
   /**
    * @return operationId of this operation
@@ -49,4 +56,14 @@ public interface Operation {
    * @return path in OpenAPI style
    */
   String getOpenAPIPath();
+
+  /**
+   * @return tags of this operation
+   */
+  List<String> getTags();
+
+  /**
+   * @return parameters of this operation
+   */
+  List<Parameter> getParameters();
 }

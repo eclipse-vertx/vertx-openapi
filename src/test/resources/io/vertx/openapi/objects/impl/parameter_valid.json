@@ -1,0 +1,36 @@
+{
+  "0000_Test_Getters": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "style": "matrix",
+      "explode": true,
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0001_Path_Parameter": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "path",
+      "required": true,
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0002_Default_Values": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petIdQuery",
+      "in": "query",
+      "schema": {
+        "type": "string"
+      }
+    }
+  }
+}
