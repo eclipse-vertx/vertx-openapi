@@ -4,13 +4,18 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.openapi.impl.RouterBuilderImpl;
+import io.vertx.openapi.objects.Operation;
 
 import java.util.List;
 
@@ -53,59 +58,6 @@ import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
 @VertxGen
 public interface RouterBuilder {
 
-  /**
-   * Access to an operation defined in the contract with {@code operationId}
-   *
-   * @param operationId the id of the operation
-   * @return the requested operation
-   * @throws IllegalArgumentException if the operation id doesn't exist in the contract
-   */
-  @Nullable Operation operation(String operationId);
-
-  /**
-   * @return all operations defined in the contract
-   */
-  List<Operation> operations();
-
-  /**
-   * Add global handler to be applied prior to {@link Router} being generated. <br/>
-   *
-   * @param rootHandler
-   * @return self
-   */
-  @Fluent
-  RouterBuilder rootHandler(Handler<RoutingContext> rootHandler);
-
-  /**
-   * Mount to paths that have to follow a security schema a security handler. This method will not perform any
-   * validation weather or not the given {@code securitySchemeName} is present in the OpenAPI document.
-   *
-   * For must use cases the method {@link #securityHandler(String)} should be used.
-   *
-   * @param securitySchemeName the components security scheme id
-   * @param handler the authentication handler
-   * @return self
-   */
-  @Fluent
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  RouterBuilder securityHandler(String securitySchemeName, AuthenticationHandler handler);
-
-  /**
-   * Creates a new security scheme for the required {@link AuthenticationHandler}.
-   * @return a security scheme.
-   */
-  SecurityScheme securityHandler(String securitySchemeName);
-
-  /**
-   * Construct a new router based on spec. It will fail if you are trying to mount a spec with security schemes
-   * without assigned handlers<br/>
-   *
-   * <b>Note:</b> Router is built when this function is called and the path definition ordering in contract is respected.
-   *
-   * @return
-   */
-  Router createRouter();
-
   static void create(Vertx vertx, JsonObject spec, Handler<AsyncResult<RouterBuilder>> handler) {
     RouterBuilder.create(vertx, spec).onComplete(handler);
   }
@@ -134,9 +86,63 @@ public interface RouterBuilder {
         } else {
           return version.resolve(vertx, repository, spec);
         }
-      }).map(resolvedSpec -> (RouterBuilder) new RouterBuilderImpl(resolvedSpec, repository))
+      }).map(resolvedSpec -> (RouterBuilder) new RouterBuilderImpl(resolvedSpec, repository, vertx))
     ).onComplete(promise);
 
     return promise.future();
   }
+
+  /**
+   * Access to an operation defined in the contract with {@code operationId}
+   *
+   * @param operationId the id of the operation
+   * @return the requested operation
+   * @throws IllegalArgumentException if the operation id doesn't exist in the contract
+   */
+  @Nullable Operation operation(String operationId);
+
+  /**
+   * @return all operations defined in the contract
+   */
+  List<Operation> operations();
+
+  /**
+   * Add global handler to be applied prior to {@link Router} being generated. <br/>
+   *
+   * @param rootHandler
+   * @return self
+   */
+  @Fluent
+  RouterBuilder rootHandler(Handler<RoutingContext> rootHandler);
+
+  /**
+   * Mount to paths that have to follow a security schema a security handler. This method will not perform any
+   * validation weather or not the given {@code securitySchemeName} is present in the OpenAPI document.
+   * <p>
+   * For must use cases the method {@link #securityHandler(String)} should be used.
+   *
+   * @param securitySchemeName the components security scheme id
+   * @param handler            the authentication handler
+   * @return self
+   */
+  @Fluent
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  RouterBuilder securityHandler(String securitySchemeName, AuthenticationHandler handler);
+
+  /**
+   * Creates a new security scheme for the required {@link AuthenticationHandler}.
+   *
+   * @return a security scheme.
+   */
+  SecurityScheme securityHandler(String securitySchemeName);
+
+  /**
+   * Construct a new router based on spec. It will fail if you are trying to mount a spec with security schemes
+   * without assigned handlers<br/>
+   *
+   * <b>Note:</b> Router is built when this function is called and the path definition ordering in contract is respected.
+   *
+   * @return
+   */
+  Router createRouter();
 }
