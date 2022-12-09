@@ -1,6 +1,7 @@
 package io.vertx.openapi.objects;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -22,20 +23,32 @@ public interface Operation {
   /**
    * Adds a handler for this operation which is executed after the security and validation handlers defined in the contract
    *
-   * @param handler
-   * @return
+   * @param handler The handler to add
+   * @return the operation
    */
   @Fluent
   Operation addHandler(Handler<RoutingContext> handler);
 
   /**
+   * @return handlers of this operation
+   */
+  @GenIgnore
+  List<Handler<RoutingContext>> getHandlers();
+
+  /**
    * Adds a failure handler for this operation
    *
-   * @param handler
-   * @return
+   * @param handler The failure handler to add
+   * @return the operation
    */
   @Fluent
   Operation addFailureHandler(Handler<RoutingContext> handler);
+
+  /**
+   * @return failure handlers of this operation
+   */
+  @GenIgnore
+  List<Handler<RoutingContext>> getFailureHandlers();
 
   /**
    * @return operationId of this operation

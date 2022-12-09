@@ -6,6 +6,7 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.ResourceHelper;
+import io.vertx.openapi.RouterBuilderException;
 import io.vertx.openapi.objects.Operation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,12 +14,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.nio.file.Path;
 
+import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
-public class PathImplTest {
+class PathImplTest {
   private static Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(PathImplTest.class);
 
   private static Path VALID_PATHS_JSON = RESOURCE_PATH.resolve("path_valid.json");
@@ -52,5 +55,19 @@ public class PathImplTest {
     assertEquals(2, petById.getParameters().size());
 
     assertEquals(1, path.getParameters().size());
+  }
+
+  @Test
+  void testWilcardInPath() {
+    RouterBuilderException exception =
+      assertThrows(RouterBuilderException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
+    String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
+    assertEquals(expectedMsg, exception.getMessage());
+  }
+
+  @Test
+  void testCutTrailingSlash() {
+    String expected = "/pets";
+    assertEquals(expected, new PathImpl(expected + "/", EMPTY_JSON_OBJECT).getName());
   }
 }

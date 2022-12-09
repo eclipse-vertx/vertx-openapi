@@ -30,10 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(VertxExtension.class)
 class OpenAPIVersionTest {
+  private static final String DUMMY_BASE_URI = "app://";
   private static final Path CONTRACT_FILE_V30 = TEST_RESOURCE_PATH.resolve("v3.0").resolve("petstore.json");
   private static final Path CONTRACT_FILE_V31 = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
-
-  private static final String DUMMY_BASE_URI = "app://";
 
   private static Stream<Arguments> provideVersionAndSpec() {
     return Stream.of(
@@ -47,12 +46,11 @@ class OpenAPIVersionTest {
   @Timeout(value = 2, timeUnit = SECONDS)
   void testValidate(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> {
-      return version.validate(vertx, repo, contract);
-    }).onComplete(testContext.succeeding(res -> {
-      testContext.verify(() -> assertTrue(res.getValid()));
-      testContext.completeNow();
-    }));
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
+      .onComplete(testContext.succeeding(res -> {
+        testContext.verify(() -> assertTrue(res.getValid()));
+        testContext.completeNow();
+      }));
   }
 
   @ParameterizedTest(name = "{index} should resolve a contract of OpenAPI version {0}")

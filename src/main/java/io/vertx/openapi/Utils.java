@@ -8,9 +8,9 @@ import static java.util.Collections.emptyMap;
 
 public final class Utils {
 
-  public static JsonArray EMPTY_JSON_ARRAY = new JsonArray(emptyList());
+  public static final JsonArray EMPTY_JSON_ARRAY = new JsonArray(emptyList());
 
-  public static JsonObject EMPTY_JSON_OBJECT = new JsonObject(emptyMap());
+  public static final JsonObject EMPTY_JSON_OBJECT = new JsonObject(emptyMap());
 
   private Utils() {
 
