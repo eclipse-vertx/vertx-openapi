@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.objects.Parameter;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,23 +24,23 @@ import static io.vertx.openapi.objects.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(VertxExtension.class)
-public class OperationImplTest {
-  private static Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(OperationImplTest.class);
+class OperationImplTest {
+  private static final Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(OperationImplTest.class);
 
-  private static Path VALID_OPERATIONS_JSON = RESOURCE_PATH.resolve("operation_valid.json");
+  private static final Path VALID_OPERATIONS_JSON = RESOURCE_PATH.resolve("operation_valid.json");
 
   private static JsonObject validTestData;
 
   @BeforeAll
   @Timeout(value = 2, timeUnit = SECONDS)
-  static void setUp(Vertx vertx, VertxTestContext testContext) {
+  static void setUp(Vertx vertx) {
     validTestData = vertx.fileSystem().readFileBlocking(VALID_OPERATIONS_JSON.toString()).toJsonObject();
-    testContext.completeNow();
   }
 
   private static OperationImpl fromTestData(String id, JsonObject testData) {
@@ -59,7 +58,7 @@ public class OperationImplTest {
 
     List<Parameter> params = operation.getParameters();
     assertEquals(1, params.size());
-    assertEquals(false, params.get(0).isExplode());
+    assertFalse(params.get(0).isExplode());
 
     OperationImpl operation2 = fromTestData("0002_Do_Not_Filter_Path_Parameters", validTestData);
 
@@ -72,17 +71,17 @@ public class OperationImplTest {
     String testId = "0000_Test_Getters";
     OperationImpl operation = fromTestData(testId, validTestData);
 
-    Handler<RoutingContext> dummyHander = RoutingContext::next;
-    Handler<RoutingContext> dummyFailureHander = RoutingContext::next;
-    assertNotSame(dummyHander, dummyFailureHander);
+    Handler<RoutingContext> dummyHandler = RoutingContext::next;
+    Handler<RoutingContext> dummyFailureHandler = RoutingContext::next;
+    assertNotSame(dummyHandler, dummyFailureHandler);
 
-    operation.addHandler(dummyHander);
-    operation.addFailureHandler(dummyFailureHander);
+    operation.addHandler(dummyHandler);
+    operation.addFailureHandler(dummyFailureHandler);
 
     assertEquals(1, operation.getHandlers().size());
-    assertSame(dummyHander, operation.getHandlers().get(0));
+    assertSame(dummyHandler, operation.getHandlers().get(0));
     assertEquals(1, operation.getFailureHandlers().size());
-    assertSame(dummyFailureHander, operation.getFailureHandlers().get(0));
+    assertSame(dummyFailureHandler, operation.getFailureHandlers().get(0));
   }
 
   @Test

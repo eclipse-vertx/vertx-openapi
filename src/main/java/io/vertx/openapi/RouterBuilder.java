@@ -63,9 +63,9 @@ public interface RouterBuilder {
   }
 
   /**
-   * Create a new {@link RouterBuilder}
+   * Create a new {@link RouterBuilder}.
    *
-   * @param vertx
+   * @param vertx the related Vert.x instance
    * @return Future completed with success when specification is loaded and valid
    */
   static Future<RouterBuilder> create(Vertx vertx, JsonObject spec) {
@@ -74,7 +74,7 @@ public interface RouterBuilder {
     }
 
     OpenAPIVersion version = OpenAPIVersion.fromContract(spec);
-    String baseUri = "what://should.we/use?";
+    String baseUri = "app://";
 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     Promise<RouterBuilder> promise = ctx.promise();
@@ -86,7 +86,7 @@ public interface RouterBuilder {
         } else {
           return version.resolve(vertx, repository, spec);
         }
-      }).map(resolvedSpec -> (RouterBuilder) new RouterBuilderImpl(resolvedSpec, repository, vertx))
+      }).map(resolvedSpec -> (RouterBuilder) new RouterBuilderImpl(resolvedSpec, vertx))
     ).onComplete(promise);
 
     return promise.future();
@@ -109,7 +109,7 @@ public interface RouterBuilder {
   /**
    * Add global handler to be applied prior to {@link Router} being generated. <br/>
    *
-   * @param rootHandler
+   * @param rootHandler the root handler to add
    * @return self
    */
   @Fluent
@@ -137,12 +137,9 @@ public interface RouterBuilder {
   SecurityScheme securityHandler(String securitySchemeName);
 
   /**
-   * Construct a new router based on spec. It will fail if you are trying to mount a spec with security schemes
-   * without assigned handlers<br/>
+   * Construct a new router based on the related OpenAPI contract.
    *
-   * <b>Note:</b> Router is built when this function is called and the path definition ordering in contract is respected.
-   *
-   * @return
+   * @return a Router based on the related OpenAPI contract.
    */
   Router createRouter();
 }

@@ -19,8 +19,7 @@ import static io.vertx.openapi.objects.Style.SIMPLE;
 import static io.vertx.openapi.objects.Style.SPACE_DELIMITED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ParameterTest {
-
+class StyleTest {
   private static Stream<Arguments> provideStyles() {
     return Stream.of(
       Arguments.of(MATRIX, "matrix"),
@@ -30,15 +29,6 @@ public class ParameterTest {
       Arguments.of(SPACE_DELIMITED, "spaceDelimited"),
       Arguments.of(PIPE_DELIMITED, "pipeDelimited"),
       Arguments.of(DEEP_OBJECT, "deepObject")
-    );
-  }
-
-  private static Stream<Arguments> provideLocations() {
-    return Stream.of(
-      Arguments.of(QUERY, "query"),
-      Arguments.of(HEADER, "header"),
-      Arguments.of(PATH, "path"),
-      Arguments.of(COOKIE, "cookie")
     );
   }
 
@@ -67,17 +57,5 @@ public class ParameterTest {
   @MethodSource("provideStyles")
   void testParseStyle(Style expected, String value) {
     assertEquals(expected, Style.parse(value));
-  }
-
-  @ParameterizedTest(name = "{index} toString should transform correct {0}")
-  @MethodSource("provideLocations")
-  void testToStringLocation(Location location, String expected) {
-    assertEquals(expected, location.toString());
-  }
-
-  @ParameterizedTest(name = "{index} should parse value correct {1}")
-  @MethodSource("provideLocations")
-  void testParseLocation(Location expected, String value) {
-    assertEquals(expected, Location.parse(value));
   }
 }

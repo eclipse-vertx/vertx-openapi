@@ -19,7 +19,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 public class OperationImpl implements Operation {
-  private final static Logger LOG = LoggerFactory.getLogger(OperationImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OperationImpl.class);
 
   private static final String KEY_OPERATION_ID = "operationId";
   private static final String KEY_TAGS = "tags";
@@ -32,8 +32,8 @@ public class OperationImpl implements Operation {
   private final List<Parameter> parameters;
 
   private final List<String> tags;
-  private List<Handler<RoutingContext>> handlers = new ArrayList<>();
-  private List<Handler<RoutingContext>> failureHandlers = new ArrayList<>();
+  private final List<Handler<RoutingContext>> handlers = new ArrayList<>();
+  private final List<Handler<RoutingContext>> failureHandlers = new ArrayList<>();
 
   public OperationImpl(String path, HttpMethod method, JsonObject operationModel, List<Parameter> pathParameters) {
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
@@ -41,25 +41,26 @@ public class OperationImpl implements Operation {
     this.path = path;
     this.operationModel = operationModel;
 
-    List<String> tags = operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(
-      toList());
-    this.tags = unmodifiableList(tags);
+    this.tags =
+      unmodifiableList(operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(
+        toList()));
 
-    List<Parameter> parameters = parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
+    List<Parameter> operationParameters =
+      parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
     // pretty sure there is a smarter / more efficient way
     for (Parameter pathParam : pathParameters) {
-      Optional<Parameter> parameterDuplicate = parameters.stream()
+      Optional<Parameter> parameterDuplicate = operationParameters.stream()
         .filter(param -> pathParam.getName().equals(param.getName()) && pathParam.getIn().equals(param.getIn()))
         .findAny();
 
       if (parameterDuplicate.isPresent()) {
         LOG.debug("Found ambiguous parameter (" + pathParam.getName() + ") in operation: " + operationId);
       } else {
-        parameters.add(pathParam);
+        operationParameters.add(pathParam);
       }
     }
 
-    this.parameters = unmodifiableList(parameters);
+    this.parameters = unmodifiableList(operationParameters);
   }
 
   @Override
@@ -74,16 +75,12 @@ public class OperationImpl implements Operation {
     return this;
   }
 
-  /**
-   * @return handlers of this operation
-   */
+  @Override
   public List<Handler<RoutingContext>> getHandlers() {
     return unmodifiableList(handlers);
   }
 
-  /**
-   * @return failure handlers of this operation
-   */
+  @Override
   public List<Handler<RoutingContext>> getFailureHandlers() {
     return unmodifiableList(failureHandlers);
   }

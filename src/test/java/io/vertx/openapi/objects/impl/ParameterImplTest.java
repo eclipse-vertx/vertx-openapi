@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
-public class ParameterImplTest {
+class ParameterImplTest {
 
   private static Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(ParameterImplTest.class);
 

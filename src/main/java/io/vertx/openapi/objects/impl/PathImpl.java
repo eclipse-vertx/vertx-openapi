@@ -2,12 +2,12 @@ package io.vertx.openapi.objects.impl;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.RouterBuilderException;
 import io.vertx.openapi.objects.Operation;
 import io.vertx.openapi.objects.Parameter;
 import io.vertx.openapi.objects.Path;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,16 +47,19 @@ public class PathImpl implements Path {
   private final List<Parameter> parameters;
 
   public PathImpl(String name, JsonObject pathModel) {
-    this.name = name;
+    if (name.contains("*")) {
+      throw RouterBuilderException.createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
+    }
+    this.name = name.endsWith("/") ? name.substring(0, name.length() - 1) : name;
     this.parameters = unmodifiableList(parseParameters(name, pathModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY)));
 
-    List<Operation> operations = new ArrayList<>();
+    List<Operation> ops = new ArrayList<>();
     SUPPORTED_METHODS.forEach((methodName, method) -> {
       Optional.ofNullable(pathModel.getJsonObject(methodName))
         .map(operationModel -> new OperationImpl(name, method, operationModel, parameters))
-        .ifPresent(operations::add);
+        .ifPresent(ops::add);
     });
-    this.operations = Collections.unmodifiableList(operations);
+    this.operations = unmodifiableList(ops);
   }
 
   @Override public String getName() {
@@ -69,5 +72,9 @@ public class PathImpl implements Path {
 
   @Override public List<Parameter> getParameters() {
     return parameters;
+  }
+
+  @Override public String toString() {
+    return name;
   }
 }
