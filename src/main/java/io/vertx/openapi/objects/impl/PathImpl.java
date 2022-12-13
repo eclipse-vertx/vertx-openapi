@@ -62,19 +62,23 @@ public class PathImpl implements Path {
     this.operations = unmodifiableList(ops);
   }
 
-  @Override public String getName() {
+  @Override
+  public String getName() {
     return name;
   }
 
-  @Override public List<Operation> getOperations() {
+  @Override
+  public List<Operation> getOperations() {
     return operations;
   }
 
-  @Override public List<Parameter> getParameters() {
+  @Override
+  public List<Parameter> getParameters() {
     return parameters;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return name;
   }
 }

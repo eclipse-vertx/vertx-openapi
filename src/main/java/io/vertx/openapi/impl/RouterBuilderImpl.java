@@ -150,6 +150,7 @@ public class RouterBuilderImpl implements RouterBuilder {
     for (Path path : paths) {
       for (Operation operation : path.getOperations()) {
         Route route = router.route(operation.getHttpMethod(), toVertxWebPath(path.getName()));
+        route.putMetadata(KEY_META_DATA_OPERATION, operation.getOperationId());
         operation.getHandlers().forEach(route::handler);
         operation.getFailureHandlers().forEach(route::failureHandler);
       }
