@@ -28,43 +28,18 @@ public enum OpenAPIVersion {
     "https://spec.openapis.org/oas/3.1/schema-base/2022-10-07"
   );
 
-  private final String schemaVersion;
-  private final Draft draft;
-
-  private final String mainSchemaFile;
-
   // Visible for testing
   final List<String> schemaFiles;
+  private final String schemaVersion;
+  private final Draft draft;
+  private final String mainSchemaFile;
 
-  private OpenAPIVersion(String schemaVersion, Draft draft, String mainSchemaFile, String... additionalSchemaFiles) {
+  OpenAPIVersion(String schemaVersion, Draft draft, String mainSchemaFile, String... additionalSchemaFiles) {
     this.schemaVersion = schemaVersion;
     this.draft = draft;
     this.mainSchemaFile = mainSchemaFile;
     this.schemaFiles = new ArrayList<>(Arrays.asList(additionalSchemaFiles));
     schemaFiles.add(mainSchemaFile);
-  }
-
-  public Future<OutputUnit> validate(Vertx vertx, SchemaRepository repo, JsonObject contract) {
-    return vertx.executeBlocking(p -> p.complete(repo.validator(mainSchemaFile).validate(contract)));
-  }
-
-  public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
-    return vertx.executeBlocking(p -> {
-      JsonSchema contractSchema = JsonSchema.of(contract);
-      p.complete(repo.resolve(contractSchema));
-    });
-  }
-
-  public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
-    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri);
-    return vertx.executeBlocking(p -> {
-      SchemaRepository repo = SchemaRepository.create(opts).preloadMetaSchema(vertx.fileSystem());
-      for (String ref : schemaFiles) {
-        JsonObject raw = new JsonObject(vertx.fileSystem().readFileBlocking(ref.substring("https://".length())));
-        repo.dereference(ref, JsonSchema.of(raw));
-      }
-      p.complete(repo);
-    });
   }
 
   public static OpenAPIVersion fromContract(JsonObject contract) {
@@ -78,5 +53,25 @@ public enum OpenAPIVersion {
     } else {
       throw createUnsupportedVersion(version);
     }
+  }
+
+  public Future<OutputUnit> validate(Vertx vertx, SchemaRepository repo, JsonObject contract) {
+    return vertx.executeBlocking(p -> p.complete(repo.validator(mainSchemaFile).validate(contract)));
+  }
+
+  public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
+    return vertx.executeBlocking(p -> p.complete(repo.resolve(JsonSchema.of(contract))));
+  }
+
+  public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
+    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri);
+    return vertx.executeBlocking(p -> {
+      SchemaRepository repo = SchemaRepository.create(opts).preloadMetaSchema(vertx.fileSystem());
+      for (String ref : schemaFiles) {
+        JsonObject raw = new JsonObject(vertx.fileSystem().readFileBlocking(ref.substring("https://".length())));
+        repo.dereference(ref, JsonSchema.of(raw));
+      }
+      p.complete(repo);
+    });
   }
 }
