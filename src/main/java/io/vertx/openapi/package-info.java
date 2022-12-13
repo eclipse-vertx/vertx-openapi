@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-@ModuleGen(name = "vertx-openapi", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-openapi", groupPackage = "io.vertx", useFutures = true)
 package io.vertx.openapi;
 
 import io.vertx.codegen.annotations.ModuleGen;

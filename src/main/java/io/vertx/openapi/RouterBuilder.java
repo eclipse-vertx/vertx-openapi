@@ -4,7 +4,6 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -24,7 +23,7 @@ import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
 
 /**
  * Interface to build a Vert.x Web {@link Router} from an OpenAPI 3 contract. <br/>
- * To add an handler, use {@link RouterBuilder#operation(String)} (String, Handler)}<br/>
+ * To add a handler, use {@link RouterBuilder#operation(String)} (String, Handler)}<br/>
  * Usage example:
  * <pre>
  * {@code
@@ -57,10 +56,7 @@ import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
  */
 @VertxGen
 public interface RouterBuilder {
-
-  static void create(Vertx vertx, JsonObject spec, Handler<AsyncResult<RouterBuilder>> handler) {
-    RouterBuilder.create(vertx, spec).onComplete(handler);
-  }
+  String KEY_META_DATA_OPERATION = "openApiOperationId";
 
   /**
    * Create a new {@link RouterBuilder}.
@@ -99,7 +95,8 @@ public interface RouterBuilder {
    * @return the requested operation
    * @throws IllegalArgumentException if the operation id doesn't exist in the contract
    */
-  @Nullable Operation operation(String operationId);
+  @Nullable
+  Operation operation(String operationId);
 
   /**
    * @return all operations defined in the contract
