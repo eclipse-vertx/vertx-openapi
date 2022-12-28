@@ -14,20 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.objects.Location.PATH;
 import static io.vertx.openapi.objects.impl.ParameterImpl.parseParameters;
-import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(VertxExtension.class)
 class OperationImplTest {
@@ -57,13 +51,12 @@ class OperationImplTest {
     OperationImpl operation = fromTestData("0001_Filter_Path_Parameters", validTestData);
 
     List<Parameter> params = operation.getParameters();
-    assertEquals(1, params.size());
-    assertFalse(params.get(0).isExplode());
+    assertThat(params).hasSize(1);
+    assertThat(params.get(0).isExplode()).isFalse();
 
     OperationImpl operation2 = fromTestData("0002_Do_Not_Filter_Path_Parameters", validTestData);
 
-    List<Parameter> params2 = operation2.getParameters();
-    assertEquals(2, params2.size());
+    assertThat(operation2.getParameters()).hasSize(2);
   }
 
   @Test
@@ -73,33 +66,32 @@ class OperationImplTest {
 
     Handler<RoutingContext> dummyHandler = RoutingContext::next;
     Handler<RoutingContext> dummyFailureHandler = RoutingContext::next;
-    assertNotSame(dummyHandler, dummyFailureHandler);
+    assertThat(dummyHandler).isNotSameInstanceAs(dummyFailureHandler);
 
     operation.addHandler(dummyHandler);
-    operation.addFailureHandler(dummyFailureHandler);
+    assertThat(operation.getHandlers()).containsExactly(dummyHandler);
 
-    assertEquals(1, operation.getHandlers().size());
-    assertSame(dummyHandler, operation.getHandlers().get(0));
-    assertEquals(1, operation.getFailureHandlers().size());
-    assertSame(dummyFailureHandler, operation.getFailureHandlers().get(0));
+    operation.addFailureHandler(dummyFailureHandler);
+    assertThat(operation.getFailureHandlers()).containsExactly(dummyFailureHandler);
   }
 
   @Test
   void testGetters() {
     String testId = "0000_Test_Getters";
     OperationImpl operation = fromTestData(testId, validTestData);
-    assertEquals("showPetById", operation.getOperationId());
-    assertEquals("/pets/{petId}", operation.getOpenAPIPath());
-    assertEquals(GET, operation.getHttpMethod());
-    assertIterableEquals(Arrays.asList("pets", "foo"), operation.getTags());
-    assertIterableEquals(emptyList(), operation.getHandlers());
-    assertIterableEquals(emptyList(), operation.getFailureHandlers());
+    assertThat(operation.getOperationId()).isEqualTo("showPetById");
+    assertThat(operation.getOpenAPIPath()).isEqualTo("/pets/{petId}");
+    assertThat(operation.getHttpMethod()).isEqualTo(GET);
+    assertThat(operation.getTags()).containsExactly("pets", "foo");
+    assertThat(operation.getHandlers()).isEmpty();
+    assertThat(operation.getFailureHandlers()).isEmpty();
+
     JsonObject operationModel = validTestData.getJsonObject(testId).getJsonObject("operationModel");
-    assertEquals(operationModel, operation.getOperationModel());
+    assertThat(operation.getOperationModel()).isEqualTo(operationModel);
 
     List<Parameter> params = operation.getParameters();
-    assertEquals(1, params.size());
-    assertEquals("petId", params.get(0).getName());
-    assertEquals(PATH, params.get(0).getIn());
+    assertThat(params).hasSize(1);
+    assertThat(params.get(0).getName()).isEqualTo("petId");
+    assertThat(params.get(0).getIn()).isEqualTo(PATH);
   }
 }

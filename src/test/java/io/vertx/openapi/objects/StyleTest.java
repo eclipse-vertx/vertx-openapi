@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.objects.Location.COOKIE;
 import static io.vertx.openapi.objects.Location.HEADER;
 import static io.vertx.openapi.objects.Location.PATH;
@@ -17,7 +18,6 @@ import static io.vertx.openapi.objects.Style.MATRIX;
 import static io.vertx.openapi.objects.Style.PIPE_DELIMITED;
 import static io.vertx.openapi.objects.Style.SIMPLE;
 import static io.vertx.openapi.objects.Style.SPACE_DELIMITED;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StyleTest {
   private static Stream<Arguments> provideStyles() {
@@ -44,18 +44,18 @@ class StyleTest {
   @ParameterizedTest(name = "{index} defaultByLocation should return the correct Style for Location Style {0}")
   @MethodSource("defaultStylesByLocation")
   void testDefaultByLocationStyle(Location location, Style expectedStyle) {
-    assertEquals(expectedStyle, Style.defaultByLocation(location));
+    assertThat(Style.defaultByLocation(location)).isEqualTo(expectedStyle);
   }
 
   @ParameterizedTest(name = "{index} toString should transform correct {0}")
   @MethodSource("provideStyles")
   void testToStringStyle(Style style, String expected) {
-    assertEquals(expected, style.toString());
+    assertThat(style.toString()).isEqualTo(expected);
   }
 
   @ParameterizedTest(name = "{index} should parse value correct {1}")
   @MethodSource("provideStyles")
   void testParseStyle(Style expected, String value) {
-    assertEquals(expected, Style.parse(value));
+    assertThat(Style.parse(value)).isEqualTo(expected);
   }
 }
