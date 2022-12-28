@@ -8,7 +8,6 @@ import io.vertx.json.schema.SchemaRepository;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,14 +22,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.OpenAPIVersion.V3_1;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(VertxExtension.class)
 class OpenAPIVersionTest {
@@ -48,7 +45,7 @@ class OpenAPIVersionTest {
 
     Function<String, Consumer<OutputUnit>> buildValidator = expectedString -> ou -> {
       String error = ou.getErrors().stream().map(OutputUnit::getError).collect(Collectors.joining());
-      assertTrue(error.contains(expectedString));
+      assertThat(error).contains(expectedString);
     };
 
     return Stream.of(
@@ -65,7 +62,7 @@ class OpenAPIVersionTest {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
-        testContext.verify(() -> assertTrue(res.getValid()));
+        testContext.verify(() -> assertThat(res.getValid()).isTrue());
         testContext.completeNow();
       }));
   }
@@ -93,7 +90,7 @@ class OpenAPIVersionTest {
 
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.resolve(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
-        testContext.verify(() -> assertEquals(contractDereferenced, res));
+        testContext.verify(() -> assertThat(res).isEqualTo(contractDereferenced));
         testContext.completeNow();
       }));
   }
@@ -103,9 +100,9 @@ class OpenAPIVersionTest {
   @Timeout(value = 2, timeUnit = SECONDS)
   void testGetRepository(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
     version.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() -> {
-      assertInstanceOf(SchemaRepository.class, repo);
+      assertThat(repo).isInstanceOf(SchemaRepository.class);
       for (String ref : version.schemaFiles) {
-        assertInstanceOf(JsonSchema.class, repo.find(ref));
+        assertThat(repo.find(ref)).isInstanceOf(JsonSchema.class);
       }
       testContext.completeNow();
     })));
@@ -115,7 +112,7 @@ class OpenAPIVersionTest {
   @MethodSource("provideVersionAndSpec")
   void testFromSpec(OpenAPIVersion version, Path specFile, Vertx vertx) {
     JsonObject spec = vertx.fileSystem().readFileBlocking(specFile.toString()).toJsonObject();
-    Assertions.assertEquals(version, OpenAPIVersion.fromContract(spec));
+    assertThat(OpenAPIVersion.fromContract(spec)).isEqualTo(version);
   }
 
   @Test

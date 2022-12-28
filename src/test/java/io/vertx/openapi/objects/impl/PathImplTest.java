@@ -2,9 +2,7 @@ package io.vertx.openapi.objects.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.RouterBuilderException;
 import io.vertx.openapi.objects.Operation;
@@ -14,25 +12,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.nio.file.Path;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
 class PathImplTest {
-  private static Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(PathImplTest.class);
+  private static final Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(PathImplTest.class);
 
-  private static Path VALID_PATHS_JSON = RESOURCE_PATH.resolve("path_valid.json");
+  private static final Path VALID_PATHS_JSON = RESOURCE_PATH.resolve("path_valid.json");
 
   private static JsonObject validTestData;
 
   @BeforeAll
-  @Timeout(value = 2, timeUnit = SECONDS)
-  static void setUp(Vertx vertx, VertxTestContext testContext) {
+  static void setUp(Vertx vertx) {
     validTestData = vertx.fileSystem().readFileBlocking(VALID_PATHS_JSON.toString()).toJsonObject();
-    testContext.completeNow();
   }
 
   private static PathImpl fromTestData(String id, JsonObject testData) {
@@ -46,15 +40,15 @@ class PathImplTest {
   void testGetters() {
     String testId = "0000_Test_Getters";
     PathImpl path = fromTestData(testId, validTestData);
-    assertEquals("/pets/{petId}", path.getName());
+    assertThat(path.getName()).isEqualTo("/pets/{petId}");
+    assertThat(path.getParameters()).hasSize(1);
 
-    assertEquals(1, path.getOperations().size());
+    assertThat(path.getOperations()).hasSize(1);
     Operation petById = path.getOperations().get(0);
-    assertNotNull(petById);
-    assertEquals("showPetById", petById.getOperationId());
-    assertEquals(2, petById.getParameters().size());
+    assertThat(petById).isNotNull();
 
-    assertEquals(1, path.getParameters().size());
+    assertThat(petById.getOperationId()).isEqualTo("showPetById");
+    assertThat(petById.getParameters()).hasSize(2);
   }
 
   @Test
@@ -62,12 +56,12 @@ class PathImplTest {
     RouterBuilderException exception =
       assertThrows(RouterBuilderException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
-    assertEquals(expectedMsg, exception.getMessage());
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @Test
   void testCutTrailingSlash() {
     String expected = "/pets";
-    assertEquals(expected, new PathImpl(expected + "/", EMPTY_JSON_OBJECT).getName());
+    assertThat(new PathImpl(expected + "/", EMPTY_JSON_OBJECT).getName()).isEqualTo(expected);
   }
 }

@@ -8,7 +8,6 @@ import io.vertx.openapi.RouterBuilderException;
 import io.vertx.openapi.Utils;
 import io.vertx.openapi.objects.Operation;
 import io.vertx.openapi.objects.impl.PathImpl;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,9 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RouterBuilderImplTest {
@@ -71,7 +69,7 @@ class RouterBuilderImplTest {
     Collections.shuffle(shuffled);
     List<PathImpl> sorted = RouterBuilderImpl.applyMountOrder(new ArrayList<>(PATHS_UNSORTED));
     for (int x = 0; x < PATHS_SORTED.size(); x++) {
-      assertEquals(PATHS_SORTED.get(x).getName(), sorted.get(x).getName());
+      assertThat(PATHS_SORTED.get(x).getName()).isEqualTo(sorted.get(x).getName());
     }
   }
 
@@ -81,17 +79,17 @@ class RouterBuilderImplTest {
     RouterBuilderException exception =
       assertThrows(RouterBuilderException.class, () -> RouterBuilderImpl.applyMountOrder(paths));
     String expectedMsg = "The passed OpenAPI contract is invalid: " + expectedReason;
-    assertEquals(expectedMsg, exception.getMessage());
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @Test
   void testToVertxWebPath() {
     String openAPIPathWithPathParams = "/pets/{petId}/friends/{friendId}";
     String expectedWithPathParams = "/pets/:petId/friends/:friendId";
-    assertEquals(expectedWithPathParams, RouterBuilderImpl.toVertxWebPath(openAPIPathWithPathParams));
+    assertThat(RouterBuilderImpl.toVertxWebPath(openAPIPathWithPathParams)).isEqualTo(expectedWithPathParams);
 
     String openAPIPathWithoutPathParams = "/pets/friends";
-    assertEquals(openAPIPathWithoutPathParams, RouterBuilderImpl.toVertxWebPath(openAPIPathWithoutPathParams));
+    assertThat(RouterBuilderImpl.toVertxWebPath(openAPIPathWithoutPathParams)).isEqualTo(openAPIPathWithoutPathParams);
   }
 
   @ParameterizedTest(name = "{index} should make operations of an OpenAPI ({0}) contract accessible")
@@ -100,24 +98,24 @@ class RouterBuilderImplTest {
     Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve(version).resolve("petstore_dereferenced.json");
     JsonObject contract = Buffer.buffer(Files.readAllBytes(pathDereferencedContract)).toJsonObject();
     RouterBuilderImpl rb = new RouterBuilderImpl(contract, null);
-    assertEquals(3, rb.operations().size());
+    assertThat(rb.operations()).hasSize(3);
 
     Operation listPets = rb.operation("listPets");
     Operation createPets = rb.operation("createPets");
     Operation showPetById = rb.operation("showPetById");
 
-    Assertions.assertNotSame(listPets, createPets);
-    Assertions.assertNotSame(listPets, showPetById);
-    Assertions.assertNotSame(createPets, showPetById);
+    assertThat(listPets).isNotSameInstanceAs(createPets);
+    assertThat(listPets).isNotSameInstanceAs(showPetById);
+    assertThat(createPets).isNotSameInstanceAs(showPetById);
   }
 
   @Test
   void testRootHandler() {
     RouterBuilderImpl rb = new RouterBuilderImpl(new JsonObject(), null);
-    assertEquals(0, rb.rootHandlers.size());
+    assertThat(rb.rootHandlers).isEmpty();
     Handler<RoutingContext> dummyHandler = RoutingContext::next;
     rb.rootHandler(dummyHandler);
-    assertEquals(1, rb.rootHandlers.size());
-    assertSame(dummyHandler, rb.rootHandlers.get(0));
+    assertThat(rb.rootHandlers).hasSize(1);
+    assertThat(rb.rootHandlers.get(0)).isSameInstanceAs(dummyHandler);
   }
 }
