@@ -1,4 +1,4 @@
-package io.vertx.openapi;
+package io.vertx.openapi.contract;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -8,6 +8,7 @@ import io.vertx.json.schema.SchemaRepository;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.openapi.ResourceHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,9 +24,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.OpenAPIVersion.V3_0;
-import static io.vertx.openapi.OpenAPIVersion.V3_1;
+import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
+import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
+import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -119,13 +121,13 @@ class OpenAPIVersionTest {
   @DisplayName("fromSpec should throw exception if field openapi doesn't exist or the version isn't supported")
   void testFromSpecException() {
     String expectedInvalidMsg = "The passed OpenAPI contract is invalid: Field \"openapi\" is missing";
-    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(null), expectedInvalidMsg);
-    JsonObject emptyContract = new JsonObject();
-    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(emptyContract), expectedInvalidMsg);
+    assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(null), expectedInvalidMsg);
+    JsonObject emptyContract = EMPTY_JSON_OBJECT;
+    assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(emptyContract), expectedInvalidMsg);
 
     String expectedUnsupportedMsg = "The version of the passed OpenAPI contract is not supported: 2.0.0";
     JsonObject unsupportedContract = new JsonObject().put("openapi", "2.0.0");
-    assertThrows(RouterBuilderException.class, () -> OpenAPIVersion.fromContract(unsupportedContract),
+    assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(unsupportedContract),
       expectedUnsupportedMsg);
   }
 }

@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.ResourceHelper;
-import io.vertx.openapi.objects.Parameter;
+import io.vertx.openapi.contract.Parameter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,8 +19,8 @@ import java.util.List;
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.objects.Location.PATH;
-import static io.vertx.openapi.objects.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @ExtendWith(VertxExtension.class)

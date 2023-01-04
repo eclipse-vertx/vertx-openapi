@@ -1,17 +1,17 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.RouterBuilderException;
-import io.vertx.openapi.objects.Location;
-import io.vertx.openapi.objects.Parameter;
-import io.vertx.openapi.objects.Style;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Location;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Style;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.vertx.openapi.objects.Location.PATH;
+import static io.vertx.openapi.contract.Location.PATH;
 import static java.util.stream.Collectors.toList;
 
 public class ParameterImpl implements Parameter {
@@ -36,11 +36,12 @@ public class ParameterImpl implements Parameter {
     if (in == PATH) {
       // if location is "path", name must be part of the path
       if (StringUtil.isNullOrEmpty(name) || !path.contains("{" + name + "}")) {
-        throw RouterBuilderException.createInvalidContract("Path parameters MUST have a name that is part of the path");
+        throw OpenAPIContractException.createInvalidContract(
+          "Path parameters MUST have a name that is part of the path");
       }
       // if location is "path", required must be true
       if (!required) {
-        throw RouterBuilderException.createInvalidContract("\"required\" MUST be true for path parameters");
+        throw OpenAPIContractException.createInvalidContract("\"required\" MUST be true for path parameters");
       }
     }
     this.style =

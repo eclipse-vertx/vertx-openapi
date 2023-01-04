@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -6,15 +6,15 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.openapi.objects.Operation;
-import io.vertx.openapi.objects.Parameter;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.objects.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 

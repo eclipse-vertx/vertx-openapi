@@ -1,19 +1,11 @@
-package io.vertx.openapi.impl;
+package io.vertx.openapi.contract.impl;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthenticationHandler;
-import io.vertx.openapi.RouterBuilder;
-import io.vertx.openapi.SecurityScheme;
-import io.vertx.openapi.objects.Operation;
-import io.vertx.openapi.objects.Path;
-import io.vertx.openapi.objects.impl.PathImpl;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.OpenAPIVersion;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Path;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,32 +13,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public class RouterBuilderImpl implements RouterBuilder {
-
+public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_PATHS = "paths";
-
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)\\}";
-
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
     path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
 
-  // VisibleForTesting
-  final List<Handler<RoutingContext>> rootHandlers = new ArrayList<>();
-  private final Vertx vertx;
   private final List<Path> paths;
-  private final List<Handler<RoutingContext>> securityHandlers = new ArrayList<>();
 
   private final Map<String, Operation> operations;
 
-  public RouterBuilderImpl(JsonObject resolvedSpec, Vertx vertx) {
-    this.vertx = vertx;
+  private final OpenAPIVersion version;
+
+  private final JsonObject rawContract;
+
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version) {
+    this.rawContract = resolvedSpec;
+    this.version = version;
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
       .map(pathEntry -> new PathImpl(pathEntry.getKey(), (JsonObject) pathEntry.getValue())).collect(toList());
     this.paths = unmodifiableList(applyMountOrder(unsortedPaths));
@@ -105,15 +95,6 @@ public class RouterBuilderImpl implements RouterBuilder {
     return withoutTemplating;
   }
 
-  /**
-   * @param openAPIPath the path with placeholders in OpenAPI format
-   * @return the path with placeholders in vertx-web format
-   */
-  //VisibleForTesting
-  static String toVertxWebPath(String openAPIPath) {
-    return openAPIPath.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, ":$1");
-  }
-
   @Override
   public @Nullable Operation operation(String operationId) {
     return operations.get(operationId);
@@ -125,36 +106,17 @@ public class RouterBuilderImpl implements RouterBuilder {
   }
 
   @Override
-  @Fluent
-  public RouterBuilder rootHandler(Handler<RoutingContext> rootHandler) {
-    rootHandlers.add(rootHandler);
-    return this;
+  public List<Path> gtePaths() {
+    return paths;
   }
 
   @Override
-  @Fluent
-  public RouterBuilder securityHandler(String securitySchemeName, AuthenticationHandler securityHandler) {
-    securityHandlers.add(securityHandler);
-    return this;
+  public JsonObject getRawContract() {
+    return rawContract.copy();
   }
 
   @Override
-  public SecurityScheme securityHandler(String securitySchemeName) {
-    return null;
-  }
-
-  @Override
-  public Router createRouter() {
-    Router router = Router.router(vertx);
-
-    for (Path path : paths) {
-      for (Operation operation : path.getOperations()) {
-        Route route = router.route(operation.getHttpMethod(), toVertxWebPath(path.getName()));
-        route.putMetadata(KEY_META_DATA_OPERATION, operation.getOperationId());
-        operation.getHandlers().forEach(route::handler);
-        operation.getFailureHandlers().forEach(route::failureHandler);
-      }
-    }
-    return router;
+  public OpenAPIVersion getVersion() {
+    return version;
   }
 }

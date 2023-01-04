@@ -1,4 +1,4 @@
-package io.vertx.openapi;
+package io.vertx.openapi.contract;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -16,8 +16,8 @@ import java.util.Optional;
 
 import static io.vertx.json.schema.Draft.DRAFT202012;
 import static io.vertx.json.schema.Draft.DRAFT4;
-import static io.vertx.openapi.RouterBuilderException.createInvalidContract;
-import static io.vertx.openapi.RouterBuilderException.createUnsupportedVersion;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedVersion;
 
 public enum OpenAPIVersion {
   V3_0("3.0.", DRAFT4, "https://spec.openapis.org/oas/3.0/schema/2021-09-28"),

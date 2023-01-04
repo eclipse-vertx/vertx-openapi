@@ -1,11 +1,11 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
-import io.vertx.openapi.ErrorType;
+import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.ResourceHelper;
-import io.vertx.openapi.RouterBuilderException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +17,11 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.ErrorType.INVALID_SPEC;
-import static io.vertx.openapi.objects.Location.PATH;
-import static io.vertx.openapi.objects.Location.QUERY;
-import static io.vertx.openapi.objects.Style.FORM;
-import static io.vertx.openapi.objects.Style.MATRIX;
+import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Location.QUERY;
+import static io.vertx.openapi.contract.Style.FORM;
+import static io.vertx.openapi.contract.Style.MATRIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -64,9 +64,9 @@ class ParameterImplTest {
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
   @MethodSource(value = "provideErrorScenarios")
-  void testExceptions(String testId, ErrorType type, String msg) {
-    RouterBuilderException exception =
-      assertThrows(RouterBuilderException.class, () -> fromTestData(testId, invalidTestData));
+  void testExceptions(String testId, ContractErrorType type, String msg) {
+    OpenAPIContractException exception =
+      assertThrows(OpenAPIContractException.class, () -> fromTestData(testId, invalidTestData));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }

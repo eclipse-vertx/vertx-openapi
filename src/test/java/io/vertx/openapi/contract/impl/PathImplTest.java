@@ -1,11 +1,11 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.ResourceHelper;
-import io.vertx.openapi.RouterBuilderException;
-import io.vertx.openapi.objects.Operation;
+import io.vertx.openapi.contract.Operation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,8 +53,8 @@ class PathImplTest {
 
   @Test
   void testWilcardInPath() {
-    RouterBuilderException exception =
-      assertThrows(RouterBuilderException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
+    OpenAPIContractException exception =
+      assertThrows(OpenAPIContractException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }

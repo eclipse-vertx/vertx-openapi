@@ -1,11 +1,11 @@
-package io.vertx.openapi.objects.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.RouterBuilderException;
-import io.vertx.openapi.objects.Operation;
-import io.vertx.openapi.objects.Parameter;
-import io.vertx.openapi.objects.Path;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Path;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static io.vertx.core.http.HttpMethod.TRACE;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.objects.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.unmodifiableList;
 
 public class PathImpl implements Path {
@@ -48,7 +48,7 @@ public class PathImpl implements Path {
 
   public PathImpl(String name, JsonObject pathModel) {
     if (name.contains("*")) {
-      throw RouterBuilderException.createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
+      throw OpenAPIContractException.createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
     }
     this.name = name.endsWith("/") ? name.substring(0, name.length() - 1) : name;
     this.parameters = unmodifiableList(parseParameters(name, pathModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY)));

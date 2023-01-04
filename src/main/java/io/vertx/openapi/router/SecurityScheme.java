@@ -13,7 +13,7 @@
  *
  *  You may elect to redistribute this code under either of these licenses.
  */
-package io.vertx.openapi;
+package io.vertx.openapi.router;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 @VertxGen
 public interface SecurityScheme {
 
-  io.vertx.openapi.RouterBuilder bindBlocking(Function<JsonObject, AuthenticationHandler> factory);
+  RouterBuilder bindBlocking(Function<JsonObject, AuthenticationHandler> factory);
 
-  Future<io.vertx.openapi.RouterBuilder> bind(Function<JsonObject, Future<AuthenticationHandler>> factory);
+  Future<RouterBuilder> bind(Function<JsonObject, Future<AuthenticationHandler>> factory);
 }

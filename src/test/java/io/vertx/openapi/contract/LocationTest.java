@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects;
+package io.vertx.openapi.contract;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -7,10 +7,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.objects.Location.COOKIE;
-import static io.vertx.openapi.objects.Location.HEADER;
-import static io.vertx.openapi.objects.Location.PATH;
-import static io.vertx.openapi.objects.Location.QUERY;
+import static io.vertx.openapi.contract.Location.COOKIE;
+import static io.vertx.openapi.contract.Location.HEADER;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Location.QUERY;
 
 class LocationTest {
   private static Stream<Arguments> provideLocations() {
