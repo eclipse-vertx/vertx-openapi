@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 
 class ParameterTest {
 
@@ -23,11 +25,11 @@ class ParameterTest {
       Arguments.of("Float", 13.37f, isNumber),
       Arguments.of("Double", 4.2, isNumber),
       Arguments.of("Boolean", true, new Boolean[] {false, false, true, false, false, false, false, false}),
-      Arguments.of("JsonObject (empty)", new JsonObject(),
+      Arguments.of("JsonObject (empty)", EMPTY_JSON_OBJECT,
         new Boolean[] {false, false, false, true, false, false, false, true}),
       Arguments.of("JsonObject", new JsonObject().put("key", "value"),
         new Boolean[] {false, false, false, true, false, false, false, false}),
-      Arguments.of("JsonArray (empty)", new JsonArray(),
+      Arguments.of("JsonArray (empty)", EMPTY_JSON_ARRAY,
         new Boolean[] {false, false, false, false, true, false, false, true}),
       Arguments.of("JsonArray", new JsonArray().add(1),
         new Boolean[] {false, false, false, false, true, false, false, false}),
@@ -42,8 +44,8 @@ class ParameterTest {
   private static Stream<Arguments> provideValues() {
     Object[] stringResult = new Object[] {"myString", null, null, null, null, null, null, null, null};
     Object[] booleanResult = new Object[] {null, true, null, null, null, null, null, null, null};
-    Object[] jsonObjectResult = new Object[] {null, null, new JsonObject(), null, null, null, null, null, null};
-    Object[] jsonArrayResult = new Object[] {null, null, null, new JsonArray(), null, null, null, null, null};
+    Object[] jsonObjectResult = new Object[] {null, null, EMPTY_JSON_OBJECT, null, null, null, null, null, null};
+    Object[] jsonArrayResult = new Object[] {null, null, null, EMPTY_JSON_ARRAY, null, null, null, null, null};
     Object[] bufferResult = new Object[] {null, null, null, null, Buffer.buffer(), null, null, null, null};
     Object[] intResult = new Object[] {null, null, null, null, null, 1337, 1337L, 1337.0f, 1337.0,};
     Object[] longResult = new Object[] {null, null, null, null, null, 42, 42L, 42.0f, 42.0};
@@ -53,8 +55,8 @@ class ParameterTest {
     return Stream.of(
       Arguments.of("String", "myString", stringResult),
       Arguments.of("Boolean", true, booleanResult),
-      Arguments.of("JsonObject", new JsonObject(), jsonObjectResult),
-      Arguments.of("JsonArray", new JsonArray(), jsonArrayResult),
+      Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
+      Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
       Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
       Arguments.of("Integer", 1337, intResult),
       Arguments.of("Long", 42L, longResult),

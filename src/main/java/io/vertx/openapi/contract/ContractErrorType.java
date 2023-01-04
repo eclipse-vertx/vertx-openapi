@@ -1,13 +1,9 @@
-package io.vertx.openapi;
+package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.VertxGen;
 
 @VertxGen
-public enum ErrorType {
-  /**
-   * You are trying to mount an operation with operation_id not defined in specification
-   */
-  OPERATION_ID_NOT_FOUND,
+public enum ContractErrorType {
   /**
    * Provided file is not a valid OpenAPI contract
    */

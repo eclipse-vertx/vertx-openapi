@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects;
+package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;

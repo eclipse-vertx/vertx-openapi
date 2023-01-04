@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects;
+package io.vertx.openapi.contract;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -7,17 +7,17 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.objects.Location.COOKIE;
-import static io.vertx.openapi.objects.Location.HEADER;
-import static io.vertx.openapi.objects.Location.PATH;
-import static io.vertx.openapi.objects.Location.QUERY;
-import static io.vertx.openapi.objects.Style.DEEP_OBJECT;
-import static io.vertx.openapi.objects.Style.FORM;
-import static io.vertx.openapi.objects.Style.LABEL;
-import static io.vertx.openapi.objects.Style.MATRIX;
-import static io.vertx.openapi.objects.Style.PIPE_DELIMITED;
-import static io.vertx.openapi.objects.Style.SIMPLE;
-import static io.vertx.openapi.objects.Style.SPACE_DELIMITED;
+import static io.vertx.openapi.contract.Location.COOKIE;
+import static io.vertx.openapi.contract.Location.HEADER;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Location.QUERY;
+import static io.vertx.openapi.contract.Style.DEEP_OBJECT;
+import static io.vertx.openapi.contract.Style.FORM;
+import static io.vertx.openapi.contract.Style.LABEL;
+import static io.vertx.openapi.contract.Style.MATRIX;
+import static io.vertx.openapi.contract.Style.PIPE_DELIMITED;
+import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.openapi.contract.Style.SPACE_DELIMITED;
 
 class StyleTest {
   private static Stream<Arguments> provideStyles() {

@@ -4,13 +4,15 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.openapi.RouterBuilder;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.router.RouterBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +35,9 @@ public class RouterBuilderTestBase {
    */
   public Future<Void> createServer(Path pathToContract,
     Function<RouterBuilder, Future<RouterBuilder>> modifyRouterBuilder) {
-    return RouterBuilder.create(vertx, vertx.fileSystem().readFileBlocking(pathToContract.toString()).toJsonObject())
+    JsonObject unresolvedContract = vertx.fileSystem().readFileBlocking(pathToContract.toString()).toJsonObject();
+    return OpenAPIContract.from(vertx, unresolvedContract)
+      .map(contract -> RouterBuilder.create(vertx, contract))
       .compose(modifyRouterBuilder)
       .compose(rb -> vertx.createHttpServer().requestHandler(rb.createRouter()).listen(0))
       .onSuccess(server -> port = server.actualPort()).mapEmpty();

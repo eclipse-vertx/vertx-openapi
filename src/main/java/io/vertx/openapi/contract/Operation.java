@@ -1,4 +1,4 @@
-package io.vertx.openapi.objects;
+package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
