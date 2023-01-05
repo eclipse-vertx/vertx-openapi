@@ -7,6 +7,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 
 import java.util.List;
@@ -18,9 +19,11 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidCo
 public interface OpenAPIContract {
 
   /**
-   * @param vertx
-   * @param unresolvedContract
-   * @return
+   * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
+   *
+   * @param vertx              The related Vert.x instance.
+   * @param unresolvedContract The unresolved contract.
+   * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract) {
     if (unresolvedContract == null) {
@@ -40,7 +43,7 @@ public interface OpenAPIContract {
         } else {
           return version.resolve(vertx, repository, unresolvedContract);
         }
-      }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version))
+      }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
     ).onComplete(promise);
 
     return promise.future();
@@ -64,7 +67,7 @@ public interface OpenAPIContract {
   /**
    * @return all {@link Path Paths} defined in the OpenAPI contract.
    */
-  List<Path> gtePaths();
+  List<Path> getPaths();
 
   /**
    * @return the resolved OpenAPI contract as {@link JsonObject}.
@@ -75,4 +78,9 @@ public interface OpenAPIContract {
    * @return the OpenAPI version of the contract.
    */
   OpenAPIVersion getVersion();
+
+  /**
+   * @return the {@link SchemaRepository} to validate against.
+   */
+  SchemaRepository getSchemaRepository();
 }

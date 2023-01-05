@@ -74,7 +74,7 @@ public class RouterBuilderImpl implements RouterBuilder {
   public Router createRouter() {
     Router router = Router.router(vertx);
 
-    for (Path path : contract.gtePaths()) {
+    for (Path path : contract.getPaths()) {
       for (Operation operation : path.getOperations()) {
         Route route = router.route(operation.getHttpMethod(), toVertxWebPath(path.getName()));
         route.putMetadata(KEY_META_DATA_OPERATION, operation.getOperationId());

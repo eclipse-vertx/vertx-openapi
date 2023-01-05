@@ -2,7 +2,6 @@ package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Path;
@@ -12,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -22,12 +22,14 @@ import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static io.vertx.core.http.HttpMethod.TRACE;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.unmodifiableList;
 
 public class PathImpl implements Path {
+  // Visible for testing
+  static final Pattern INVALID_CURLY_BRACES = Pattern.compile("/[^/]+\\{|\\}[^/]+/|\\}[^/]+$");
   private static final String KEY_PARAMETERS = "parameters";
-
   private static final Map<String, HttpMethod> SUPPORTED_METHODS;
 
   static {
@@ -48,7 +50,11 @@ public class PathImpl implements Path {
 
   public PathImpl(String name, JsonObject pathModel) {
     if (name.contains("*")) {
-      throw OpenAPIContractException.createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
+      throw createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
+    }
+    if (INVALID_CURLY_BRACES.matcher(name).find()) {
+      throw createInvalidContract(
+        "Curly brace MUST be the first/last character in a path segment (/{parameterName}/): " + name);
     }
     this.name = name.endsWith("/") ? name.substring(0, name.length() - 1) : name;
     this.parameters = unmodifiableList(parseParameters(name, pathModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY)));

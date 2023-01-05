@@ -3,9 +3,9 @@ package io.vertx.openapi.contract.impl;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
-import io.vertx.openapi.ResourceHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
+import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
@@ -58,7 +59,13 @@ class ParameterImplTest {
       Arguments.of("0001_Path_With_Empty_Name", INVALID_SPEC,
         "The passed OpenAPI contract is invalid: Path parameters MUST have a name that is part of the path"),
       Arguments.of("0002_Path_Without_Require", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: \"required\" MUST be true for path parameters")
+        "The passed OpenAPI contract is invalid: \"required\" MUST be true for path parameters"),
+      Arguments.of("0003_With_Property_Content", UNSUPPORTED_FEATURE,
+        "The passed OpenAPI contract contains a feature that is not supported: Usage of property \"content\" in parameter definition"),
+      Arguments.of("0004_Without_Property_Content_And_Schema", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: A parameter MUST contain either the \"schema\" or \"content\" property"),
+      Arguments.of("0005_Path_With_Wrong_Style", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: The style of a path parameter MUST be simple, label or matrix")
     );
   }
 
@@ -80,6 +87,7 @@ class ParameterImplTest {
     assertThat(param.isRequired()).isTrue();
     assertThat(param.getStyle()).isEqualTo(MATRIX);
     assertThat(param.isExplode()).isTrue();
+    assertThat((Object) param.getSchema().get("type")).isEqualTo("string");
 
     JsonObject paramModel = validTestData.getJsonObject(testId).getJsonObject("parameterModel");
     assertThat(param.getParameterModel()).isEqualTo(paramModel);

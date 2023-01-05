@@ -2,6 +2,7 @@ package io.vertx.openapi.contract.impl;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
 import io.vertx.openapi.contract.Operation;
@@ -13,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -34,9 +35,12 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final JsonObject rawContract;
 
-  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version) {
+  private final SchemaRepository schemaRepository;
+
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
     this.rawContract = resolvedSpec;
     this.version = version;
+    this.schemaRepository = schemaRepository;
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
       .map(pathEntry -> new PathImpl(pathEntry.getKey(), (JsonObject) pathEntry.getValue())).collect(toList());
     this.paths = unmodifiableList(applyMountOrder(unsortedPaths));
@@ -106,7 +110,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   }
 
   @Override
-  public List<Path> gtePaths() {
+  public List<Path> getPaths() {
     return paths;
   }
 
@@ -118,5 +122,9 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   @Override
   public OpenAPIVersion getVersion() {
     return version;
+  }
+
+  @Override public SchemaRepository getSchemaRepository() {
+    return schemaRepository;
   }
 }

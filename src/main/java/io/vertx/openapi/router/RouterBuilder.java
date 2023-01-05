@@ -26,7 +26,7 @@ public interface RouterBuilder {
    * Create a new {@link RouterBuilder}.
    *
    * @param vertx the related Vert.x instance
-   * @return Future completed with success when specification is loaded and valid
+   * @return an instance of {@link RouterBuilder}
    */
   static RouterBuilder create(Vertx vertx, OpenAPIContract contract) {
     return new RouterBuilderImpl(vertx, contract);

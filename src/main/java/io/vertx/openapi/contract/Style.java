@@ -24,14 +24,12 @@ public enum Style {
 
   public static Style defaultByLocation(Location in) {
     switch (in) {
+      case COOKIE:
       case QUERY:
         return FORM;
       case PATH:
-        return SIMPLE;
       case HEADER:
         return SIMPLE;
-      case COOKIE:
-        return FORM;
       default:
         return null;
     }

@@ -18,5 +18,32 @@
       "name": "petId",
       "in": "path"
     }
+  },
+  "0003_With_Property_Content": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "content": {}
+    }
+  },
+  "0004_Without_Property_Content_And_Schema": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query"
+    }
+  },
+  "0005_Path_With_Wrong_Style": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "path",
+      "required": true,
+      "style": "form",
+      "schema": {
+        "type": "string"
+      }
+    }
   }
 }
