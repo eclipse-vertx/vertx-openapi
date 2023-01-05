@@ -1,14 +1,20 @@
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.Utils;
-import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
-import io.vertx.openapi.contract.impl.PathImpl;
+import io.vertx.openapi.contract.OpenAPIContractException;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +22,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
+import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OpenAPIContractImplTest {
@@ -23,7 +31,7 @@ class OpenAPIContractImplTest {
   private static final List<PathImpl> PATHS_UNSORTED = Arrays.asList(
     new PathImpl("/v2", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/{abc}/pets/{petId}", Utils.EMPTY_JSON_OBJECT),
-    new PathImpl("/{abc}/{foo}}/bar", Utils.EMPTY_JSON_OBJECT),
+    new PathImpl("/{abc}/{foo}/bar", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/pets/{petId}", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/v1/docs/docId", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/pets/petId", Utils.EMPTY_JSON_OBJECT),
@@ -37,7 +45,7 @@ class OpenAPIContractImplTest {
     new PathImpl("/pets/{petId}", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/v1/docs/{docId}", Utils.EMPTY_JSON_OBJECT),
     new PathImpl("/{abc}/pets/{petId}", Utils.EMPTY_JSON_OBJECT),
-    new PathImpl("/{abc}/{foo}}/bar", Utils.EMPTY_JSON_OBJECT)
+    new PathImpl("/{abc}/{foo}/bar", Utils.EMPTY_JSON_OBJECT)
   );
 
   private static Stream<Arguments> testApplyMountOrderThrows() {
@@ -70,5 +78,21 @@ class OpenAPIContractImplTest {
       assertThrows(OpenAPIContractException.class, () -> OpenAPIContractImpl.applyMountOrder(paths));
     String expectedMsg = "The passed OpenAPI contract is invalid: " + expectedReason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  void testGetters() throws IOException {
+    Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore_dereferenced.json");
+    JsonObject resolvedSpec = Buffer.buffer(Files.readAllBytes(pathDereferencedContract)).toJsonObject();
+    SchemaRepository schemaRepository = Mockito.mock(SchemaRepository.class);
+    OpenAPIContractImpl contract = new OpenAPIContractImpl(resolvedSpec, V3_1, schemaRepository);
+
+    assertThat(contract.getPaths()).hasSize(2);
+    assertThat(contract.operations()).hasSize(3);
+    assertThat(contract.operation("showPetById")).isNotNull();
+    assertThat(contract.operation("fooBar")).isNull();
+    assertThat(contract.getVersion()).isEqualTo(V3_1);
+    assertThat(contract.getRawContract()).isEqualTo(resolvedSpec);
+    assertThat(contract.getSchemaRepository()).isEqualTo(schemaRepository);
   }
 }

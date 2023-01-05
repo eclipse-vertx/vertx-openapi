@@ -37,7 +37,7 @@ class RouterBuilderImplTest {
     Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve(version).resolve("petstore_dereferenced.json");
     JsonObject contract = Buffer.buffer(Files.readAllBytes(pathDereferencedContract)).toJsonObject();
     RouterBuilderImpl rb =
-      new RouterBuilderImpl(null, new OpenAPIContractImpl(contract, OpenAPIVersion.fromContract(contract)));
+      new RouterBuilderImpl(null, new OpenAPIContractImpl(contract, OpenAPIVersion.fromContract(contract), null));
     assertThat(rb.operations()).hasSize(3);
 
     Operation listPets = rb.operation("listPets");
@@ -52,7 +52,7 @@ class RouterBuilderImplTest {
   @Test
   void testRootHandler() {
     JsonObject dummySpec = new JsonObject().put("openapi", "3.0.0");
-    RouterBuilderImpl rb = new RouterBuilderImpl(null, new OpenAPIContractImpl(dummySpec, V3_1));
+    RouterBuilderImpl rb = new RouterBuilderImpl(null, new OpenAPIContractImpl(dummySpec, V3_1, null));
     assertThat(rb.rootHandlers).isEmpty();
     Handler<RoutingContext> dummyHandler = RoutingContext::next;
     rb.rootHandler(dummyHandler);

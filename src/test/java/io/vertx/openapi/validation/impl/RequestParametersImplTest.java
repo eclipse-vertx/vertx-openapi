@@ -25,5 +25,12 @@ class RequestParametersImplTest {
     assertThat(params.getPathParameters()).containsExactlyEntriesIn(path);
     assertThat(params.getQuery()).containsExactlyEntriesIn(query);
     assertThat(params.getBody()).isEqualTo(body);
+
+    RequestParameters paramsNullValues = new RequestParametersImpl(null, null, null, null, null);
+    assertThat(paramsNullValues.getHeaders()).isEmpty();
+    assertThat(paramsNullValues.getCookies()).isEmpty();
+    assertThat(paramsNullValues.getPathParameters()).isEmpty();
+    assertThat(paramsNullValues.getQuery()).isEmpty();
+    assertThat(paramsNullValues.getBody().isEmpty()).isTrue();
   }
 }

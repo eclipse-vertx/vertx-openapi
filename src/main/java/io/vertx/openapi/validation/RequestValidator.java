@@ -2,10 +2,23 @@ package io.vertx.openapi.validation;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.validation.impl.RequestValidatorImpl;
 
 @VertxGen
 public interface RequestValidator {
+
+  /**
+   * Create a new {@link RequestValidator}.
+   *
+   * @param vertx the related Vert.x instance
+   * @return an instance of {@link RequestValidator}.
+   */
+  static RequestValidator create(Vertx vertx, OpenAPIContract contract) {
+    return new RequestValidatorImpl(vertx, contract);
+  }
 
   /**
    * Like {@link #validate(RequestParameters, String)}, but the operationId is determined from the passed path and method.

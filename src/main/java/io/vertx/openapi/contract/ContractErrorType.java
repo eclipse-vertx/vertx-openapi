@@ -11,5 +11,9 @@ public enum ContractErrorType {
   /**
    * You are trying to use an OpenAPI contract within a version that is not supported.
    */
-  UNSUPPORTED_SPEC
+  UNSUPPORTED_SPEC,
+  /**
+   * You are trying to use an OpenAPI feature that is not supported.
+   */
+  UNSUPPORTED_FEATURE
 }

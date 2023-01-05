@@ -1,6 +1,7 @@
 package io.vertx.openapi.contract;
 
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
+import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_SPEC;
 
 public class OpenAPIContractException extends RuntimeException {
@@ -24,6 +25,11 @@ public class OpenAPIContractException extends RuntimeException {
   public static OpenAPIContractException createUnsupportedVersion(String version) {
     return new OpenAPIContractException("The version of the passed OpenAPI contract is not supported: " + version,
       UNSUPPORTED_SPEC, null);
+  }
+
+  public static OpenAPIContractException createUnsupportedFeature(String feature) {
+    return new OpenAPIContractException(
+      "The passed OpenAPI contract contains a feature that is not supported: " + feature, UNSUPPORTED_FEATURE, null);
   }
 
   public ContractErrorType type() {

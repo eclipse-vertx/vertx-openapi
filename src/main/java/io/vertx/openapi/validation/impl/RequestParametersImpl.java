@@ -15,11 +15,15 @@ public class RequestParametersImpl implements RequestParameters {
 
   public RequestParametersImpl(Map<String, RequestParameter> cookies, Map<String, RequestParameter> headers,
     Map<String, RequestParameter> path, Map<String, RequestParameter> query, RequestParameter body) {
-    this.cookies = Collections.unmodifiableMap(cookies);
-    this.headers = Collections.unmodifiableMap(headers);
-    this.path = Collections.unmodifiableMap(path);
-    this.query = Collections.unmodifiableMap(query);
-    this.body = body;
+    this.cookies = safeUnmodifiableMap(cookies);
+    this.headers = safeUnmodifiableMap(headers);
+    this.path = safeUnmodifiableMap(path);
+    this.query = safeUnmodifiableMap(query);
+    this.body = body == null ? new RequestParameterImpl(null) : body;
+  }
+
+  private static Map<String, RequestParameter> safeUnmodifiableMap(Map<String, RequestParameter> map) {
+    return Collections.unmodifiableMap(map == null ? Collections.emptyMap() : map);
   }
 
   @Override
