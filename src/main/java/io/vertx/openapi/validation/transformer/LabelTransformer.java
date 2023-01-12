@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorException;
@@ -10,29 +10,27 @@ import static io.vertx.openapi.validation.ValidatorException.createInvalidValueF
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  * | style  | explode | empty  | string      | array                               | object                   |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
- * | matrix | false   | ;color | ;color=blue | ;color=blue,black,brown             | ;color=R,100,G,200,B,150 |
+ * | label  | false   | .      | .blue       | .blue.black.brown                   | .R.100.G.200.B.150       |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
- * | matrix | true    | ;color | ;color=blue | ;color=blue;color=black;color=brown | ;R=100;G=200;B=150       |
+ * | label  | true    | .      | .blue       | .blue.black.brown                   | .R=100.G=200.B=150       |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  */
-public class MatrixTransformer extends SimpleTransformer {
+public class LabelTransformer extends SimpleTransformer {
 
-  private static String buildPrefix(Parameter parameter) {
-    return ";" + parameter.getName() + "=";
+  private static boolean startsWithDot(String value) {
+    return '.' == value.charAt(0);
   }
 
-  private static boolean hasPrefix(String prefix, String value) {
-    return value.startsWith(prefix);
-  }
-
-  static String removePrefix(Parameter parameter, String value) {
-    String prefix = buildPrefix(parameter);
-    return hasPrefix(prefix, value) ? value.substring(prefix.length()) : value;
+  /**
+   * @return a String without the preceded dot.
+   */
+  private static String removePrecededDot(String value) {
+    return startsWithDot(value) ? value.substring(1) : value;
   }
 
   @Override
   public Object transform(Parameter parameter, String rawValue) {
-    if (!rawValue.isEmpty() && hasPrefix(buildPrefix(parameter), rawValue)) {
+    if (!rawValue.isEmpty() && startsWithDot(rawValue)) {
       return super.transform(parameter, rawValue);
     } else {
       throw createInvalidValueFormat(parameter);
@@ -41,17 +39,16 @@ public class MatrixTransformer extends SimpleTransformer {
 
   @Override
   public Object transformPrimitive(Parameter parameter, String rawValue) {
-    return super.transformPrimitive(parameter, removePrefix(parameter, rawValue));
+    return super.transformPrimitive(parameter, removePrecededDot(rawValue));
   }
 
   @Override
   public Object transformObject(Parameter parameter, String rawValue) {
     try {
       if (parameter.isExplode()) {
-        String convertedValue = rawValue.replaceAll(";", ",").substring(1);
-        return super.transformObject(parameter, convertedValue);
+        return super.transformObject(parameter, removePrecededDot(rawValue).replace(".", ","));
       }
-      return super.transformObject(parameter, removePrefix(parameter, rawValue));
+      return super.transformObject(parameter, removePrecededDot(rawValue));
     } catch (ValidatorException e) {
       throw createInvalidValueFormat(parameter);
     }
@@ -60,9 +57,8 @@ public class MatrixTransformer extends SimpleTransformer {
   @Override
   public Object transformArray(Parameter parameter, String rawValue) {
     if (parameter.isExplode()) {
-      String convertedValue = rawValue.replaceAll(buildPrefix(parameter), ",").substring(1);
-      return super.transformArray(parameter, convertedValue);
+      return super.transformArray(parameter, (removePrecededDot(rawValue).replace(".", ",")));
     }
-    return super.transformArray(parameter, removePrefix(parameter, rawValue));
+    return super.transformArray(parameter, removePrecededDot(rawValue));
   }
 }

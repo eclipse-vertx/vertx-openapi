@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,7 +25,7 @@ public class SimpleTransformer implements ValueTransformer {
     if (rawValue.isEmpty()) {
       return EMPTY_JSON_OBJECT;
     }
-    String effectiveRawValue = parameter.isExplode() ? rawValue.replaceAll("=", ",") : rawValue;
+    String effectiveRawValue = parameter.isExplode() ? rawValue.replace("=", ",") : rawValue;
     String[] values = effectiveRawValue.split(",");
     if (values.length % 2 != 0) {
       throw createInvalidValueFormat(parameter);

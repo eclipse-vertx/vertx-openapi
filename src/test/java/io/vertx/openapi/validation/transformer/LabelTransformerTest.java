@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,6 @@ import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.LABEL;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -117,6 +116,6 @@ class LabelTransformerTest {
     Parameter param = mockParameter("dummy", PATH, LABEL, false, schema);
     LabelTransformer spyTransformer = spy(new LabelTransformer());
     spyTransformer.transform(param, ".5");
-    verify(spyTransformer).transform(eq(param), eq(".5"));
+    verify(spyTransformer).transform(param, ".5");
   }
 }

@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.core.json.DecodeException;
 import io.vertx.json.schema.JsonSchema;

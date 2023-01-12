@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -21,19 +21,18 @@ import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.MATRIX;
-import static io.vertx.openapi.validation.validator.transformer.MatrixTransformer.removePrefix;
+import static io.vertx.openapi.validation.transformer.MatrixTransformer.removePrefix;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 class MatrixTransformerTest {
-  private static final Parameter DUMMY_PARAM = mockLabelParameter("dummy", false);
-  private static final Parameter DUMMY_PARAM_EXPLODE = mockLabelParameter("dummy", true);
+  private static final Parameter DUMMY_PARAM = mockMatrixParameter("dummy", false);
+  private static final Parameter DUMMY_PARAM_EXPLODE = mockMatrixParameter("dummy", true);
 
   private static final MatrixTransformer TRANSFORMER = new MatrixTransformer();
 
-  private static Parameter mockLabelParameter(String name, boolean explode) {
+  private static Parameter mockMatrixParameter(String name, boolean explode) {
     return mockParameter(name, PATH, MATRIX, explode, JsonSchema.of(EMPTY_JSON_OBJECT));
   }
 
@@ -116,12 +115,12 @@ class MatrixTransformerTest {
     Parameter param = mockParameter("dummy", PATH, MATRIX, false, schema);
     MatrixTransformer spyTransformer = spy(new MatrixTransformer());
     spyTransformer.transform(param, ";dummy=5");
-    verify(spyTransformer).transform(eq(param), eq(";dummy=5"));
+    verify(spyTransformer).transform(param, ";dummy=5");
   }
 
   @Test
   void testRemovePrefix() {
-    assertThat(removePrefix(DUMMY_PARAM, ";dummy=")).isEqualTo("");
+    assertThat(removePrefix(DUMMY_PARAM, "")).isEqualTo("");
     assertThat(removePrefix(DUMMY_PARAM, ";dummy=")).isEqualTo("");
   }
 }

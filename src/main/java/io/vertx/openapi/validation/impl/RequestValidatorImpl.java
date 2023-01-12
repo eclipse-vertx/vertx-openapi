@@ -3,32 +3,47 @@ package io.vertx.openapi.validation.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Style;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestParameters;
 import io.vertx.openapi.validation.RequestValidator;
-import io.vertx.openapi.validation.validator.PathParameterValidator;
+import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.transformer.FormTransformer;
+import io.vertx.openapi.validation.transformer.LabelTransformer;
+import io.vertx.openapi.validation.transformer.MatrixTransformer;
+import io.vertx.openapi.validation.transformer.SimpleTransformer;
+import io.vertx.openapi.validation.transformer.ValueTransformer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.vertx.core.Future.failedFuture;
-import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
+import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 
 public class RequestValidatorImpl implements RequestValidator {
 
+  private static final Map<Style, ValueTransformer> VALUE_TRANSFORMERS = new HashMap<>(3);
+
+  static {
+    VALUE_TRANSFORMERS.put(Style.SIMPLE, new SimpleTransformer());
+    VALUE_TRANSFORMERS.put(Style.LABEL, new LabelTransformer());
+    VALUE_TRANSFORMERS.put(Style.MATRIX, new MatrixTransformer());
+    VALUE_TRANSFORMERS.put(Style.FORM, new FormTransformer());
+  }
+
   private final OpenAPIContract contract;
-  private final PathParameterValidator pathParameterValidator;
 
   private final Vertx vertx;
 
   public RequestValidatorImpl(Vertx vertx, OpenAPIContract contract) {
     this.vertx = vertx;
     this.contract = contract;
-    this.pathParameterValidator = new PathParameterValidator(contract.getSchemaRepository());
   }
 
   @Override
@@ -54,14 +69,39 @@ public class RequestValidatorImpl implements RequestValidator {
       for (Parameter param : operation.getParameters()) {
         Location location = param.getIn();
 
-        if (PATH.equals(location)) {
-          RequestParameter value = params.getPathParameters().get(param.getName());
-          path.put(param.getName(), pathParameterValidator.validate(param, value));
+        switch (location) {
+          case PATH:
+            path.put(param.getName(), validateParameter(param, params.getPathParameters().get(param.getName())));
+            break;
+          case COOKIE:
+            cookies.put(param.getName(), validateParameter(param, params.getCookies().get(param.getName())));
+            break;
+          default:
+            throw new IllegalStateException();
         }
       }
 
       RequestParameters parametersToReturn = new RequestParametersImpl(cookies, headers, path, query, null);
       p.complete(parametersToReturn);
     });
+  }
+
+  // VisibleForTesting
+  RequestParameter validateParameter(Parameter parameter, RequestParameter value) throws ValidatorException {
+    if (value == null || value.isNull()) {
+      if (parameter.isRequired()) {
+        throw createMissingRequiredParameter(parameter);
+      } else {
+        return new RequestParameterImpl(null);
+      }
+    } else {
+      ValueTransformer transformer = VALUE_TRANSFORMERS.get(parameter.getStyle());
+      Object transformedValue = transformer.transform(parameter, value.getString());
+      OutputUnit result = contract.getSchemaRepository().validator(parameter.getSchema()).validate(transformedValue);
+      if (Boolean.TRUE.equals(result.getValid())) {
+        return new RequestParameterImpl(transformedValue);
+      }
+      throw createInvalidValue(parameter, result);
+    }
   }
 }

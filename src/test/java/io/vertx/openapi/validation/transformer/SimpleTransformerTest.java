@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.validator.transformer;
+package io.vertx.openapi.validation.transformer;
 
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
@@ -42,7 +42,7 @@ class SimpleTransformerTest {
 
   private static Stream<Arguments> provideValidObjectValues() {
     String complexExplodedRaw = "string=foo,number=13.37,integer=42,boolean=true";
-    String complexRaw = complexExplodedRaw.replaceAll("=", ",");
+    String complexRaw = complexExplodedRaw.replace("=", ",");
     JsonObject expectedComplex =
       new JsonObject().put("string", "foo").put("number", 13.37).put("integer", 42).put("boolean", true);
 
