@@ -16,24 +16,27 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
+import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.MATRIX;
-import static io.vertx.openapi.validation.transformer.MatrixTransformer.removePrefix;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 class MatrixTransformerTest {
-  private static final Parameter DUMMY_PARAM = mockMatrixParameter("dummy", false);
-  private static final Parameter DUMMY_PARAM_EXPLODE = mockMatrixParameter("dummy", true);
+  private static final Parameter DUMMY_PARAM = mockMatrixParameter("dummy", false, EMPTY_JSON_OBJECT);
+  private static final Parameter DUMMY_PARAM_EXPLODE = mockMatrixParameter("dummy", true, EMPTY_JSON_OBJECT);
+
+  private static final Parameter DUMMY_PARAM_OBJECT_EXPLODE =
+    mockMatrixParameter("dummy", true, objectSchema().toJson());
 
   private static final MatrixTransformer TRANSFORMER = new MatrixTransformer();
 
-  private static Parameter mockMatrixParameter(String name, boolean explode) {
-    return mockParameter(name, PATH, MATRIX, explode, JsonSchema.of(EMPTY_JSON_OBJECT));
+  private static Parameter mockMatrixParameter(String name, boolean explode, JsonObject schema) {
+    return mockParameter(name, PATH, MATRIX, explode, JsonSchema.of(schema));
   }
 
   private static Stream<Arguments> provideValidPrimitiveValues() {
@@ -66,28 +69,34 @@ class MatrixTransformerTest {
 
     return Stream.of(
       Arguments.of("empty", DUMMY_PARAM, ";dummy=", EMPTY_JSON_OBJECT),
-      Arguments.of("empty (exploded)", DUMMY_PARAM_EXPLODE, ";", EMPTY_JSON_OBJECT),
+      Arguments.of("empty (exploded)", DUMMY_PARAM_OBJECT_EXPLODE, ";", EMPTY_JSON_OBJECT),
       Arguments.of(complexRaw, DUMMY_PARAM, complexRaw, expected),
-      Arguments.of(complexExplodedRaw + " (exploded)", DUMMY_PARAM_EXPLODE, complexExplodedRaw, expected)
+      Arguments.of(complexExplodedRaw + " (exploded)", DUMMY_PARAM_OBJECT_EXPLODE, complexExplodedRaw, expected)
     );
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue)).isEqualTo(expectedValue);
+    // Leading prefix will be removed in transform method
+    int prefixLength = TRANSFORMER.buildPrefix(DUMMY_PARAM).length();
+    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue.substring(prefixLength))).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with array value: {0}")
   @MethodSource("provideValidArrayValues")
   void testTransformArrayValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformArray(parameter, rawValue)).isEqualTo(expectedValue);
+    // Leading prefix will be removed in transform method
+    int prefixLength = TRANSFORMER.buildPrefix(parameter).length();
+    assertThat(TRANSFORMER.transformArray(parameter, rawValue.substring(prefixLength))).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with object value: {0}")
   @MethodSource("provideValidObjectValues")
   void testTransformObjectValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformObject(parameter, rawValue)).isEqualTo(expectedValue);
+    // Leading prefix will be removed in transform method
+    int prefixLength = TRANSFORMER.buildPrefix(parameter).length();
+    assertThat(TRANSFORMER.transformObject(parameter, rawValue.substring(prefixLength))).isEqualTo(expectedValue);
   }
 
   @Test
@@ -116,11 +125,5 @@ class MatrixTransformerTest {
     MatrixTransformer spyTransformer = spy(new MatrixTransformer());
     spyTransformer.transform(param, ";dummy=5");
     verify(spyTransformer).transform(param, ";dummy=5");
-  }
-
-  @Test
-  void testRemovePrefix() {
-    assertThat(removePrefix(DUMMY_PARAM, "")).isEqualTo("");
-    assertThat(removePrefix(DUMMY_PARAM, ";dummy=")).isEqualTo("");
   }
 }

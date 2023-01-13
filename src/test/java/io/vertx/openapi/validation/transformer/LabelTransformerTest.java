@@ -76,19 +76,22 @@ class LabelTransformerTest {
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue)).isEqualTo(expectedValue);
+    // Leading dot will be removed in transform method
+    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue.substring(1))).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with array value: {0}")
   @MethodSource("provideValidArrayValues")
   void testTransformArrayValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformArray(parameter, rawValue)).isEqualTo(expectedValue);
+    // Leading dot will be removed in transform method
+    assertThat(TRANSFORMER.transformArray(parameter, rawValue.substring(1))).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with object value: {0}")
   @MethodSource("provideValidObjectValues")
   void testTransformObjectValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformObject(parameter, rawValue)).isEqualTo(expectedValue);
+    // Leading dot will be removed in transform method
+    assertThat(TRANSFORMER.transformObject(parameter, rawValue.substring(1))).isEqualTo(expectedValue);
   }
 
   @Test

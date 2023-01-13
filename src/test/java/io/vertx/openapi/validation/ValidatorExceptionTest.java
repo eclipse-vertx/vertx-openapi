@@ -38,4 +38,12 @@ class ValidatorExceptionTest {
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.ILLEGAL_VALUE);
   }
+
+  @Test
+  void testCreateUnsupportedValueFormat() {
+    ValidatorException exception = ValidatorException.createUnsupportedValueFormat(DUMMY_PARAMETER);
+    String expectedMsg = "Values in style label with exploded=false are not supported for path parameter dummy.";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+    assertThat(exception.type()).isEqualTo(ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT);
+  }
 }

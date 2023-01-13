@@ -12,12 +12,22 @@ of this component:
 
 ### LabelTransformer
 
+See class comment for `LabelTransformer`, the OpenAPI spec seems to be wrong.
+
 * How to handle type `number` when style `Label` and exploded is `true`?
   * because all values are seperated by a '.' (dot), and this char is also used as floating point.
 
 ### FormTransformer
 
 How does Cookie Parameter Parser behave when explode is true? see https://swagger.io/docs/specification/serialization/
+
+### Missing Transformer
+
+Due to wrong or insufficient documentation the following transformers are postponed:
+
+- PipeDelimitedTransformer
+- SpaceDelimitedTransformer
+- DeepObjectTransformer
 
 
 

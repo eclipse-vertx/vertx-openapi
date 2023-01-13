@@ -4,6 +4,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorException;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
@@ -29,6 +34,20 @@ class SimpleTransformerTest {
 
   private static Parameter mockSimpleParameter(String name, boolean explode) {
     return mockParameter(name, PATH, SIMPLE, explode, JsonSchema.of(EMPTY_JSON_OBJECT));
+  }
+
+  private static Parameter buildSimplePathParameter(SchemaBuilder<?, ?> schema) {
+    return mockParameter("dummy", PATH, SIMPLE, false, JsonSchema.of(schema.toJson()));
+  }
+
+  private static Stream<Arguments> provideValidPrimitiveValues() {
+    return Stream.of(
+      Arguments.of("(String) empty", buildSimplePathParameter(stringSchema()), "", ""),
+      Arguments.of("(String) \"foobar\"", buildSimplePathParameter(stringSchema()), "foobar", "foobar"),
+      Arguments.of("(Number) 14.6767", buildSimplePathParameter(numberSchema()), "14.6767", 14.6767),
+      Arguments.of("(Integer) 42", buildSimplePathParameter(intSchema()), "42", 42),
+      Arguments.of("(Boolean) true", buildSimplePathParameter(booleanSchema()), "true", true)
+    );
   }
 
   private static Stream<Arguments> provideValidArrayValues() {
@@ -53,6 +72,12 @@ class SimpleTransformerTest {
       Arguments.of(complexExplodedRaw + " (exploded)", DUMMY_PARAM_EXPLODE, complexExplodedRaw,
         expectedComplex)
     );
+  }
+
+  @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"simple\" with primitive value: {0}")
+  @MethodSource("provideValidPrimitiveValues")
+  void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
+    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue)).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"simple\" with array value: {0}")

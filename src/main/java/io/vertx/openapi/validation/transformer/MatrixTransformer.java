@@ -1,7 +1,6 @@
 package io.vertx.openapi.validation.transformer;
 
 import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.validation.ValidatorException;
 
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueFormat;
 
@@ -15,54 +14,32 @@ import static io.vertx.openapi.validation.ValidatorException.createInvalidValueF
  * | matrix | true    | ;color | ;color=blue | ;color=blue;color=black;color=brown | ;R=100;G=200;B=150       |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  */
-public class MatrixTransformer extends SimpleTransformer {
+public class MatrixTransformer extends ParameterTransformer {
 
-  private static String buildPrefix(Parameter parameter) {
+  String buildPrefix(Parameter parameter) {
+    if (parameter.isExplode() && "object".equals(getSchemaType(parameter))) {
+      return ";";
+    }
     return ";" + parameter.getName() + "=";
-  }
-
-  private static boolean hasPrefix(String prefix, String value) {
-    return value.startsWith(prefix);
-  }
-
-  static String removePrefix(Parameter parameter, String value) {
-    String prefix = buildPrefix(parameter);
-    return hasPrefix(prefix, value) ? value.substring(prefix.length()) : value;
   }
 
   @Override
   public Object transform(Parameter parameter, String rawValue) {
-    if (!rawValue.isEmpty() && hasPrefix(buildPrefix(parameter), rawValue)) {
-      return super.transform(parameter, rawValue);
+    String prefix = buildPrefix(parameter);
+    if (!rawValue.isEmpty() && rawValue.startsWith(prefix)) {
+      return super.transform(parameter, rawValue.substring(prefix.length()));
     } else {
       throw createInvalidValueFormat(parameter);
     }
   }
 
   @Override
-  public Object transformPrimitive(Parameter parameter, String rawValue) {
-    return super.transformPrimitive(parameter, removePrefix(parameter, rawValue));
+  protected String[] getArrayValues(Parameter parameter, String rawValue) {
+    return parameter.isExplode() ? rawValue.split(buildPrefix(parameter)) : rawValue.split(",");
+
   }
 
-  @Override
-  public Object transformObject(Parameter parameter, String rawValue) {
-    try {
-      if (parameter.isExplode()) {
-        String convertedValue = rawValue.replace(";", ",").substring(1);
-        return super.transformObject(parameter, convertedValue);
-      }
-      return super.transformObject(parameter, removePrefix(parameter, rawValue));
-    } catch (ValidatorException e) {
-      throw createInvalidValueFormat(parameter);
-    }
-  }
-
-  @Override
-  public Object transformArray(Parameter parameter, String rawValue) {
-    if (parameter.isExplode()) {
-      String convertedValue = rawValue.replace(buildPrefix(parameter), ",").substring(1);
-      return super.transformArray(parameter, convertedValue);
-    }
-    return super.transformArray(parameter, removePrefix(parameter, rawValue));
+  @Override protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+    return parameter.isExplode() ? rawValue.split("(" + buildPrefix(parameter) + "|=)") : rawValue.split(",");
   }
 }

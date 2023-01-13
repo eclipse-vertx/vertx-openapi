@@ -12,27 +12,23 @@ import io.vertx.openapi.contract.Parameter;
  * | form   | true    | color= | color=blue | color=blue&color=black&color=brown | R=100&G=200&B=150       |
  * +--------+---------+--------+------------+------------------------------------+-------------------------+
  */
-public class FormTransformer extends SimpleTransformer {
+public class FormTransformer extends ParameterTransformer {
 
   private static String buildPrefix(Parameter parameter) {
     return parameter.getName() + "=";
   }
 
   @Override
-  public Object transformArray(Parameter parameter, String rawValue) {
+  protected String[] getArrayValues(Parameter parameter, String rawValue) {
     if (parameter.isExplode()) {
-      String convertedValue = rawValue.replace(buildPrefix(parameter), "").replace("&", ",");
-      return super.transformArray(parameter, convertedValue);
+      String prefix = buildPrefix(parameter);
+      return rawValue.substring(prefix.length()).split("&" + prefix);
+    } else {
+      return rawValue.split(",");
     }
-    return super.transformArray(parameter, rawValue);
   }
 
-  @Override
-  public Object transformObject(Parameter parameter, String rawValue) {
-    if (parameter.isExplode()) {
-      String convertedValue = rawValue.replace("&", ",");
-      return super.transformObject(parameter, convertedValue);
-    }
-    return super.transformObject(parameter, rawValue);
+  @Override protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+    return parameter.isExplode() ? rawValue.split("[=&]") : rawValue.split(",");
   }
 }

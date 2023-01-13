@@ -15,6 +15,11 @@ public enum ValidatorErrorType {
   INVALID_VALUE_FORMAT,
 
   /**
+   * The format of the related value is not yet supported.
+   */
+  UNSUPPORTED_VALUE_FORMAT,
+
+  /**
    * The value of the related parameter can't be decoded.
    */
   ILLEGAL_VALUE,

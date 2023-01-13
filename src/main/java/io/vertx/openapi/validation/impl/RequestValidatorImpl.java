@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.json.schema.OutputUnit;
-import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
@@ -16,8 +15,8 @@ import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.transformer.FormTransformer;
 import io.vertx.openapi.validation.transformer.LabelTransformer;
 import io.vertx.openapi.validation.transformer.MatrixTransformer;
+import io.vertx.openapi.validation.transformer.ParameterTransformer;
 import io.vertx.openapi.validation.transformer.SimpleTransformer;
-import io.vertx.openapi.validation.transformer.ValueTransformer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,10 +24,11 @@ import java.util.Map;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
+import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
 
 public class RequestValidatorImpl implements RequestValidator {
 
-  private static final Map<Style, ValueTransformer> VALUE_TRANSFORMERS = new HashMap<>(3);
+  private static final Map<Style, ParameterTransformer> VALUE_TRANSFORMERS = new HashMap<>(3);
 
   static {
     VALUE_TRANSFORMERS.put(Style.SIMPLE, new SimpleTransformer());
@@ -67,22 +67,24 @@ public class RequestValidatorImpl implements RequestValidator {
       Map<String, RequestParameter> query = new HashMap<>(params.getQuery().size());
 
       for (Parameter param : operation.getParameters()) {
-        Location location = param.getIn();
-
-        switch (location) {
+        switch (param.getIn()) {
+          case COOKIE:
+            cookies.put(param.getName(), validateParameter(param, params.getCookies().get(param.getName())));
+            break;
+          case HEADER:
+            headers.put(param.getName(), validateParameter(param, params.getHeaders().get(param.getName())));
+            break;
           case PATH:
             path.put(param.getName(), validateParameter(param, params.getPathParameters().get(param.getName())));
             break;
-          case COOKIE:
-            cookies.put(param.getName(), validateParameter(param, params.getCookies().get(param.getName())));
+          case QUERY:
+            query.put(param.getName(), validateParameter(param, params.getQuery().get(param.getName())));
             break;
           default:
             throw new IllegalStateException();
         }
       }
-
-      RequestParameters parametersToReturn = new RequestParametersImpl(cookies, headers, path, query, null);
-      p.complete(parametersToReturn);
+      p.complete(new RequestParametersImpl(cookies, headers, path, query, null));
     });
   }
 
@@ -95,7 +97,10 @@ public class RequestValidatorImpl implements RequestValidator {
         return new RequestParameterImpl(null);
       }
     } else {
-      ValueTransformer transformer = VALUE_TRANSFORMERS.get(parameter.getStyle());
+      ParameterTransformer transformer = VALUE_TRANSFORMERS.get(parameter.getStyle());
+      if (transformer == null) {
+        throw createUnsupportedValueFormat(parameter);
+      }
       Object transformedValue = transformer.transform(parameter, value.getString());
       OutputUnit result = contract.getSchemaRepository().validator(parameter.getSchema()).validate(transformedValue);
       if (Boolean.TRUE.equals(result.getValid())) {

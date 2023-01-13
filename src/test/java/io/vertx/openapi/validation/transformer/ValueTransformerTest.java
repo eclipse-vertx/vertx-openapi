@@ -5,12 +5,8 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
@@ -23,42 +19,51 @@ import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
-class ValueTransformerTest {
-  private static final ValueTransformer TRANSFORMER = new ValueTransformer() {
-    @Override
-    public Object transformObject(Parameter parameter, String rawValue) {
-      throw new DecodeException();
-    }
-
-    @Override
-    public Object transformArray(Parameter parameter, String rawValue) {
-      return null;
-    }
-  };
+class ParameterTransformerTest {
+  private ParameterTransformer TRANSFORMER;
 
   private static Parameter buildSimplePathParameter(SchemaBuilder<?, ?> schema) {
     return mockParameter("dummy", PATH, SIMPLE, false, JsonSchema.of(schema.toJson()));
   }
 
-  private static Stream<Arguments> provideValidPrimitiveValues() {
-    return Stream.of(
-      Arguments.of("(String) empty", buildSimplePathParameter(stringSchema()), "", ""),
-      Arguments.of("(String) \"foobar\"", buildSimplePathParameter(stringSchema()), "foobar", "foobar"),
-      Arguments.of("(Number) 14.6767", buildSimplePathParameter(numberSchema()), "14.6767", 14.6767),
-      Arguments.of("(Integer) 42", buildSimplePathParameter(intSchema()), "42", 42),
-      Arguments.of("(Boolean) true", buildSimplePathParameter(booleanSchema()), "true", true)
-    );
-  }
+  @BeforeEach
+  void setUp() {
+    TRANSFORMER = new ParameterTransformer() {
+      @Override
+      protected String[] getArrayValues(Parameter parameter, String rawValue) {
+        return new String[0];
+      }
 
-  @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"simple\" with primitive value: {0}")
-  @MethodSource("provideValidPrimitiveValues")
-  void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue)).isEqualTo(expectedValue);
+      @Override
+      protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+        return new String[0];
+      }
+
+      @Override
+      public Object transformObject(Parameter parameter, String rawValue) {
+        return "object";
+      }
+
+      @Override
+      public Object transformPrimitive(Parameter parameter, String rawValue) {
+        return "primitive";
+      }
+
+      @Override
+      public Object transformArray(Parameter parameter, String rawValue) {
+        return "array";
+      }
+    };
   }
 
   @Test
   void testTransformDecodeException() {
+    TRANSFORMER = spy(TRANSFORMER);
+    when(TRANSFORMER.transformObject(any(), any())).thenThrow(DecodeException.class);
     String invalidValue = "\"";
     ValidatorException exception =
       assertThrows(ValidatorException.class,
@@ -69,27 +74,13 @@ class ValueTransformerTest {
 
   @Test
   void testTransformRouting() {
-    ValueTransformer vt = new ValueTransformer() {
-      @Override public Object transformObject(Parameter parameter, String rawValue) {
-        return "object";
-      }
-
-      @Override public Object transformPrimitive(Parameter parameter, String rawValue) {
-        return "primitive";
-      }
-
-      @Override public Object transformArray(Parameter parameter, String rawValue) {
-        return "array";
-      }
-    };
-
     String value = "doesn'TMatter";
 
-    assertThat(vt.transform(buildSimplePathParameter(stringSchema()), value)).isEqualTo("primitive");
-    assertThat(vt.transform(buildSimplePathParameter(numberSchema()), value)).isEqualTo("primitive");
-    assertThat(vt.transform(buildSimplePathParameter(intSchema()), value)).isEqualTo("primitive");
-    assertThat(vt.transform(buildSimplePathParameter(booleanSchema()), value)).isEqualTo("primitive");
-    assertThat(vt.transform(buildSimplePathParameter(arraySchema()), value)).isEqualTo("array");
-    assertThat(vt.transform(buildSimplePathParameter(objectSchema()), value)).isEqualTo("object");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(stringSchema()), value)).isEqualTo("primitive");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(numberSchema()), value)).isEqualTo("primitive");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(intSchema()), value)).isEqualTo("primitive");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(booleanSchema()), value)).isEqualTo("primitive");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(arraySchema()), value)).isEqualTo("array");
+    assertThat(TRANSFORMER.transform(buildSimplePathParameter(objectSchema()), value)).isEqualTo("object");
   }
 }

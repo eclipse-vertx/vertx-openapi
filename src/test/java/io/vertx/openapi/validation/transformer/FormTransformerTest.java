@@ -44,7 +44,7 @@ class FormTransformerTest {
     return Stream.of(
       Arguments.of("empty", DUMMY_PARAM, "", EMPTY_JSON_ARRAY),
       Arguments.of("3", DUMMY_PARAM, "3", new JsonArray().add(3)),
-      Arguments.of("3 (exploded)", DUMMY_PARAM_EXPLODE, "3", new JsonArray().add(3)),
+      Arguments.of("dummy=3 (exploded)", DUMMY_PARAM_EXPLODE, "dummy=3", new JsonArray().add(3)),
       Arguments.of("Hello,1,false,13.37", DUMMY_PARAM, "Hello,1,false,13.37", expectedComplex),
       Arguments.of("dummy=Hello&dummy=1&dummy=false&dummy=13.37 (exploded)", DUMMY_PARAM_EXPLODE,
         "dummy=Hello&dummy=1&dummy=false&dummy=13.37", expectedComplex)
@@ -65,19 +65,19 @@ class FormTransformerTest {
     );
   }
 
-  @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with primitive value: {0}")
+  @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, String rawValue, Object expectedValue) {
     assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue)).isEqualTo(expectedValue);
   }
 
-  @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with array value: {0}")
+  @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with array value: {0}")
   @MethodSource("provideValidArrayValues")
   void testTransformArrayValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
     assertThat(TRANSFORMER.transformArray(parameter, rawValue)).isEqualTo(expectedValue);
   }
 
-  @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with object value: {0}")
+  @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with object value: {0}")
   @MethodSource("provideValidObjectValues")
   void testTransformObjectValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
     assertThat(TRANSFORMER.transformObject(parameter, rawValue)).isEqualTo(expectedValue);
