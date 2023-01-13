@@ -7,6 +7,7 @@ import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.Style;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestParameters;
@@ -24,31 +25,40 @@ import java.util.Map;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
+import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
+import static io.vertx.openapi.validation.ValidatorException.createOperationNotFound;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
 
 public class RequestValidatorImpl implements RequestValidator {
-
-  private static final Map<Style, ParameterTransformer> VALUE_TRANSFORMERS = new HashMap<>(3);
-
-  static {
-    VALUE_TRANSFORMERS.put(Style.SIMPLE, new SimpleTransformer());
-    VALUE_TRANSFORMERS.put(Style.LABEL, new LabelTransformer());
-    VALUE_TRANSFORMERS.put(Style.MATRIX, new MatrixTransformer());
-    VALUE_TRANSFORMERS.put(Style.FORM, new FormTransformer());
-  }
-
-  private final OpenAPIContract contract;
-
   private final Vertx vertx;
+  private final OpenAPIContract contract;
+  private final Map<Style, ParameterTransformer> parameterTransformers;
+
+  private final PathFinder pathFinder;
 
   public RequestValidatorImpl(Vertx vertx, OpenAPIContract contract) {
     this.vertx = vertx;
     this.contract = contract;
+    parameterTransformers = new HashMap<>(4);
+    parameterTransformers.put(Style.SIMPLE, new SimpleTransformer());
+    parameterTransformers.put(Style.LABEL, new LabelTransformer());
+    parameterTransformers.put(Style.MATRIX, new MatrixTransformer());
+    parameterTransformers.put(Style.FORM, new FormTransformer());
+
+    pathFinder = new PathFinder(contract.getPaths());
   }
 
   @Override
   public Future<RequestParameters> validate(RequestParameters params, String path, HttpMethod method) {
-    return null;
+    Path pathObject = pathFinder.findPath(path);
+    if (pathObject != null) {
+      for (Operation op : pathObject.getOperations()) {
+        if (op.getHttpMethod().equals(method)) {
+          return validate(params, op.getOperationId());
+        }
+      }
+    }
+    return failedFuture(createOperationNotFound(method, path));
   }
 
   @Override
@@ -56,8 +66,7 @@ public class RequestValidatorImpl implements RequestValidator {
     Operation operation = contract.operation(operationId);
 
     if (operation == null) {
-      String msg = "No operation found with id: " + operationId;
-      return failedFuture(new IllegalArgumentException(msg));
+      return failedFuture(createOperationIdInvalid(operationId));
     }
 
     return vertx.executeBlocking(p -> {
@@ -97,7 +106,7 @@ public class RequestValidatorImpl implements RequestValidator {
         return new RequestParameterImpl(null);
       }
     } else {
-      ParameterTransformer transformer = VALUE_TRANSFORMERS.get(parameter.getStyle());
+      ParameterTransformer transformer = parameterTransformers.get(parameter.getStyle());
       if (transformer == null) {
         throw createUnsupportedValueFormat(parameter);
       }

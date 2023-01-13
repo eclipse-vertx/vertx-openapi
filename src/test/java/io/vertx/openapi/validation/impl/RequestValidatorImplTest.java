@@ -16,6 +16,7 @@ import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Style;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestParameters;
+import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.PATCH;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
@@ -48,8 +51,12 @@ import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(VertxExtension.class)
@@ -70,7 +77,7 @@ class RequestValidatorImplTest {
     );
   }
 
-  private static Stream<Arguments> testValidate() {
+  private static Stream<Arguments> testValidateWithOperationId() {
     List<Parameter> parameters = new ArrayList<>();
     parameters.add(buildParam("CookieParamAge", COOKIE, FORM, intSchema().toJson(), true));
     parameters.add(buildParam("HeaderParamUser", HEADER, SIMPLE, objectSchema().toJson(), true));
@@ -114,16 +121,15 @@ class RequestValidatorImplTest {
     OpenAPIContract.from(vertx, contract).onSuccess(c -> testContext.verify(() -> {
       this.contractSpy = Mockito.spy(c);
       this.validator = new RequestValidatorImpl(vertx, contractSpy);
-    })).onComplete(testContext.succeedingThenComplete());
+      testContext.completeNow();
+    })).onFailure(testContext::failNow);
   }
 
   @ParameterizedTest
   @MethodSource
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
-  void testValidate(List<Parameter> parameters, RequestParameters params, RequestParameters expected,
+  void testValidateWithOperationId(List<Parameter> parameters, RequestParameters params, RequestParameters expected,
     VertxTestContext testContext) {
-    Checkpoint cp = testContext.checkpoint(2);
-
     Operation mockedOperation = mock(Operation.class);
     when(mockedOperation.getParameters()).thenReturn(parameters);
     when(contractSpy.operation(anyString())).thenReturn(mockedOperation);
@@ -134,8 +140,45 @@ class RequestValidatorImplTest {
       assertThat(validatedParams.getPathParameters()).containsExactlyEntriesIn(expected.getPathParameters());
       assertThat(validatedParams.getQuery()).containsExactlyEntriesIn(expected.getQuery());
       assertThat(validatedParams.getBody()).isEqualTo(expected.getBody());
+      testContext.completeNow();
+    })).onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void voidTestValidateWithPath(VertxTestContext testContext) {
+    when(contractSpy.operation(anyString())).thenReturn(null);
+    RequestValidator validatorSpy = spy(validator);
+    validatorSpy.validate(null, "/pets", GET).onFailure(t -> testContext.verify(() -> {
+      // A failure is expected here, due to the mocked contract. But it is only important
+      // that validate(Request, operationId) was called
+      verify(validatorSpy).validate(any(), eq("listPets"));
+      testContext.completeNow();
+    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testValidateThrowOperationIdInValid(VertxTestContext testContext) {
+    validator.validate(null, "invalidId").onFailure(t -> testContext.verify(() -> {
+      assertThat(t).hasMessageThat().isEqualTo("Invalid OperationId: invalidId");
+      testContext.completeNow();
+    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testValidateThrowOperationNotFound(VertxTestContext testContext) {
+    Checkpoint cp = testContext.checkpoint(2);
+    validator.validate(null, "/path/dont/exist", PATCH).onFailure(t -> testContext.verify(() -> {
+      assertThat(t).hasMessageThat().isEqualTo("No operation found for the request: PATCH /path/dont/exist");
       cp.flag();
-    })).onComplete(testContext.succeeding(validatedParams -> cp.flag()));
+    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
+
+    validator.validate(null, "/pets", PATCH).onFailure(t -> testContext.verify(() -> {
+      assertThat(t).hasMessageThat().isEqualTo("No operation found for the request: PATCH /pets");
+      cp.flag();
+    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
 
   @Test

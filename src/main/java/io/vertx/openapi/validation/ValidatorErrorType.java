@@ -27,5 +27,10 @@ public enum ValidatorErrorType {
   /**
    * The value of the related parameter does not fit to the schema.
    */
-  INVALID_VALUE
+  INVALID_VALUE,
+
+  /**
+   * The request can't get validated due to missing operation information.
+   */
+  MISSING_OPERATION
 }

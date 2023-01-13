@@ -1,6 +1,7 @@
 package io.vertx.openapi.validation;
 
 import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.Parameter;
 
@@ -9,6 +10,7 @@ import java.util.Objects;
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMAT;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
@@ -57,6 +59,16 @@ public class ValidatorException extends RuntimeException {
     String msg = String.format("The value of %s parameter %s is invalid. Reason: %s",
       parameter.getIn().name().toLowerCase(), parameter.getName(), extractErrorMsg(reason));
     return new ValidatorException(msg, INVALID_VALUE, reason);
+  }
+
+  public static ValidatorException createOperationIdInvalid(String operationId) {
+    String msg = String.format("Invalid OperationId: %s", operationId);
+    return new ValidatorException(msg, MISSING_OPERATION);
+  }
+
+  public static ValidatorException createOperationNotFound(HttpMethod method, String path) {
+    String msg = String.format("No operation found for the request: %s %s", method.name(), path);
+    return new ValidatorException(msg, MISSING_OPERATION);
   }
 
   private static String extractErrorMsg(OutputUnit outputUnit) {
