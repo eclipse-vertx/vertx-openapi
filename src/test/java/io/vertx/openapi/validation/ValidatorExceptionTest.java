@@ -6,15 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.LABEL;
 
 class ValidatorExceptionTest {
 
   private static final Parameter DUMMY_PARAMETER =
-    mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(EMPTY_JSON_OBJECT));
+    mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
 
   @Test
   void testCreateMissingRequiredParameter() {

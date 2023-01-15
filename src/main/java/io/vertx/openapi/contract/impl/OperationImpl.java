@@ -6,6 +6,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 
@@ -13,7 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.contract.Location.QUERY;
+import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
@@ -60,7 +64,18 @@ public class OperationImpl implements Operation {
       }
     }
 
+    long explodedQueryParams =
+      operationParameters.stream()
+        .filter(p -> p.isExplode() && p.getStyle() == FORM && p.getIn() == QUERY && p.getSchemaType() == OBJECT)
+        .count();
+    if (explodedQueryParams > 1) {
+      String msg =
+        "Found multiple exploded query parameters of style form with type object in operation: " + operationId;
+      throw OpenAPIContractException.createInvalidContract(msg);
+    }
+
     this.parameters = unmodifiableList(operationParameters);
+
   }
 
   @Override

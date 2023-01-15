@@ -33,7 +33,7 @@ class SimpleTransformerTest {
   private static final SimpleTransformer TRANSFORMER = new SimpleTransformer();
 
   private static Parameter mockSimpleParameter(String name, boolean explode) {
-    return mockParameter(name, PATH, SIMPLE, explode, JsonSchema.of(EMPTY_JSON_OBJECT));
+    return mockParameter(name, PATH, SIMPLE, explode, JsonSchema.of(stringSchema().toJson()));
   }
 
   private static Parameter buildSimplePathParameter(SchemaBuilder<?, ?> schema) {

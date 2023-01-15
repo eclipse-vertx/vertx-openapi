@@ -10,16 +10,18 @@ public enum Style {
   MATRIX("matrix"), LABEL("label"), FORM("form"), SIMPLE("simple"), SPACE_DELIMITED(
     "spaceDelimited"), PIPE_DELIMITED("pipeDelimited"), DEEP_OBJECT("deepObject");
 
-  private final String openAPIvalue;
+  private final String openAPIValue;
 
-  Style(String openAPIvalue) {
-    this.openAPIvalue = openAPIvalue;
+  Style(String openAPIValue) {
+    this.openAPIValue = openAPIValue;
   }
 
   public static Style parse(String style) {
     Predicate<String> eq = Predicate.isEqual(style);
     // Contract validation happened before, so it will find one of these values.
-    return style == null ? null : Arrays.stream(Style.values()).filter(l -> eq.test(l.toString())).findFirst().get();
+    return style == null ?
+      null :
+      Arrays.stream(Style.values()).filter(l -> eq.test(l.toString())).findFirst().orElse(null);
   }
 
   public static Style defaultByLocation(Location in) {
@@ -37,6 +39,6 @@ public enum Style {
 
   @Override
   public String toString() {
-    return openAPIvalue;
+    return openAPIValue;
   }
 }

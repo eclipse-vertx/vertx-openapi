@@ -14,16 +14,6 @@ import static io.vertx.openapi.validation.ValidatorException.createInvalidValueF
 public abstract class ParameterTransformer {
 
   /**
-   * Returns the schema type (string, integer, number, boolean, array, object) of the passed {@link Parameter}.
-   *
-   * @param parameter The related {@link Parameter}.
-   * @return the schema type (string, integer, number, boolean, array, object).
-   */
-  protected String getSchemaType(Parameter parameter) {
-    return parameter.getSchema().<String>get("type");
-  }
-
-  /**
    * Transforms the raw value from its {@link String} representation into JSON. This method does not only decode a
    * {@link String}, it also takes the different {@link io.vertx.openapi.contract.Style styles} into account}.
    *
@@ -33,10 +23,10 @@ public abstract class ParameterTransformer {
    */
   public Object transform(Parameter parameter, String rawValue) {
     try {
-      switch (getSchemaType(parameter)) {
-        case "object":
+      switch (parameter.getSchemaType()) {
+        case OBJECT:
           return transformObject(parameter, rawValue);
-        case "array":
+        case ARRAY:
           return transformArray(parameter, rawValue);
         default:
           return transformPrimitive(parameter, rawValue);
@@ -63,8 +53,7 @@ public abstract class ParameterTransformer {
         throw de;
       } else {
         // let's try it as JSON String
-        String stringified = "\"" + rawValue + "\"";
-        return transformPrimitive(parameter, stringified);
+        return transformPrimitive(parameter, "\"" + rawValue + "\"");
       }
     }
   }

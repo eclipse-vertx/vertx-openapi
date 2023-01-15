@@ -13,7 +13,7 @@ class RequestParameterImplTest {
   }
 
   @Test
-  void testhashcodeAndEquals() {
+  void testHashcodeAndEquals() {
     RequestParameterImpl param1 = new RequestParameterImpl("param1");
     RequestParameterImpl param2 = new RequestParameterImpl("param2");
 

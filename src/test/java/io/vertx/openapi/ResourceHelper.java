@@ -11,7 +11,7 @@ public final class ResourceHelper {
 
   }
 
-  public static Path getRelatedTestResourcePath(Class relatedClass) {
+  public static Path getRelatedTestResourcePath(Class<?> relatedClass) {
     Path related = Paths.get(relatedClass.getPackage().getName().replace(".", "/"));
     return TEST_RESOURCE_PATH.resolve(related);
   }

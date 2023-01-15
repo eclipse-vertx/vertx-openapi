@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
-import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
+import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -122,8 +122,8 @@ class OpenAPIVersionTest {
   void testFromSpecException() {
     String expectedInvalidMsg = "The passed OpenAPI contract is invalid: Field \"openapi\" is missing";
     assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(null), expectedInvalidMsg);
-    JsonObject emptyContract = EMPTY_JSON_OBJECT;
-    assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(emptyContract), expectedInvalidMsg);
+    assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(EMPTY_JSON_OBJECT),
+      expectedInvalidMsg);
 
     String expectedUnsupportedMsg = "The version of the passed OpenAPI contract is not supported: 2.0.0";
     JsonObject unsupportedContract = new JsonObject().put("openapi", "2.0.0");

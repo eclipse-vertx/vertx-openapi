@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.impl;
+package io.vertx.openapi.contract.impl;
 
 import io.vertx.openapi.contract.Path;
 
@@ -18,7 +18,7 @@ class PathFinder {
    * <br>
    * /v1/friends
    * <p>
-   * Resultus into:
+   * Results into:
    * <p>
    * [2, (/v1/users, /v1/friends) ]
    */
@@ -31,7 +31,7 @@ class PathFinder {
    * <br>
    * /v1/user/{userid}/friends/{friendId}
    * <p>
-   * Resultus into:
+   * Results into:
    * <p>
    * [4, [ [Path, (v1, user, {userid}, name)],  [Path, (v1, user, {userid}, age)] ] ]
    * <br>
@@ -68,7 +68,7 @@ class PathFinder {
     return null;
   }
 
-  //VisibleForTesting
+  // VisibleForTesting
   boolean testSegments(String[] pathSegments, String[] pathTemplateSegments) {
     for (int i = 0; i < pathTemplateSegments.length; i++) {
       String templateSegment = pathTemplateSegments[i];

@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
+import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
@@ -32,7 +33,7 @@ class LabelTransformerTest {
   private static final LabelTransformer TRANSFORMER = new LabelTransformer();
 
   private static Parameter mockLabelParameter(String name, boolean explode) {
-    return mockParameter(name, PATH, LABEL, explode, JsonSchema.of(EMPTY_JSON_OBJECT));
+    return mockParameter(name, PATH, LABEL, explode, JsonSchema.of(stringSchema().toJson()));
   }
 
   private static Stream<Arguments> provideValidPrimitiveValues() {

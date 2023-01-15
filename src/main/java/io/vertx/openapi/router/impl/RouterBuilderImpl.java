@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RouterBuilderImpl implements RouterBuilder {
-  private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)\\}";
+  private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
 
   // VisibleForTesting
   final List<Handler<RoutingContext>> rootHandlers = new ArrayList<>();
@@ -36,7 +36,7 @@ public class RouterBuilderImpl implements RouterBuilder {
    * @param openAPIPath the path with placeholders in OpenAPI format
    * @return the path with placeholders in vertx-web format
    */
-  //VisibleForTesting
+  // VisibleForTesting
   static String toVertxWebPath(String openAPIPath) {
     return openAPIPath.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, ":$1");
   }

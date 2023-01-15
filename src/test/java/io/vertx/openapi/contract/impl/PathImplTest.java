@@ -56,7 +56,7 @@ class PathImplTest {
   }
 
   @Test
-  void testWilcardInPath() {
+  void testWildcardInPath() {
     OpenAPIContractException exception =
       assertThrows(OpenAPIContractException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";

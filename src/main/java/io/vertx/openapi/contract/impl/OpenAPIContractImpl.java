@@ -1,6 +1,7 @@
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.OpenAPIContract;
@@ -9,7 +10,6 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Path;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.toMap;
 
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_PATHS = "paths";
-  private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)\\}";
+  private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
     path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
 
@@ -37,6 +37,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final SchemaRepository schemaRepository;
 
+  private final PathFinder pathFinder;
+
   public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
     this.rawContract = resolvedSpec;
     this.version = version;
@@ -46,6 +48,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.paths = unmodifiableList(applyMountOrder(unsortedPaths));
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
       Operation::getOperationId, operation -> operation));
+    this.pathFinder = new PathFinder(paths);
   }
 
   /**
@@ -74,8 +77,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       }
     }
 
-    Collections.sort(withTemplating, comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
-    Collections.sort(withoutTemplating, comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
+    withTemplating.sort(comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
+    withoutTemplating.sort(comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
 
     // Check for Paths with same hierarchy but different templated names
     for (int x = 1; x < withTemplating.size(); x++) {
@@ -126,5 +129,22 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   @Override public SchemaRepository getSchemaRepository() {
     return schemaRepository;
+  }
+
+  @Override public Path findPath(String urlPath) {
+    return pathFinder.findPath(urlPath);
+  }
+
+  @Override
+  public Operation findOperation(String urlPath, HttpMethod method) {
+    Path pathObject = findPath(urlPath);
+    if (pathObject != null) {
+      for (Operation op : pathObject.getOperations()) {
+        if (op.getHttpMethod().equals(method)) {
+          return op;
+        }
+      }
+    }
+    return null;
   }
 }

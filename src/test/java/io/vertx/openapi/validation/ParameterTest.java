@@ -108,7 +108,7 @@ class ParameterTest {
     }
   }
 
-  class DummyParameter implements Parameter {
+  static class DummyParameter implements Parameter {
     private Object value;
 
     DummyParameter setValue(Object value) {

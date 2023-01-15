@@ -1,4 +1,4 @@
-package io.vertx.openapi.validation.impl;
+package io.vertx.openapi.contract.impl;
 
 import com.google.common.collect.ImmutableList;
 import io.vertx.openapi.contract.Path;

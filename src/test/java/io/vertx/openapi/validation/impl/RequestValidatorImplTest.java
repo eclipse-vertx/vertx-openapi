@@ -2,13 +2,14 @@ package io.vertx.openapi.validation.impl;
 
 import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.OutputUnit;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.openapi.Utils;
 import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
@@ -25,7 +26,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.PATCH;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
@@ -50,10 +49,12 @@ import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,7 @@ class RequestValidatorImplTest {
     );
   }
 
-  private static Stream<Arguments> testValidateWithOperationId() {
+  private static Stream<Arguments> testValidateWithParamsAndOperationId() {
     List<Parameter> parameters = new ArrayList<>();
     parameters.add(buildParam("CookieParamAge", COOKIE, FORM, intSchema().toJson(), true));
     parameters.add(buildParam("HeaderParamUser", HEADER, SIMPLE, objectSchema().toJson(), true));
@@ -119,8 +120,46 @@ class RequestValidatorImplTest {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     OpenAPIContract.from(vertx, contract).onSuccess(c -> testContext.verify(() -> {
-      this.contractSpy = Mockito.spy(c);
+      this.contractSpy = spy(c);
       this.validator = new RequestValidatorImpl(vertx, contractSpy);
+      testContext.completeNow();
+    })).onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void voidTestValidateWithRequest(VertxTestContext testContext) {
+    String operationId = "isMocked";
+    HttpServerRequest requestMock = mock(HttpServerRequest.class);
+    when(requestMock.path()).thenReturn("/mocked/path");
+    when(requestMock.method()).thenReturn(GET);
+
+    Operation mockedOperation = mock(Operation.class);
+    when(mockedOperation.getParameters()).thenReturn(emptyList());
+    when(mockedOperation.getOperationId()).thenReturn(operationId);
+
+    when(contractSpy.findOperation("/mocked/path", GET)).thenReturn(mockedOperation);
+    when(contractSpy.operation(operationId)).thenReturn(mockedOperation);
+
+    RequestValidator validatorSpy = spy(validator);
+    validatorSpy.validate(requestMock).onSuccess(v -> testContext.verify(() -> {
+      verify(validatorSpy).validate(isA(HttpServerRequest.class), eq(operationId));
+      verify(validatorSpy).validate(isA(RequestParameters.class), eq(operationId));
+      testContext.completeNow();
+    })).onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void voidTestValidateWithRequestAndOperationId(VertxTestContext testContext) {
+    RequestValidator validatorSpy = spy(validator);
+    HttpServerRequest requestMock = mock(HttpServerRequest.class);
+    Operation mockedOperation = mock(Operation.class);
+    when(mockedOperation.getParameters()).thenReturn(emptyList());
+    when(contractSpy.operation(anyString())).thenReturn(mockedOperation);
+
+    validatorSpy.validate(requestMock, "isMocked").onSuccess(v -> testContext.verify(() -> {
+      verify(validatorSpy).validate(isA(RequestParameters.class), eq("isMocked"));
       testContext.completeNow();
     })).onFailure(testContext::failNow);
   }
@@ -128,7 +167,8 @@ class RequestValidatorImplTest {
   @ParameterizedTest
   @MethodSource
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
-  void testValidateWithOperationId(List<Parameter> parameters, RequestParameters params, RequestParameters expected,
+  void testValidateWithParamsAndOperationId(List<Parameter> parameters, RequestParameters params,
+    RequestParameters expected,
     VertxTestContext testContext) {
     Operation mockedOperation = mock(Operation.class);
     when(mockedOperation.getParameters()).thenReturn(parameters);
@@ -146,38 +186,29 @@ class RequestValidatorImplTest {
 
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
-  void voidTestValidateWithPath(VertxTestContext testContext) {
-    when(contractSpy.operation(anyString())).thenReturn(null);
-    RequestValidator validatorSpy = spy(validator);
-    validatorSpy.validate(null, "/pets", GET).onFailure(t -> testContext.verify(() -> {
-      // A failure is expected here, due to the mocked contract. But it is only important
-      // that validate(Request, operationId) was called
-      verify(validatorSpy).validate(any(), eq("listPets"));
-      testContext.completeNow();
-    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
-  }
-
-  @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testValidateThrowOperationIdInValid(VertxTestContext testContext) {
-    validator.validate(null, "invalidId").onFailure(t -> testContext.verify(() -> {
+    Checkpoint cp = testContext.checkpoint(2);
+    validator.validate((HttpServerRequest) null, "invalidId").onFailure(t -> testContext.verify(() -> {
       assertThat(t).hasMessageThat().isEqualTo("Invalid OperationId: invalidId");
-      testContext.completeNow();
+      cp.flag();
+    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
+
+    validator.validate((RequestParameters) null, "invalidId").onFailure(t -> testContext.verify(() -> {
+      assertThat(t).hasMessageThat().isEqualTo("Invalid OperationId: invalidId");
+      cp.flag();
     })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
 
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testValidateThrowOperationNotFound(VertxTestContext testContext) {
-    Checkpoint cp = testContext.checkpoint(2);
-    validator.validate(null, "/path/dont/exist", PATCH).onFailure(t -> testContext.verify(() -> {
-      assertThat(t).hasMessageThat().isEqualTo("No operation found for the request: PATCH /path/dont/exist");
-      cp.flag();
-    })).onSuccess(v -> testContext.failNow("Test expects a failure"));
+    HttpServerRequest requestMock = mock(HttpServerRequest.class);
+    when(requestMock.path()).thenReturn("/invalid/path");
+    when(requestMock.method()).thenReturn(GET);
 
-    validator.validate(null, "/pets", PATCH).onFailure(t -> testContext.verify(() -> {
-      assertThat(t).hasMessageThat().isEqualTo("No operation found for the request: PATCH /pets");
-      cp.flag();
+    validator.validate(requestMock).onFailure(t -> testContext.verify(() -> {
+      assertThat(t).hasMessageThat().isEqualTo("No operation found for the request: GET /invalid/path");
+      testContext.completeNow();
     })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
 
@@ -221,8 +252,11 @@ class RequestValidatorImplTest {
     Parameter param = buildParam("p1", stringSchema().toJson(), false);
     ValidatorException exception =
       assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("3")));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE);
+    String reason = "Instance type number is invalid. Expected string";
+    assertThat(exception.getReason()).isInstanceOf(OutputUnit.class);
     String expectedMsg =
-      "The value of path parameter p1 is invalid. Reason: Instance type number is invalid. Expected string";
+      "The value of path parameter p1 is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
@@ -246,7 +280,7 @@ class RequestValidatorImplTest {
   @ParameterizedTest(name = "{index} Throw UNSUPPORTED_VALUE_FORMAT error when param style is {0}")
   @EnumSource(value = Style.class, names = {"SPACE_DELIMITED", "PIPE_DELIMITED", "DEEP_OBJECT"})
   void testValidateParameterThrowUnsupportedValueFormat(Style style) {
-    Parameter param = mockParameter("dummy", HEADER, style, false, JsonSchema.of(Utils.EMPTY_JSON_OBJECT));
+    Parameter param = mockParameter("dummy", HEADER, style, false, JsonSchema.of(stringSchema().toJson()));
     ValidatorException exception = assertThrows(ValidatorException.class,
       () -> validator.validateParameter(param, new RequestParameterImpl("foo")));
     String expectedMsg =

@@ -28,7 +28,7 @@ public enum OpenAPIVersion {
     "https://spec.openapis.org/oas/3.1/schema-base/2022-10-07"
   );
 
-  // Visible for testing
+  // VisibleForTesting
   final List<String> schemaFiles;
   private final String schemaVersion;
   private final Draft draft;

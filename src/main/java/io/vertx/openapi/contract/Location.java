@@ -14,7 +14,7 @@ public enum Location {
     // Contract validation happened before, so it will find one of these values.
     return location == null ?
       null :
-      Arrays.stream(Location.values()).filter(l -> eq.test(l.toString())).findFirst().get();
+      Arrays.stream(Location.values()).filter(l -> eq.test(l.toString())).findFirst().orElse(null);
   }
 
   @Override

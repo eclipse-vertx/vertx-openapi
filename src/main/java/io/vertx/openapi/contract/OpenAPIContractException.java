@@ -32,6 +32,11 @@ public class OpenAPIContractException extends RuntimeException {
       "The passed OpenAPI contract contains a feature that is not supported: " + feature, UNSUPPORTED_FEATURE, null);
   }
 
+  public static OpenAPIContractException createInvalidStyle(Location in, String allowedStyles) {
+    String reason = String.format("The style of a %s parameter MUST be %s", in, allowedStyles);
+    return createInvalidContract(reason);
+  }
+
   public ContractErrorType type() {
     return type;
   }

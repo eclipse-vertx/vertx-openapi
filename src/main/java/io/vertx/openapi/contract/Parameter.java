@@ -3,6 +3,7 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaType;
 
 /**
  * This interface represents the most important attributes of an OpenAPI Parameter.
@@ -48,4 +49,9 @@ public interface Parameter {
    * @return the {@link JsonSchema} of the parameter
    */
   JsonSchema getSchema();
+
+  /**
+   * @return the {@link SchemaType} of the parameter
+   */
+  SchemaType getSchemaType();
 }

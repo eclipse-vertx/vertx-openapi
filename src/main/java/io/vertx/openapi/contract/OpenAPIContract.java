@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
@@ -83,4 +84,21 @@ public interface OpenAPIContract {
    * @return the {@link SchemaRepository} to validate against.
    */
   SchemaRepository getSchemaRepository();
+
+  /**
+   * Finds the related {@link Path} object based on the passed url path.
+   *
+   * @param urlPath The path of the request.
+   * @return the found {@link Path} object, or null if the passed path doesn't match any {@link Path} object.
+   */
+  Path findPath(String urlPath);
+
+  /**
+   * Finds the related {@link Operation} object based on the passed url path and method.
+   *
+   * @param urlPath The path of the request.
+   * @param method  The method of the request.
+   * @return the found {@link Operation} object, or null if the passed path and method doesn't match any {@link Operation} object.
+   */
+  Operation findOperation(String urlPath, HttpMethod method);
 }

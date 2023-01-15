@@ -24,8 +24,12 @@ public class ValidatorException extends RuntimeException {
     this(message, type, null);
   }
 
-  public ValidatorException(String message, ValidatorErrorType type, OutputUnit outputUnit) {
-    super(message);
+  public ValidatorException(String message, ValidatorErrorType type, Throwable cause) {
+    this(message, type, null, cause);
+  }
+
+  public ValidatorException(String message, ValidatorErrorType type, OutputUnit outputUnit, Throwable cause) {
+    super(message, cause);
     this.type = type;
     this.outputUnit = outputUnit;
   }
@@ -58,7 +62,7 @@ public class ValidatorException extends RuntimeException {
   public static ValidatorException createInvalidValue(Parameter parameter, OutputUnit reason) {
     String msg = String.format("The value of %s parameter %s is invalid. Reason: %s",
       parameter.getIn().name().toLowerCase(), parameter.getName(), extractErrorMsg(reason));
-    return new ValidatorException(msg, INVALID_VALUE, reason);
+    return new ValidatorException(msg, INVALID_VALUE, reason, null);
   }
 
   public static ValidatorException createOperationIdInvalid(String operationId) {

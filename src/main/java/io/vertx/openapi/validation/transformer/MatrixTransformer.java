@@ -2,6 +2,7 @@ package io.vertx.openapi.validation.transformer;
 
 import io.vertx.openapi.contract.Parameter;
 
+import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueFormat;
 
 /**
@@ -17,7 +18,7 @@ import static io.vertx.openapi.validation.ValidatorException.createInvalidValueF
 public class MatrixTransformer extends ParameterTransformer {
 
   String buildPrefix(Parameter parameter) {
-    if (parameter.isExplode() && "object".equals(getSchemaType(parameter))) {
+    if (parameter.isExplode() && parameter.getSchemaType() == OBJECT) {
       return ";";
     }
     return ";" + parameter.getName() + "=";

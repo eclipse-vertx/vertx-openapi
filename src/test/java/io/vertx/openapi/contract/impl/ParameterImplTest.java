@@ -2,10 +2,13 @@ package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Style;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +20,15 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
+import static io.vertx.openapi.contract.Location.COOKIE;
+import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
-import static io.vertx.openapi.contract.Style.MATRIX;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static io.vertx.openapi.contract.Style.SIMPLE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
@@ -65,7 +70,32 @@ class ParameterImplTest {
       Arguments.of("0004_Without_Property_Content_And_Schema", INVALID_SPEC,
         "The passed OpenAPI contract is invalid: A parameter MUST contain either the \"schema\" or \"content\" property"),
       Arguments.of("0005_Path_With_Wrong_Style", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: The style of a path parameter MUST be simple, label or matrix")
+        "The passed OpenAPI contract is invalid: The style of a path parameter MUST be simple, label or matrix"),
+      Arguments.of("0006_Cookie_With_Wrong_Style", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: The style of a cookie parameter MUST be form"),
+      Arguments.of("0007_Header_With_Wrong_Style", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: The style of a header parameter MUST be simple"),
+      Arguments.of("0008_Query_With_Wrong_Style", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: The style of a query parameter MUST be form, spaceDelimited, pipeDelimited or deepObject"),
+      Arguments.of("0009_Query_With_Unsupported_Style_DeepObject", UNSUPPORTED_FEATURE,
+        "The passed OpenAPI contract contains a feature that is not supported: Parameters of style: deepObject"),
+      Arguments.of("0010_Query_With_Unsupported_Style_SpaceDelimited", UNSUPPORTED_FEATURE,
+        "The passed OpenAPI contract contains a feature that is not supported: Parameters of style: spaceDelimited"),
+      Arguments.of("0011_Query_With_Unsupported_Style_pipeDelimited", UNSUPPORTED_FEATURE,
+        "The passed OpenAPI contract contains a feature that is not supported: Parameters of style: pipeDelimited"),
+      Arguments.of("0012_With_Schema_No_Type", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: Missing \"type\" for \"schema\" property in parameter: petId"),
+      Arguments.of("0013_Cookie_With_Unsupported_Combination_Array_And_Exploded", UNSUPPORTED_FEATURE,
+        "The passed OpenAPI contract contains a feature that is not supported: Cookie parameter values formatted as exploded array")
+    );
+  }
+
+  private static Stream<Arguments> provideDefaultValuesScenarios() {
+    return Stream.of(
+      Arguments.of("0002_Default_Values_Cookie", COOKIE, FORM, true),
+      Arguments.of("0003_Default_Values_Header", HEADER, SIMPLE, false),
+      Arguments.of("0004_Default_Values_Path", PATH, SIMPLE, false),
+      Arguments.of("0005_Default_Values_Query", QUERY, FORM, true)
     );
   }
 
@@ -83,11 +113,12 @@ class ParameterImplTest {
     String testId = "0000_Test_Getters";
     ParameterImpl param = fromTestData(testId, validTestData);
     assertThat(param.getName()).isEqualTo("petId");
-    assertThat(param.getIn()).isEqualTo(QUERY);
+    assertThat(param.getIn()).isEqualTo(HEADER);
     assertThat(param.isRequired()).isTrue();
-    assertThat(param.getStyle()).isEqualTo(MATRIX);
+    assertThat(param.getStyle()).isEqualTo(SIMPLE);
     assertThat(param.isExplode()).isTrue();
-    assertThat((Object) param.getSchema().get("type")).isEqualTo("string");
+    assertThat(param.getSchema()).isEqualTo(JsonSchema.of(new JsonObject().put("type", "string")));
+    assertThat(param.getSchemaType()).isEqualTo(STRING);
 
     JsonObject paramModel = validTestData.getJsonObject(testId).getJsonObject("parameterModel");
     assertThat(param.getParameterModel()).isEqualTo(paramModel);
@@ -102,12 +133,13 @@ class ParameterImplTest {
     assertThat(param.isRequired()).isTrue();
   }
 
-  @Test
-  void testDefaultValues() {
-    String testId = "0002_Default_Values";
+  @ParameterizedTest(name = "{index} {1} should have style {2} and explode={3}")
+  @MethodSource(value = "provideDefaultValuesScenarios")
+  void testDefaultValues(String testId, Location in, Style expectedStyle, boolean isExploded) {
     ParameterImpl param = fromTestData(testId, validTestData);
-    assertThat(param.isRequired()).isFalse();
-    assertEquals(FORM, param.getStyle());
-    assertThat(param.isExplode()).isFalse();
+    assertThat(param.getIn()).isEqualTo(in);
+    assertThat(param.isRequired()).isEqualTo(in == PATH);
+    assertThat(param.getStyle()).isEqualTo(expectedStyle);
+    assertThat(param.isExplode()).isEqualTo(isExploded);
   }
 }

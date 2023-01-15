@@ -2,21 +2,35 @@
   "0000_Path_With_No_Name": {
     "path": "/pets",
     "parameterModel": {
-      "in": "path"
+      "in": "path",
+      "required": true,
+      "style": "simple",
+      "schema": {
+        "type": "string"
+      }
     }
   },
   "0001_Path_With_Empty_Name": {
     "path": "/pets",
     "parameterModel": {
       "name": "",
-      "in": "path"
+      "in": "path",
+      "required": true,
+      "style": "simple",
+      "schema": {
+        "type": "string"
+      }
     }
   },
   "0002_Path_Without_Require": {
     "path": "/pets/{petId}",
     "parameterModel": {
       "name": "petId",
-      "in": "path"
+      "in": "path",
+      "style": "simple",
+      "schema": {
+        "type": "string"
+      }
     }
   },
   "0003_With_Property_Content": {
@@ -43,6 +57,100 @@
       "style": "form",
       "schema": {
         "type": "string"
+      }
+    }
+  },
+  "0006_Cookie_With_Wrong_Style": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "cookie",
+      "required": true,
+      "style": "simple",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0007_Header_With_Wrong_Style": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "header",
+      "required": true,
+      "style": "form",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0008_Query_With_Wrong_Style": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "style": "simple",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0009_Query_With_Unsupported_Style_DeepObject": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "style": "deepObject",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0010_Query_With_Unsupported_Style_SpaceDelimited": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "style": "spaceDelimited",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0011_Query_With_Unsupported_Style_pipeDelimited": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "style": "pipeDelimited",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0012_With_Schema_No_Type": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "schema": {
+      }
+    }
+  },
+  "0013_Cookie_With_Unsupported_Combination_Array_And_Exploded": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "cookie",
+      "required": true,
+      "explode": true,
+      "style": "form",
+      "schema": {
+        "type": "array"
       }
     }
   }

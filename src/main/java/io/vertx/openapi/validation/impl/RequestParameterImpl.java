@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class RequestParameterImpl implements RequestParameter {
 
-  private Object value;
+  private final Object value;
 
   public RequestParameterImpl(Object value) {
     this.value = value;

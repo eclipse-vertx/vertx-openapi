@@ -27,8 +27,8 @@ import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static java.util.Collections.unmodifiableList;
 
 public class PathImpl implements Path {
-  // Visible for testing
-  static final Pattern INVALID_CURLY_BRACES = Pattern.compile("/[^/]+\\{|\\}[^/]+/|\\}[^/]+$");
+  // VisibleForTesting
+  static final Pattern INVALID_CURLY_BRACES = Pattern.compile("/[^/]+\\{|}[^/]+/|}[^/]+$");
   private static final String KEY_PARAMETERS = "parameters";
   private static final Map<String, HttpMethod> SUPPORTED_METHODS;
 

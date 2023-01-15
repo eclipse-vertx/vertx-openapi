@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
@@ -27,8 +28,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 class MatrixTransformerTest {
-  private static final Parameter DUMMY_PARAM = mockMatrixParameter("dummy", false, EMPTY_JSON_OBJECT);
-  private static final Parameter DUMMY_PARAM_EXPLODE = mockMatrixParameter("dummy", true, EMPTY_JSON_OBJECT);
+  private static final Parameter DUMMY_PARAM = mockMatrixParameter("dummy", false, stringSchema().toJson());
+  private static final Parameter DUMMY_PARAM_EXPLODE = mockMatrixParameter("dummy", true, stringSchema().toJson());
 
   private static final Parameter DUMMY_PARAM_OBJECT_EXPLODE =
     mockMatrixParameter("dummy", true, objectSchema().toJson());

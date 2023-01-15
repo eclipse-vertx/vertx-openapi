@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.Utils;
 import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Operation;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.PATCH;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -89,10 +92,17 @@ class OpenAPIContractImplTest {
 
     assertThat(contract.getPaths()).hasSize(2);
     assertThat(contract.operations()).hasSize(3);
-    assertThat(contract.operation("showPetById")).isNotNull();
+    Operation showPetById = contract.operation("showPetById");
+    assertThat(showPetById).isNotNull();
     assertThat(contract.operation("fooBar")).isNull();
     assertThat(contract.getVersion()).isEqualTo(V3_1);
     assertThat(contract.getRawContract()).isEqualTo(resolvedSpec);
     assertThat(contract.getSchemaRepository()).isEqualTo(schemaRepository);
+    assertThat(contract.getSchemaRepository()).isEqualTo(schemaRepository);
+    assertThat(contract.findPath("/pets/123").getName()).isEqualTo("/pets/{petId}");
+    assertThat(contract.findOperation("/pets/123", GET)).isEqualTo(showPetById);
+
+    assertThat(contract.findOperation("/pets/123/134", GET)).isNull();
+    assertThat(contract.findOperation("/pets/123", PATCH)).isNull();
   }
 }

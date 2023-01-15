@@ -7,9 +7,9 @@ import io.vertx.openapi.contract.Parameter;
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  * | style  | explode | empty  | string      | array                               | object                   |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
- * | simple | false   | n/a    | blue        | blue,black,brown                    | R,100,G,200,B,150        |
+ * | simple | false   |        | blue        | blue,black,brown                    | R,100,G,200,B,150        |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
- * | simple | true    | n/a    | blue        | blue,black,brown                    | R=100,G=200,B=150        |
+ * | simple | true    |        | blue        | blue,black,brown                    | R=100,G=200,B=150        |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  */
 public class SimpleTransformer extends ParameterTransformer {
@@ -21,6 +21,6 @@ public class SimpleTransformer extends ParameterTransformer {
 
   @Override
   protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
-    return parameter.isExplode() ? rawValue.split(",|=") : rawValue.split(",");
+    return parameter.isExplode() ? rawValue.split("[,|=]") : rawValue.split(",");
   }
 }

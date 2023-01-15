@@ -2,12 +2,11 @@ package io.vertx.openapi.validation.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.Style;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestParameters;
@@ -19,10 +18,15 @@ import io.vertx.openapi.validation.transformer.MatrixTransformer;
 import io.vertx.openapi.validation.transformer.ParameterTransformer;
 import io.vertx.openapi.validation.transformer.SimpleTransformer;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.vertx.core.Future.failedFuture;
+import static io.vertx.openapi.contract.Style.FORM;
+import static io.vertx.openapi.contract.Style.LABEL;
+import static io.vertx.openapi.contract.Style.MATRIX;
+import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
@@ -34,37 +38,37 @@ public class RequestValidatorImpl implements RequestValidator {
   private final OpenAPIContract contract;
   private final Map<Style, ParameterTransformer> parameterTransformers;
 
-  private final PathFinder pathFinder;
-
   public RequestValidatorImpl(Vertx vertx, OpenAPIContract contract) {
     this.vertx = vertx;
     this.contract = contract;
-    parameterTransformers = new HashMap<>(4);
-    parameterTransformers.put(Style.SIMPLE, new SimpleTransformer());
-    parameterTransformers.put(Style.LABEL, new LabelTransformer());
-    parameterTransformers.put(Style.MATRIX, new MatrixTransformer());
-    parameterTransformers.put(Style.FORM, new FormTransformer());
-
-    pathFinder = new PathFinder(contract.getPaths());
+    parameterTransformers = new EnumMap<>(Style.class);
+    parameterTransformers.put(SIMPLE, new SimpleTransformer());
+    parameterTransformers.put(LABEL, new LabelTransformer());
+    parameterTransformers.put(MATRIX, new MatrixTransformer());
+    parameterTransformers.put(FORM, new FormTransformer());
   }
 
   @Override
-  public Future<RequestParameters> validate(RequestParameters params, String path, HttpMethod method) {
-    Path pathObject = pathFinder.findPath(path);
-    if (pathObject != null) {
-      for (Operation op : pathObject.getOperations()) {
-        if (op.getHttpMethod().equals(method)) {
-          return validate(params, op.getOperationId());
-        }
-      }
+  public Future<RequestParameters> validate(HttpServerRequest request) {
+    Operation operation = contract.findOperation(request.path(), request.method());
+    if (operation == null) {
+      return failedFuture(createOperationNotFound(request.method(), request.path()));
     }
-    return failedFuture(createOperationNotFound(method, path));
+    return validate(request, operation.getOperationId());
+  }
+
+  @Override
+  public Future<RequestParameters> validate(HttpServerRequest request, String operationId) {
+    Operation operation = contract.operation(operationId);
+    if (operation == null) {
+      return failedFuture(createOperationIdInvalid(operationId));
+    }
+    return validate(RequestParameters.of(request, operation), operationId);
   }
 
   @Override
   public Future<RequestParameters> validate(RequestParameters params, String operationId) {
     Operation operation = contract.operation(operationId);
-
     if (operation == null) {
       return failedFuture(createOperationIdInvalid(operationId));
     }
@@ -88,9 +92,6 @@ public class RequestValidatorImpl implements RequestValidator {
             break;
           case QUERY:
             query.put(param.getName(), validateParameter(param, params.getQuery().get(param.getName())));
-            break;
-          default:
-            throw new IllegalStateException();
         }
       }
       p.complete(new RequestParametersImpl(cookies, headers, path, query, null));
