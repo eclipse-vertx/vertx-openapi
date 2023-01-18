@@ -13,6 +13,8 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.router.RouterBuilder;
 import io.vertx.openapi.router.SecurityScheme;
+import io.vertx.openapi.validation.RequestValidator;
+import io.vertx.openapi.validation.impl.RequestValidatorImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +75,18 @@ public class RouterBuilderImpl implements RouterBuilder {
   @Override
   public Router createRouter() {
     Router router = Router.router(vertx);
+    RequestValidator validator = new RequestValidatorImpl(vertx, contract);
 
     for (Path path : contract.getPaths()) {
       for (Operation operation : path.getOperations()) {
         Route route = router.route(operation.getHttpMethod(), toVertxWebPath(path.getName()));
         route.putMetadata(KEY_META_DATA_OPERATION, operation.getOperationId());
+        route.handler(rc -> {
+          validator.validate(rc.request(), operation.getOperationId()).onSuccess(rp -> {
+            rc.put(KEY_META_DATA_VALIDATED_PARAMETERS, rp);
+            rc.next();
+          }).onFailure(t -> rc.fail(t));
+        });
         operation.getHandlers().forEach(route::handler);
         operation.getFailureHandlers().forEach(route::failureHandler);
       }

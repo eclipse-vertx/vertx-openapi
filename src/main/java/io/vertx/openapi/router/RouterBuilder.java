@@ -22,6 +22,8 @@ import java.util.List;
 public interface RouterBuilder {
   String KEY_META_DATA_OPERATION = "openApiOperationId";
 
+  String KEY_META_DATA_VALIDATED_PARAMETERS = "openApiValidatedParameters";
+
   /**
    * Create a new {@link RouterBuilder}.
    *
