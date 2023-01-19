@@ -2,7 +2,18 @@ package io.vertx.openapi.validation;
 
 import java.util.Map;
 
-interface Parameters {
+public interface ValidatedRequest {
+  
+  /**
+   * @return the path parameters.
+   */
+  Map<String, RequestParameter> getPathParameters();
+
+  /**
+   * @return the query parameters.
+   */
+  Map<String, RequestParameter> getQuery();
+
   /**
    * @return the cookie parameters.
    */

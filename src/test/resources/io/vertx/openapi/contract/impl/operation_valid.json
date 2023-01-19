@@ -85,5 +85,27 @@
         }
       ]
     }
+  },
+  "0003_Test_RequestBody": {
+    "path": "/pets",
+    "method": "post",
+    "operationModel": {
+      "operationId": "createPet",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "requestBody": {
+        "description": "Create a new pet in the store",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      }
+    }
   }
 }

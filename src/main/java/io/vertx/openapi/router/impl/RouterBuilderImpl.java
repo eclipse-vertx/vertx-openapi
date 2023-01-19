@@ -81,12 +81,10 @@ public class RouterBuilderImpl implements RouterBuilder {
       for (Operation operation : path.getOperations()) {
         Route route = router.route(operation.getHttpMethod(), toVertxWebPath(path.getName()));
         route.putMetadata(KEY_META_DATA_OPERATION, operation.getOperationId());
-        route.handler(rc -> {
-          validator.validate(rc.request(), operation.getOperationId()).onSuccess(rp -> {
-            rc.put(KEY_META_DATA_VALIDATED_PARAMETERS, rp);
-            rc.next();
-          }).onFailure(t -> rc.fail(t));
-        });
+        route.handler(rc -> validator.validate(rc.request(), operation.getOperationId()).onSuccess(rp -> {
+          rc.put(KEY_META_DATA_VALIDATED_REQUEST, rp);
+          rc.next();
+        }).onFailure(rc::fail));
         operation.getHandlers().forEach(route::handler);
         operation.getFailureHandlers().forEach(route::failureHandler);
       }

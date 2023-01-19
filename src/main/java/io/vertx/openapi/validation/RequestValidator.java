@@ -8,9 +8,9 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.validation.impl.RequestValidatorImpl;
 
 /**
- * The {@link RequestValidator} requires the {@link RequestParameters parameters} in a specific format to be able to
+ * The {@link RequestValidator} requires the {@link ValidatableRequest parameters} in a specific format to be able to
  * parse and validate them. This is especially true for <i>exploded</i> parameters. The following table shows how the
- * value of a parameter of a request must be stored in a {@link RequestParameters} object. For these examples the key
+ * value of a parameter of a request must be stored in a {@link ValidatableRequest} object. For these examples the key
  * of those values is always <i>color</i>.
  * <p></p>
  * These are the initial values for each type:<br>
@@ -19,7 +19,7 @@ import io.vertx.openapi.validation.impl.RequestValidatorImpl;
  * <li>array -> ["blue","black","brown"]</li>
  * <li>object -> { "R": 100, "G": 200, "B": 150 }</li>
  * </ul>
- * For cookie parameters {@link RequestParameters#getCookies()}
+ * For cookie parameters {@link ValidatableRequest#getCookies()}
  * <pre>
  * +--------+---------+-------+-----------+------------------------------------+-------------------------+
  * | style  | explode | empty | primitive | array                              | object                  |
@@ -29,7 +29,7 @@ import io.vertx.openapi.validation.impl.RequestValidatorImpl;
  * | form   | true    |       | blue      | color=blue&color=black&color=brown | R=100&G=200&B=150       |
  * +--------+---------+-------+-----------+------------------------------------+-------------------------+
  * </pre>
- * For header parameters {@link RequestParameters#getHeaders()}
+ * For header parameters {@link ValidatableRequest#getHeaders()}
  * <pre>
  * +--------+---------+-------+-----------+------------------------------------+-------------------------+
  * | style  | explode | empty | primitive | array                              | object                  |
@@ -39,7 +39,7 @@ import io.vertx.openapi.validation.impl.RequestValidatorImpl;
  * | simple | true    |       | blue      | blue,black,brown                   | R=100,G=200,B=150       |
  * +--------+---------+-------+-----------+------------------------------------+-------------------------+
  * </pre>
- * For path parameters {@link RequestParameters#getPathParameters()}
+ * For path parameters {@link ValidatableRequest#getPathParameters()}
  * <pre>
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  * | style  | explode | empty  | primitive   | array                               | object                   |
@@ -57,7 +57,7 @@ import io.vertx.openapi.validation.impl.RequestValidatorImpl;
  * | matrix | true    | ;color | ;color=blue | ;color=blue;color=black;color=brown | ;R=100;G=200;B=150       |
  * +--------+---------+--------+-------------+-------------------------------------+--------------------------+
  * </pre>
- * For query parameters {@link RequestParameters#getQuery()}
+ * For query parameters {@link ValidatableRequest#getQuery()}
  * <pre>
  * +----------------+---------+-------+------------+-----------------------------------+--------------------------+
  * | style          | explode | empty | primitive | array                              | object                   |
@@ -92,7 +92,7 @@ public interface RequestValidator {
   }
 
   /**
-   * Like {@link #validate(RequestParameters, String)}, but the operationId and {@link RequestParameters} are
+   * Like {@link #validate(ValidatableRequest, String)}, but the operationId and {@link ValidatableRequest} are
    * determined from the passed request.
    * <p></p>
    * <b>Note:</b> Determining the operationId is expensive. If possible use {@link #validate(HttpServerRequest, String)}.
@@ -100,16 +100,16 @@ public interface RequestValidator {
    * @param request the request to validate
    * @return A succeeded Future with the parsed and validated request parameters, or a failed Future containing ValidationException.
    */
-  Future<RequestParameters> validate(HttpServerRequest request);
+  Future<ValidatedRequest> validate(HttpServerRequest request);
 
   /**
-   * Like {@link #validate(RequestParameters, String)}, but {@link RequestParameters} are directly extracted from the passed request.
+   * Like {@link #validate(ValidatableRequest, String)}, but {@link ValidatableRequest} are directly extracted from the passed request.
    *
    * @param request     the request to validate
    * @param operationId the id of the related operation.
    * @return A succeeded Future with the parsed and validated request parameters, or a failed Future containing ValidationException.
    */
-  Future<RequestParameters> validate(HttpServerRequest request, String operationId);
+  Future<ValidatedRequest> validate(HttpServerRequest request, String operationId);
 
   /**
    * Validates the passed request parameters against the operation defined in the related OpenAPI contract.
@@ -118,5 +118,5 @@ public interface RequestValidator {
    * @param operationId the id of the related operation.
    * @return A succeeded Future with the parsed and validated request parameters, or a failed Future containing ValidationException.
    */
-  Future<RequestParameters> validate(RequestParameters params, String operationId);
+  Future<ValidatedRequest> validate(ValidatableRequest params, String operationId);
 }

@@ -1,19 +1,24 @@
 package io.vertx.openapi.validation.impl;
 
 import io.vertx.openapi.validation.RequestParameter;
-import io.vertx.openapi.validation.RequestParameters;
+import io.vertx.openapi.validation.ValidatedRequest;
 
 import java.util.Collections;
 import java.util.Map;
 
-public class RequestParametersImpl implements RequestParameters {
+public class ValidatedRequestImpl implements ValidatedRequest {
   private final Map<String, RequestParameter> cookies;
   private final Map<String, RequestParameter> headers;
   private final Map<String, RequestParameter> path;
   private final Map<String, RequestParameter> query;
   private final RequestParameter body;
 
-  public RequestParametersImpl(Map<String, RequestParameter> cookies, Map<String, RequestParameter> headers,
+  public ValidatedRequestImpl(Map<String, RequestParameter> cookies, Map<String, RequestParameter> headers,
+    Map<String, RequestParameter> path, Map<String, RequestParameter> query) {
+    this(cookies, headers, path, query, null);
+  }
+
+  public ValidatedRequestImpl(Map<String, RequestParameter> cookies, Map<String, RequestParameter> headers,
     Map<String, RequestParameter> path, Map<String, RequestParameter> query, RequestParameter body) {
     this.cookies = safeUnmodifiableMap(cookies);
     this.headers = safeUnmodifiableMap(headers);

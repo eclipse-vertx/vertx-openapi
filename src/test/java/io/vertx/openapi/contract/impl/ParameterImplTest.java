@@ -121,7 +121,7 @@ class ParameterImplTest {
     assertThat(param.getSchemaType()).isEqualTo(STRING);
 
     JsonObject paramModel = validTestData.getJsonObject(testId).getJsonObject("parameterModel");
-    assertThat(param.getParameterModel()).isEqualTo(paramModel);
+    assertThat(param.getOpenAPIModel()).isEqualTo(paramModel);
   }
 
   @Test

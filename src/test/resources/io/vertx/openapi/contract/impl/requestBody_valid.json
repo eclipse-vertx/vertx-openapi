@@ -1,0 +1,31 @@
+{
+  "0000_Test_Getters_Required_True_Content_Schema_String": {
+    "required": true,
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "0001_Test_Getters_Required_False_Content_Schema_String": {
+    "required": false,
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "0002_Test_Getters_Without_Required_Content_Schema_String": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

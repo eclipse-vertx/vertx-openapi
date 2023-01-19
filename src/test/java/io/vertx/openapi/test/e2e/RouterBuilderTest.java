@@ -10,7 +10,7 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.router.RouterBuilder;
 import io.vertx.openapi.test.base.RouterBuilderTestBase;
-import io.vertx.openapi.validation.RequestParameters;
+import io.vertx.openapi.validation.ValidatedRequest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -34,9 +34,9 @@ class RouterBuilderTest extends RouterBuilderTestBase {
     Checkpoint cpShowPetById = testContext.checkpoint(2);
 
     Function<Checkpoint, Handler<RoutingContext>> buildCheckpointHandler = cp -> rc -> {
-      RequestParameters parameters = rc.get(RouterBuilder.KEY_META_DATA_VALIDATED_PARAMETERS);
+      ValidatedRequest validatedRequest = rc.get(RouterBuilder.KEY_META_DATA_VALIDATED_REQUEST);
       cp.flag();
-      rc.response().send(Json.encode(parameters)).onFailure(testContext::failNow);
+      rc.response().send(Json.encode(validatedRequest)).onFailure(testContext::failNow);
     };
 
     Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve(version).resolve("petstore.json");
@@ -51,12 +51,15 @@ class RouterBuilderTest extends RouterBuilderTestBase {
         assertThat(query.getJsonObject("limit").getMap()).containsEntry("long", 42);
         cpListPets.flag();
       }))
-      .compose(v -> createRequest(POST, "/pets").send())
-      .onSuccess(response -> testContext.verify(() -> {
-        JsonObject body = response.bodyAsJsonObject().getJsonObject("body");
-        assertThat(body.getMap()).containsEntry("null", true);
-        cpCreatePets.flag();
-      }))
+      .compose(v -> {
+        JsonObject bodyJson = new JsonObject().put("id", 1).put("name", "FooBar");
+        return createRequest(POST, "/pets").sendJsonObject(bodyJson).onSuccess(response -> testContext.verify(() -> {
+          JsonObject body = response.bodyAsJsonObject().getJsonObject("body");
+          JsonObject bodyValueAsJson = body.getJsonObject("jsonObject");
+          assertThat(bodyValueAsJson).isEqualTo(bodyJson);
+          cpCreatePets.flag();
+        }));
+      })
       .compose(v -> createRequest(GET, "/pets/foobar").send())
       .onSuccess(response -> testContext.verify(() -> {
         JsonObject path = response.bodyAsJsonObject().getJsonObject("pathParameters");

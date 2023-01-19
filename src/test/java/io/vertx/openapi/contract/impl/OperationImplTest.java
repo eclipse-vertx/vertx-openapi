@@ -11,6 +11,7 @@ import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,13 +113,21 @@ class OperationImplTest {
     assertThat(operation.getTags()).containsExactly("pets", "foo");
     assertThat(operation.getHandlers()).isEmpty();
     assertThat(operation.getFailureHandlers()).isEmpty();
+    assertThat(operation.getRequestBody()).isNull();
 
     JsonObject operationModel = validTestData.getJsonObject(testId).getJsonObject("operationModel");
-    assertThat(operation.getOperationModel()).isEqualTo(operationModel);
+    assertThat(operation.getOpenAPIModel()).isEqualTo(operationModel);
 
     List<Parameter> params = operation.getParameters();
     assertThat(params).hasSize(1);
     assertThat(params.get(0).getName()).isEqualTo("petId");
     assertThat(params.get(0).getIn()).isEqualTo(PATH);
+  }
+
+  @Test
+  void testGetRequestBody() {
+    String testId = "0003_Test_RequestBody";
+    OperationImpl operation = fromTestData(testId, validTestData);
+    assertThat(operation.getRequestBody()).isInstanceOf(RequestBody.class);
   }
 }

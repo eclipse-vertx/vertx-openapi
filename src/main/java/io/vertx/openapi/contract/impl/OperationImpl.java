@@ -9,6 +9,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +30,14 @@ public class OperationImpl implements Operation {
   private static final String KEY_TAGS = "tags";
   private static final String KEY_PARAMETERS = "parameters";
 
+  private static final String KEY_REQUEST_BODY = "requestBody";
+
   private final String operationId;
   private final String path;
   private final HttpMethod method;
   private final JsonObject operationModel;
   private final List<Parameter> parameters;
-
+  private final RequestBody requestBody;
   private final List<String> tags;
   private final List<Handler<RoutingContext>> handlers = new ArrayList<>();
   private final List<Handler<RoutingContext>> failureHandlers = new ArrayList<>();
@@ -76,6 +79,12 @@ public class OperationImpl implements Operation {
 
     this.parameters = unmodifiableList(operationParameters);
 
+    JsonObject requestBodyJson = operationModel.getJsonObject(KEY_REQUEST_BODY);
+    if (requestBodyJson == null || requestBodyJson.isEmpty()) {
+      this.requestBody = null;
+    } else {
+      this.requestBody = new RequestBodyImpl(requestBodyJson, operationId);
+    }
   }
 
   @Override
@@ -106,7 +115,7 @@ public class OperationImpl implements Operation {
   }
 
   @Override
-  public JsonObject getOperationModel() {
+  public JsonObject getOpenAPIModel() {
     return operationModel.copy();
   }
 
@@ -128,5 +137,10 @@ public class OperationImpl implements Operation {
   @Override
   public List<Parameter> getParameters() {
     return parameters;
+  }
+
+  @Override
+  public RequestBody getRequestBody() {
+    return requestBody;
   }
 }

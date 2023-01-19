@@ -139,7 +139,7 @@ public class ParameterImpl implements Parameter {
   }
 
   @Override
-  public JsonObject getParameterModel() {
+  public JsonObject getOpenAPIModel() {
     return parameterModel.copy();
   }
 

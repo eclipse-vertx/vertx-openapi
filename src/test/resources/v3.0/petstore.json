@@ -70,6 +70,17 @@
         "tags": [
           "pets"
         ],
+        "requestBody": {
+          "description": "Create a new pet in the store",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Null response"

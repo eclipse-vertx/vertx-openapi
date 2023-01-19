@@ -1,11 +1,13 @@
 package io.vertx.openapi.validation;
 
+import io.vertx.core.Future;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
-import io.vertx.openapi.validation.impl.RequestParametersImpl;
+import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +31,7 @@ public class RequestUtils {
 
   }
 
-  public static RequestParameters extract(HttpServerRequest request, Operation operation) {
+  public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation) {
     Map<String, RequestParameter> cookies = new HashMap<>();
     Map<String, RequestParameter> headers = new HashMap<>();
     Map<String, RequestParameter> pathParams = new HashMap<>();
@@ -52,7 +54,15 @@ public class RequestUtils {
       }
     }
 
-    return new RequestParametersImpl(cookies, headers, pathParams, query, null);
+    if (operation.getRequestBody() == null) {
+      return Future.succeededFuture(new ValidatableRequestImpl(cookies, headers, pathParams, query));
+    }
+
+    String contentType = request.headers().get(HttpHeaders.CONTENT_TYPE);
+    return request.body().map(buffer -> {
+      RequestParameter body = new RequestParameterImpl(buffer);
+      return new ValidatableRequestImpl(cookies, headers, pathParams, query, body, contentType);
+    });
   }
 
   private static RequestParameter extractCookie(HttpServerRequest request, Parameter parameter) {

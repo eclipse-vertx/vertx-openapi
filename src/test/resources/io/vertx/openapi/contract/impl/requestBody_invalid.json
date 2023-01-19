@@ -1,0 +1,17 @@
+{
+  "0000_RequestBody_Without_Content": {
+  },
+  "0001_RequestBody_With_Empty_Content": {
+    "content": {
+    }
+  },
+  "0002_RequestBody_With_Content_Type_Plain_Text": {
+    "content": {
+      "plain/text": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

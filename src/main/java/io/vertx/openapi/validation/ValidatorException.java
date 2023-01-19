@@ -65,6 +65,11 @@ public class ValidatorException extends RuntimeException {
     return new ValidatorException(msg, INVALID_VALUE, reason, null);
   }
 
+  public static ValidatorException createInvalidValueBody(OutputUnit reason) {
+    String msg = String.format("The value of the request body is invalid. Reason: %s", extractErrorMsg(reason));
+    return new ValidatorException(msg, INVALID_VALUE, reason, null);
+  }
+
   public static ValidatorException createOperationIdInvalid(String operationId) {
     String msg = String.format("Invalid OperationId: %s", operationId);
     return new ValidatorException(msg, MISSING_OPERATION);

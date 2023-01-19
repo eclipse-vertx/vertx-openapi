@@ -21,13 +21,11 @@ class OpenAPIContractTest {
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testFromFailsInvalidSpecMustNotNull(Vertx vertx, VertxTestContext testContext) {
-    OpenAPIContract.from(vertx, null).onComplete(testContext.failing(t -> {
-      testContext.verify(() -> {
-        assertThat(t).isInstanceOf(OpenAPIContractException.class);
-        assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid: Spec must not be null");
-        testContext.completeNow();
-      });
-    }));
+    OpenAPIContract.from(vertx, null).onComplete(testContext.failing(t -> testContext.verify(() -> {
+      assertThat(t).isInstanceOf(OpenAPIContractException.class);
+      assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid: Spec must not be null");
+      testContext.completeNow();
+    })));
   }
 
   @Test
@@ -36,13 +34,11 @@ class OpenAPIContractTest {
     Path path = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("v3_0_invalid_petstore.json");
     JsonObject invalidContractJson = vertx.fileSystem().readFileBlocking(path.toString()).toJsonObject();
 
-    OpenAPIContract.from(vertx, invalidContractJson).onComplete(testContext.failing(t -> {
-      testContext.verify(() -> {
-        assertThat(t).isInstanceOf(OpenAPIContractException.class);
-        assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid.");
-        assertThat(t).hasCauseThat().isInstanceOf(ValidationException.class);
-        testContext.completeNow();
-      });
-    }));
+    OpenAPIContract.from(vertx, invalidContractJson).onComplete(testContext.failing(t -> testContext.verify(() -> {
+      assertThat(t).isInstanceOf(OpenAPIContractException.class);
+      assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid.");
+      assertThat(t).hasCauseThat().isInstanceOf(ValidationException.class);
+      testContext.completeNow();
+    })));
   }
 }

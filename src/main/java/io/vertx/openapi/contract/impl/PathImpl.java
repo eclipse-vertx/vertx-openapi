@@ -47,8 +47,10 @@ public class PathImpl implements Path {
   private final String name;
   private final List<Operation> operations;
   private final List<Parameter> parameters;
+  private final JsonObject pathModel;
 
   public PathImpl(String name, JsonObject pathModel) {
+    this.pathModel = pathModel;
     if (name.contains("*")) {
       throw createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
     }
@@ -86,5 +88,10 @@ public class PathImpl implements Path {
   @Override
   public String toString() {
     return name;
+  }
+
+  @Override
+  public JsonObject getOpenAPIModel() {
+    return pathModel.copy();
   }
 }

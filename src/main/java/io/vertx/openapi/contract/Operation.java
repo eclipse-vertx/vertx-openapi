@@ -5,7 +5,6 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
@@ -13,12 +12,12 @@ import java.util.List;
 /**
  * This interface represents the most important attributes of an OpenAPI Operation.
  * <br>
- * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operationObject">Operation V3.1</a>
+ * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operation-Object">Operation V3.1</a>
  * <br>
- * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#operationObject">Operation V3.0</a>
+ * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#operation-Object">Operation V3.0</a>
  */
 @VertxGen
-public interface Operation {
+public interface Operation extends OpenAPIObject {
 
   /**
    * Adds a handler for this operation which is executed after the security and validation handlers defined in the contract
@@ -56,11 +55,6 @@ public interface Operation {
   String getOperationId();
 
   /**
-   * @return model of this operation
-   */
-  JsonObject getOperationModel();
-
-  /**
    * @return http method of this operation
    */
   HttpMethod getHttpMethod();
@@ -79,4 +73,9 @@ public interface Operation {
    * @return parameters of this operation
    */
   List<Parameter> getParameters();
+
+  /**
+   * @return request body of the operation, or null if no request body is defined
+   */
+  RequestBody getRequestBody();
 }

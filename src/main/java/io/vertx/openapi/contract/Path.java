@@ -12,7 +12,7 @@ import java.util.List;
  * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#path-item-object">Parameter V3.0</a>
  */
 @VertxGen
-public interface Path {
+public interface Path extends OpenAPIObject {
 
   /**
    * @return the name of this path

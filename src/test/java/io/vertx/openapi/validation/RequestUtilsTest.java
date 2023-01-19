@@ -5,15 +5,20 @@ import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.Location;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Style;
 import io.vertx.openapi.test.base.HttpServerTestBase;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,9 +30,11 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.json.schema.common.dsl.SchemaType.ARRAY;
 import static io.vertx.json.schema.common.dsl.SchemaType.NUMBER;
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
+import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Location.PATH;
@@ -35,6 +42,7 @@ import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.LABEL;
 import static io.vertx.openapi.contract.Style.MATRIX;
 import static io.vertx.openapi.contract.Style.SIMPLE;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -183,21 +191,45 @@ class RequestUtilsTest extends HttpServerTestBase {
       .onFailure(testContext::failNow);
   }
 
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testExtractBody(VertxTestContext testContext) {
+    MediaType mockedMediaType = mock(MediaType.class);
+    when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
+
+    RequestBody mockedRequestBody = mock(RequestBody.class);
+    when(mockedRequestBody.isRequired()).thenReturn(true);
+    when(mockedRequestBody.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
+
+    Operation mockedOperation = mockOperation(emptyList());
+    when(mockedOperation.getRequestBody()).thenReturn(mockedRequestBody);
+
+    JsonObject bodyJson = new JsonObject().put("foo", "bar");
+
+    createValidationHandler(params -> {
+      assertThat(params.getContentType()).isEqualTo(APPLICATION_JSON.toString());
+      assertThat(params.getBody().isBuffer()).isTrue();
+      assertThat(params.getBody().getBuffer().toJsonObject()).isEqualTo(bodyJson);
+      testContext.completeNow();
+    }, mockedOperation, testContext).compose(
+        v -> createRequest(HttpMethod.POST, "").sendJsonObject(bodyJson))
+      .onFailure(testContext::failNow);
+  }
+
   @ParameterizedTest(name = "{index} Template path {0} has parameter {1} in the {2} section")
   @MethodSource
   void testFindPathSegment(String templatePath, String parameterName, int expected) {
     assertThat(RequestUtils.findPathSegment(templatePath, parameterName)).isEqualTo(expected);
   }
 
-  private Future<Void> createValidationHandler(Consumer<RequestParameters> verifier, Operation operation,
+  private Future<Void> createValidationHandler(Consumer<ValidatableRequest> verifier, Operation operation,
     VertxTestContext testContext) {
-    return createServer(request -> {
-      RequestParameters requestParameters = RequestUtils.extract(request, operation);
-      testContext.verify(() -> {
-        verifier.accept(requestParameters);
+
+    return createServer(request -> RequestUtils.extract(request, operation)
+      .onComplete(testContext.succeeding(validatableRequest -> testContext.verify(() -> {
+        verifier.accept(validatableRequest);
         request.response().send().onFailure(testContext::failNow);
-      });
-    });
+      }))));
   }
 
   private Operation mockOperation(Parameter parameter) {

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("NewClassNamingConvention")
 @ExtendWith(VertxExtension.class)
 public class HttpServerTestBase {
 

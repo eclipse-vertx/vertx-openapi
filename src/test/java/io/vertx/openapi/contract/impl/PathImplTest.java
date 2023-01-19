@@ -53,6 +53,8 @@ class PathImplTest {
 
     assertThat(petById.getOperationId()).isEqualTo("showPetById");
     assertThat(petById.getParameters()).hasSize(2);
+
+    assertThat(path.getOpenAPIModel().getJsonArray("parameters")).hasSize(1);
   }
 
   @Test
