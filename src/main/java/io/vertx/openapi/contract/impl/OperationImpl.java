@@ -1,17 +1,14 @@
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,8 +36,6 @@ public class OperationImpl implements Operation {
   private final List<Parameter> parameters;
   private final RequestBody requestBody;
   private final List<String> tags;
-  private final List<Handler<RoutingContext>> handlers = new ArrayList<>();
-  private final List<Handler<RoutingContext>> failureHandlers = new ArrayList<>();
 
   public OperationImpl(String path, HttpMethod method, JsonObject operationModel, List<Parameter> pathParameters) {
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
@@ -85,28 +80,6 @@ public class OperationImpl implements Operation {
     } else {
       this.requestBody = new RequestBodyImpl(requestBodyJson, operationId);
     }
-  }
-
-  @Override
-  public Operation addHandler(Handler<RoutingContext> handler) {
-    handlers.add(handler);
-    return this;
-  }
-
-  @Override
-  public Operation addFailureHandler(Handler<RoutingContext> handler) {
-    failureHandlers.add(handler);
-    return this;
-  }
-
-  @Override
-  public List<Handler<RoutingContext>> getHandlers() {
-    return unmodifiableList(handlers);
-  }
-
-  @Override
-  public List<Handler<RoutingContext>> getFailureHandlers() {
-    return unmodifiableList(failureHandlers);
   }
 
   @Override

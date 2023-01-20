@@ -1,16 +1,19 @@
 package io.vertx.openapi.test.e2e;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.router.RouterBuilder;
 import io.vertx.openapi.test.base.RouterBuilderTestBase;
 import io.vertx.openapi.validation.ValidatedRequest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -41,9 +44,9 @@ class RouterBuilderTest extends RouterBuilderTestBase {
 
     Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve(version).resolve("petstore.json");
     createServer(pathDereferencedContract, rb -> {
-      rb.operation("listPets").addHandler(buildCheckpointHandler.apply(cpListPets));
-      rb.operation("createPets").addHandler(buildCheckpointHandler.apply(cpCreatePets));
-      rb.operation("showPetById").addHandler(buildCheckpointHandler.apply(cpShowPetById));
+      rb.getRoute("listPets").addHandler(buildCheckpointHandler.apply(cpListPets));
+      rb.getRoute("createPets").addHandler(buildCheckpointHandler.apply(cpCreatePets));
+      rb.getRoute("showPetById").addHandler(buildCheckpointHandler.apply(cpShowPetById));
       return Future.succeededFuture(rb);
     }).compose(v -> createRequest(GET, "/pets").addQueryParam("limit", "42").send())
       .onSuccess(response -> testContext.verify(() -> {
@@ -66,6 +69,43 @@ class RouterBuilderTest extends RouterBuilderTestBase {
         assertThat(path.getJsonObject("petId").getMap()).containsEntry("string", "foobar");
         cpShowPetById.flag();
       }))
+      .onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testRouterWithoutValidation(VertxTestContext testContext) {
+    Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
+    createServer(pathDereferencedContract, rb -> {
+      rb.rootHandler(BodyHandler.create()).getRoute("createPets").setDoValidation(false)
+        .addHandler(rc -> rc.response().end(rc.body().buffer()));
+      return Future.succeededFuture(rb);
+    }).compose(v -> {
+        JsonObject invalidBodyJson = new JsonObject().put("foo", "bar");
+        return createRequest(POST, "/pets").sendJsonObject(invalidBodyJson)
+          .onSuccess(response -> testContext.verify(() -> {
+            assertThat(response.bodyAsJsonObject()).isEqualTo(invalidBodyJson);
+            testContext.completeNow();
+          }));
+      })
+      .onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testRouterWithInvalidRequest(VertxTestContext testContext) {
+    Path pathDereferencedContract = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
+    createServer(pathDereferencedContract, rb -> {
+      rb.getRoute("createPets").addHandler(rc -> rc.response().end(rc.body().buffer()));
+      return Future.succeededFuture(rb);
+    }).compose(v -> {
+        JsonObject invalidBodyJson = new JsonObject().put("foo", "bar");
+        return createRequest(POST, "/pets").sendJsonObject(invalidBodyJson)
+          .onSuccess(response -> testContext.verify(() -> {
+            assertThat(response.statusCode()).isEqualTo(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+            testContext.completeNow();
+          }));
+      })
       .onFailure(testContext::failNow);
   }
 }

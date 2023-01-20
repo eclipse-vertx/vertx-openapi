@@ -1,10 +1,8 @@
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.ResourceHelper;
@@ -88,22 +86,6 @@ class OperationImplTest {
   }
 
   @Test
-  void testAdders() {
-    String testId = "0000_Test_Getters";
-    OperationImpl operation = fromTestData(testId, validTestData);
-
-    Handler<RoutingContext> dummyHandler = RoutingContext::next;
-    Handler<RoutingContext> dummyFailureHandler = RoutingContext::next;
-    assertThat(dummyHandler).isNotSameInstanceAs(dummyFailureHandler);
-
-    operation.addHandler(dummyHandler);
-    assertThat(operation.getHandlers()).containsExactly(dummyHandler);
-
-    operation.addFailureHandler(dummyFailureHandler);
-    assertThat(operation.getFailureHandlers()).containsExactly(dummyFailureHandler);
-  }
-
-  @Test
   void testGetters() {
     String testId = "0000_Test_Getters";
     OperationImpl operation = fromTestData(testId, validTestData);
@@ -111,8 +93,6 @@ class OperationImplTest {
     assertThat(operation.getOpenAPIPath()).isEqualTo("/pets/{petId}");
     assertThat(operation.getHttpMethod()).isEqualTo(GET);
     assertThat(operation.getTags()).containsExactly("pets", "foo");
-    assertThat(operation.getHandlers()).isEmpty();
-    assertThat(operation.getFailureHandlers()).isEmpty();
     assertThat(operation.getRequestBody()).isNull();
 
     JsonObject operationModel = validTestData.getJsonObject(testId).getJsonObject("operationModel");

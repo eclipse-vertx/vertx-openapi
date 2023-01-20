@@ -22,7 +22,6 @@ import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static java.util.stream.Collectors.joining;
 
 public class RequestUtils {
-
   private static final RequestParameter EMPTY = new RequestParameterImpl(null);
   private static final Function<Collection<String>, String> GET_FIRST_VALUE =
     values -> values.stream().findFirst().orElse(null);
@@ -31,6 +30,14 @@ public class RequestUtils {
 
   }
 
+  /**
+   * Extracts and transforms the parameters and the body of an incoming request into a {@link ValidatableRequest format}
+   * that can be validated by the {@link io.vertx.openapi.validation.RequestValidator}.
+   *
+   * @param request   the incoming request.
+   * @param operation the operation of the related request.
+   * @return A {@link Future} holding the ValidatableRequest.
+   */
   public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation) {
     Map<String, RequestParameter> cookies = new HashMap<>();
     Map<String, RequestParameter> headers = new HashMap<>();
