@@ -1,10 +1,12 @@
 package io.vertx.openapi.router;
 
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.validation.ValidatableRequest;
 
+@VertxGen
 public interface RequestExtractor {
 
   /**

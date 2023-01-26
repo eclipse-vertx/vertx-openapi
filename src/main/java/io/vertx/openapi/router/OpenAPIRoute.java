@@ -2,12 +2,14 @@ package io.vertx.openapi.router;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.openapi.contract.Operation;
 
 import java.util.List;
 
+@VertxGen
 public interface OpenAPIRoute {
 
   /**

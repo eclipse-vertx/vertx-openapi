@@ -1,5 +1,7 @@
 package io.vertx.openapi.contract;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 import java.util.Map;
 
 /**
@@ -9,6 +11,7 @@ import java.util.Map;
  * <br>
  * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#request-body-Object">Operation V3.0</a>
  */
+@VertxGen
 public interface RequestBody extends OpenAPIObject {
 
   /**
