@@ -1,12 +1,24 @@
+/*
+ * Copyright (c) 2023, SAP SE
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *
+ */
+
 package io.vertx.openapi.validation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.junit5.Timeout;
@@ -144,7 +156,8 @@ class RequestUtilsTest extends HttpServerTestBase {
     createValidationHandler(params -> {
       assertThat(params.getQuery().get(parameter.getName()).getString()).isEqualTo(expected);
       testContext.completeNow();
-    }, mockOperation(parameter), testContext).compose(v -> createRequest(HttpMethod.GET, "?" + query).send())
+    }, mockOperation(parameter), testContext).compose(
+        v -> createRequest(HttpMethod.GET, "?" + query).map(req -> req.send()))
       .onFailure(testContext::failNow);
   }
 
@@ -156,7 +169,7 @@ class RequestUtilsTest extends HttpServerTestBase {
       assertThat(params.getCookies().get(parameter.getName()).getString()).isEqualTo(expected);
       testContext.completeNow();
     }, mockOperation(parameter), testContext).compose(
-        v -> createRequest(HttpMethod.GET, "").putHeader("Cookie", cookieString).send())
+        v -> createRequest(HttpMethod.GET, "").map(req -> req.putHeader("Cookie", cookieString).send()))
       .onFailure(testContext::failNow);
   }
 
@@ -168,13 +181,12 @@ class RequestUtilsTest extends HttpServerTestBase {
     createValidationHandler(params -> {
       assertThat(params.getHeaders().get(parameter.getName()).getString()).isEqualTo(expected);
       testContext.completeNow();
-    }, mockOperation(parameter), testContext).compose(
-        v -> {
-          HttpRequest<Buffer> req = createRequest(HttpMethod.GET, "");
-          headers.forEach(req::putHeader);
-          return req.send();
-        })
-      .onFailure(testContext::failNow);
+    }, mockOperation(parameter), testContext).compose(v ->
+      createRequest(HttpMethod.GET, "").map(req -> {
+        headers.forEach(req::putHeader);
+        return req.send();
+      })
+    ).onFailure(testContext::failNow);
   }
 
   @ParameterizedTest(name = "{index} Path {2} ({1}) should be transformed into {3}")
@@ -187,7 +199,8 @@ class RequestUtilsTest extends HttpServerTestBase {
     createValidationHandler(params -> {
       assertThat(params.getPathParameters().get(parameter.getName()).getString()).isEqualTo(expected);
       testContext.completeNow();
-    }, mockedOperation, testContext).compose(v -> createRequest(HttpMethod.GET, "/test/" + path + "/").send())
+    }, mockedOperation, testContext).compose(
+        v -> createRequest(HttpMethod.GET, "/test/" + path + "/").map(HttpClientRequest::send))
       .onFailure(testContext::failNow);
   }
 
@@ -211,8 +224,9 @@ class RequestUtilsTest extends HttpServerTestBase {
       assertThat(params.getBody().isBuffer()).isTrue();
       assertThat(params.getBody().getBuffer().toJsonObject()).isEqualTo(bodyJson);
       testContext.completeNow();
-    }, mockedOperation, testContext).compose(
-        v -> createRequest(HttpMethod.POST, "").sendJsonObject(bodyJson))
+    }, mockedOperation, testContext).compose(v -> createRequest(HttpMethod.POST, ""))
+      .map(req -> req.putHeader(HttpHeaderNames.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
+        .send(bodyJson.toBuffer()))
       .onFailure(testContext::failNow);
   }
 

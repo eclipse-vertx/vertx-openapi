@@ -1,14 +1,25 @@
+/*
+ * Copyright (c) 2023, SAP SE
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *
+ */
+
 package io.vertx.openapi.test.base;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -60,8 +71,9 @@ public class HttpServerTestBase {
    * @param path   The path of the request
    * @return a pre-configured HTTP request.
    */
-  protected HttpRequest<Buffer> createRequest(HttpMethod method, String path) {
-    WebClientOptions opts = new WebClientOptions().setDefaultHost("localhost").setDefaultPort(port);
-    return WebClient.create(vertx, opts).request(method, path);
+  protected Future<HttpClientRequest> createRequest(HttpMethod method, String path) {
+    HttpClient client =
+      vertx.createHttpClient(new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost"));
+    return client.request(method, path);
   }
 }
