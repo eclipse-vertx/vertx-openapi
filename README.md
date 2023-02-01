@@ -12,10 +12,7 @@ of this component:
 
 ### LabelTransformer
 
-See class comment for `LabelTransformer`, the OpenAPI spec seems to be wrong.
-
-* How to handle type `number` when style `Label` and exploded is `true`?
-  * because all values are seperated by a '.' (dot), and this char is also used as floating point.
+How to handle type `number` when style `Label` and exploded is `true`? Because all values are seperated by a '.' (dot), and this char is also used as floating point.
 
 ### FormTransformer
 
