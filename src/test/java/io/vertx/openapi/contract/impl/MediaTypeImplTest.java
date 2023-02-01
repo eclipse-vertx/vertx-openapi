@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MediaTypeImplTest {

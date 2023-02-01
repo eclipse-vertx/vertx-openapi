@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.openapi;
+package io.vertx.openapi.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,8 +37,8 @@ import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
 class UtilsTest {
 
   private static Stream<Arguments> testReadYamlOrJson() throws IOException {
-    Path petstoreYaml = getRelatedTestResourcePath(UtilsTest.class).resolve("petstore.yaml");
-    Path petstoreJson = getRelatedTestResourcePath(UtilsTest.class).resolve("petstore.json");
+    Path petstoreYaml = getRelatedTestResourcePath("io.vertx.openapi").resolve("petstore.yaml");
+    Path petstoreJson = getRelatedTestResourcePath("io.vertx.openapi").resolve("petstore.json");
     JsonObject expectedJson = Buffer.buffer(Files.readAllBytes(petstoreJson)).toJsonObject();
     return Stream.of(
       Arguments.of(petstoreYaml.toString(), expectedJson),
@@ -54,4 +55,20 @@ class UtilsTest {
       testContext.completeNow();
     })));
   }
+
+  @Test
+  public void testNumericYamlKeysAsString(Vertx vertx, VertxTestContext testContext) {
+    Utils.readYamlOrJson(vertx, "quirks/test.yaml")
+      .onSuccess(json -> {
+        testContext.verify(() -> {
+          assertThat(json).isNotNull();
+          for (Object key : json.getMap().keySet()) {
+            assertThat(key).isInstanceOf(String.class);
+          }
+          testContext.completeNow();
+        });
+      })
+      .onFailure(testContext::failNow);
+  }
+
 }

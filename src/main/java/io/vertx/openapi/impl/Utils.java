@@ -10,16 +10,17 @@
  *
  */
 
-package io.vertx.openapi;
+package io.vertx.openapi.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.yaml.snakeyaml.Yaml;
+
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
@@ -29,8 +30,6 @@ import static java.util.Collections.emptyMap;
 public final class Utils {
   public static final JsonArray EMPTY_JSON_ARRAY = new JsonArray(emptyList());
   public static final JsonObject EMPTY_JSON_OBJECT = new JsonObject(emptyMap());
-
-  private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
 
   private Utils() {
 
@@ -50,14 +49,36 @@ public final class Utils {
         return succeededFuture(buff.toJsonObject());
       } else if ("yaml".equals(suffix) || "yml".equals(suffix)) {
         try {
-          JsonNode node = YAML_MAPPER.readTree(buff.toString());
-          return succeededFuture(new JsonObject(node.toString()));
-        } catch (JsonProcessingException e) {
+          final Yaml yaml = new Yaml(new OpenAPIYamlConstructor());
+          Map<Object, Object> doc = yaml.load(buff.toString(StandardCharsets.UTF_8));
+          return succeededFuture(new JsonObject(jsonify(doc)));
+        } catch (RuntimeException e) {
           return failedFuture(e);
         }
       } else {
         return failedFuture(new IllegalArgumentException("Only JSON or YAML files are allowed"));
       }
     });
+  }
+
+  /**
+   * Yaml allows map keys of type object, however json always requires key as String,
+   * this helper method will ensure we adapt keys to the right type
+   *
+   * @param yaml yaml map
+   * @return json map
+   */
+  private static Map<String, Object> jsonify(Map<Object, Object> yaml) {
+    final Map<String, Object> json = new LinkedHashMap<>();
+
+    for (Map.Entry<Object, Object> kv : yaml.entrySet()) {
+      Object value = kv.getValue();
+      if (value instanceof Map) {
+        value = jsonify((Map<Object, Object>) value);
+      }
+      json.put(kv.getKey().toString(), value);
+    }
+
+    return json;
   }
 }

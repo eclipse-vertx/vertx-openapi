@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
-import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
