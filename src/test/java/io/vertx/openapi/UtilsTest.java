@@ -19,6 +19,7 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.impl.Utils;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -55,4 +56,20 @@ class UtilsTest {
       testContext.completeNow();
     })));
   }
+
+  @Test
+  public void testNumericYamlKeysAsString(Vertx vertx, VertxTestContext testContext) {
+    Utils.readYamlOrJson(vertx, "quirks/test.yaml")
+      .onSuccess(json -> {
+        testContext.verify(() -> {
+          assertThat(json).isNotNull();
+          for (Object key : json.getMap().keySet()) {
+            assertThat(key).isInstanceOf(String.class);
+          }
+          testContext.completeNow();
+        });
+      })
+      .onFailure(testContext::failNow);
+  }
+
 }
