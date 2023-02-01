@@ -15,7 +15,7 @@ package io.vertx.openapi.contract.impl;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.Utils;
+import io.vertx.openapi.impl.Utils;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import org.junit.jupiter.api.RepeatedTest;
