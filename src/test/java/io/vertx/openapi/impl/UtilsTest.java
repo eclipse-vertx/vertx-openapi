@@ -37,8 +37,8 @@ import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
 class UtilsTest {
 
   private static Stream<Arguments> testReadYamlOrJson() throws IOException {
-    Path petstoreYaml = getRelatedTestResourcePath(UtilsTest.class).resolve("petstore.yaml");
-    Path petstoreJson = getRelatedTestResourcePath(UtilsTest.class).resolve("petstore.json");
+    Path petstoreYaml = getRelatedTestResourcePath("io.vertx.openapi").resolve("petstore.yaml");
+    Path petstoreJson = getRelatedTestResourcePath("io.vertx.openapi").resolve("petstore.json");
     JsonObject expectedJson = Buffer.buffer(Files.readAllBytes(petstoreJson)).toJsonObject();
     return Stream.of(
       Arguments.of(petstoreYaml.toString(), expectedJson),

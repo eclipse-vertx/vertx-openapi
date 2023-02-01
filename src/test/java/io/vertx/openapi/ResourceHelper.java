@@ -31,6 +31,11 @@ public final class ResourceHelper {
     return TEST_RESOURCE_PATH.resolve(related);
   }
 
+  public static Path getRelatedTestResourcePath(String relatedPackage) {
+    Path related = Paths.get(relatedPackage.replace(".", "/"));
+    return TEST_RESOURCE_PATH.resolve(related);
+  }
+
   public static JsonObject loadJson(Vertx vertx, Path path) {
     return vertx.fileSystem().readFileBlocking(path.toString()).toJsonObject();
   }
