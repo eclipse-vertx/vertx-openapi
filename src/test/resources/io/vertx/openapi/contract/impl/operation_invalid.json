@@ -1,0 +1,35 @@
+{
+  "0000_Multiple_Exploded_Form_Parameters_In_Query_With_Content_Object": {
+    "path": "/pets/{petId}",
+    "method": "get",
+    "operationModel": {
+      "operationId": "showPetById",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "query",
+          "required": true,
+          "style": "form",
+          "explode": true,
+          "schema": {
+            "type": "object"
+          }
+        },
+        {
+          "name": "petId2",
+          "in": "query",
+          "required": true,
+          "style": "form",
+          "explode": true,
+          "schema": {
+            "type": "object"
+          }
+        }
+      ]
+    }
+  }
+}

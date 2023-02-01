@@ -1,0 +1,67 @@
+{
+  "0000_Test_Getters": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "petId",
+      "in": "header",
+      "required": true,
+      "style": "simple",
+      "explode": true,
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0001_Path_Parameter": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "path",
+      "required": true,
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0002_Default_Values_Cookie": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "petId",
+      "in": "cookie",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0003_Default_Values_Header": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "petId",
+      "in": "header",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0004_Default_Values_Path": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "required": true,
+      "in": "path",
+      "schema": {
+        "type": "string"
+      }
+    }
+  },
+  "0005_Default_Values_Query": {
+    "path": "/pets",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "schema": {
+        "type": "string"
+      }
+    }
+  }
+}

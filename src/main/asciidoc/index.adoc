@@ -1,0 +1,97 @@
+= Vert.x OpenAPI
+:toc: left
+
+Vert.x OpenAPI extends Vert.x to support https://www.openapis.org/[OpenAPI 3] in version 3.0 and 3.1.
+
+Vert.x OpenAPI can:
+
+* parse and validate your OpenAPI contract.
+* parse and validate incoming requests according to your OpenAPI contract.
+
+== Using Vert.x OpenAPI
+
+To use Vert.x OpenAPI, add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml,subs="+attributes"]
+----
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-openapi</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+
+* Gradle (in your `build.gradle` file):
+
+[source,groovy,subs="+attributes"]
+----
+dependencies {
+  compile 'io.vertx:vertx-openapi:${maven.version}'
+}
+----
+
+== `OpenAPIContract`
+
+When using Vert.x OpenAPI you always start with creating an instance of {@link io.vertx.openapi.contract.OpenAPIContract} from your contract.
+
+[source,$lang]
+----
+{@link examples.ContractExamples#createContract}
+----
+
+NOTE: Due to security reasons this library is not downloading external references from your contract.
+In case your contract requires external resources, they must be downloaded upfront and also provided to the
+{@link io.vertx.openapi.contract.OpenAPIContract}.
+
+The example below shows a snippet from an example OpenAPI contract that includes a reference to an external resource and how to create an instance of {@link io.vertx.openapi.contract.OpenAPIContract}.
+
+[source,yaml]
+----
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      parameters:
+        - name: query
+          schema:
+            $ref: 'https://example.com/pet-components#/components/schemas/Query'
+----
+
+[source,$lang]
+----
+{@link examples.ContractExamples#createContractAdditionalFiles}
+----
+
+NOTE: During the instantiation of {@link io.vertx.openapi.contract.OpenAPIContract} the contract gets validated.
+In case your contract does not match the OpenAPI specification or uses features which are not yet supported an error is thrown.
+
+=== Path, Operation, Parameter
+
+The {@link io.vertx.openapi.contract.OpenAPIContract} interface offers methods to navigate to the {@link io.vertx.openapi.contract.Path},
+{@link io.vertx.openapi.contract.Operation} and {@link io.vertx.openapi.contract.Parameter} objects of the OpenAPI contract.
+
+[source,$lang]
+----
+{@link examples.ContractExamples#pathParameterOperationExample}
+----
+
+== Validation
+
+The {@link io.vertx.openapi.validation.RequestValidator} offers multiple _validate_ methods to validate incoming requests.
+
+[source,$lang]
+----
+{@link examples.ValidationExamples#createValidator}
+----
+
+The {@link io.vertx.openapi.validation.RequestValidator} also offers a signature of the _validate_ method that consumes a {@link io.vertx.openapi.validation.ValidatableRequest}.
+
+[source,$lang]
+----
+{@link examples.ValidationExamples#validatableRequest}
+----
+
+NOTE: The parameters in a {@link io.vertx.openapi.validation.ValidatableRequest} must be stored in a specific format depending on the style, location and if they are exploded or not, otherwise the {@link io.vertx.openapi.validation.RequestValidator} can't validate the request.
+How this format *MUST* look like is described in the JavaDoc of {@link io.vertx.openapi.validation.RequestValidator}.
