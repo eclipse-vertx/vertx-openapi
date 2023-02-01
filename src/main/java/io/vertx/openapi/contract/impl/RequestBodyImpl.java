@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
 import static java.lang.String.join;

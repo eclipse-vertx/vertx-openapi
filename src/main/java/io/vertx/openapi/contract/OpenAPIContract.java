@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.vertx.core.Future.failedFuture;
-import static io.vertx.openapi.Utils.readYamlOrJson;
+import static io.vertx.openapi.impl.Utils.readYamlOrJson;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static java.util.Collections.emptyMap;
 

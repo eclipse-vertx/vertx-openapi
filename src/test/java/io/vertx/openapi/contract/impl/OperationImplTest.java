@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;

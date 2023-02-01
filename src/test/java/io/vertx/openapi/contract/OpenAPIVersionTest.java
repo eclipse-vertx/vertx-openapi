@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static java.util.concurrent.TimeUnit.SECONDS;

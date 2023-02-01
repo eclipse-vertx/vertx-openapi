@@ -27,7 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.file.Path;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.impl.PathImpl.INVALID_CURLY_BRACES;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

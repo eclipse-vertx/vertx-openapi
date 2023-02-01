@@ -18,8 +18,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.Parameter;
 
-import static io.vertx.openapi.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createCantDecodeValue;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueFormat;
 

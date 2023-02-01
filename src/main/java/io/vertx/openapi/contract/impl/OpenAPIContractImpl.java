@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import static io.vertx.openapi.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
