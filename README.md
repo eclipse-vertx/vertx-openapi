@@ -5,7 +5,7 @@
 Please see the in-source asciidoc documentation or the main documentation on the web-site for a full description
 of this component:
 
-* [web-site docs](https://vertx.io/docs/vertx-openapi/java/)
+* [web-site docs](https://vertx.io/docs/vertx-web-openapi/java/)
 * [in-source docs](src/main/asciidoc/index.adoc)
 
 ## TODOs
