@@ -12,6 +12,7 @@
 
 package io.vertx.openapi.contract;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.http.HttpMethod;
 
@@ -56,4 +57,18 @@ public interface Operation extends OpenAPIObject {
    * @return request body of the operation, or null if no request body is defined
    */
   RequestBody getRequestBody();
+
+  /**
+   * @return the default response, or null if no default response is defined.
+   */
+  @Nullable
+  Response getDefaultResponse();
+
+  /**
+   * Returns the response to the passed response code or null.
+   *
+   * @param responseCode The related response code
+   * @return The related response, or null.
+   */
+  Response getResponse(int responseCode);
 }

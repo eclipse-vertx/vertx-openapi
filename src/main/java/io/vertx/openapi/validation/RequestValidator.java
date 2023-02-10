@@ -96,7 +96,8 @@ public interface RequestValidator {
   /**
    * Create a new {@link RequestValidator}.
    *
-   * @param vertx the related Vert.x instance
+   * @param vertx    the related Vert.x instance
+   * @param contract the related {@link OpenAPIContract}
    * @return an instance of {@link RequestValidator}.
    */
   static RequestValidator create(Vertx vertx, OpenAPIContract contract) {

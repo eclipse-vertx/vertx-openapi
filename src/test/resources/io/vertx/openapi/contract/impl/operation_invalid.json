@@ -31,5 +31,21 @@
         }
       ]
     }
+  },
+  "0001_No_Responses": {
+    "path": "/pets",
+    "method": "get",
+    "operationModel": {
+      "operationId": "getPets"
+    }
+  },
+  "0002_Empty_Responses": {
+    "path": "/pets",
+    "method": "get",
+    "operationModel": {
+      "operationId": "getPets",
+      "responses": {
+      }
+    }
   }
 }

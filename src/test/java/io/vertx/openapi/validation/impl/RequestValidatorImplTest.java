@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
@@ -85,6 +86,10 @@ class RequestValidatorImplTest {
   private RequestValidatorImpl validator;
 
   private OpenAPIContract contractSpy;
+
+  private static Parameter buildParam(String name, JsonObject schema, boolean required) {
+    return buildParam(name, PATH, SIMPLE, schema, required);
+  }
 
   private static Parameter buildParam(String name, Location in, Style style, JsonObject schema, boolean required) {
     return mockParameter(name, in, style, false, JsonSchema.of(schema), required);
@@ -150,11 +155,11 @@ class RequestValidatorImplTest {
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    OpenAPIContract.from(vertx, contract).onSuccess(c -> testContext.verify(() -> {
+    OpenAPIContract.from(vertx, contract).onSuccess(c -> {
       this.contractSpy = spy(c);
       this.validator = new RequestValidatorImpl(vertx, contractSpy);
       testContext.completeNow();
-    })).onFailure(testContext::failNow);
+    }).onFailure(testContext::failNow);
   }
 
   @Test
@@ -267,10 +272,6 @@ class RequestValidatorImplTest {
     })).onComplete(testContext.failing(validatedParams -> cp.flag()));
   }
 
-  private Parameter buildParam(String name, JsonObject schema, boolean required) {
-    return buildParam(name, PATH, SIMPLE, schema, required);
-  }
-
   @Test
   void testValidateParameter() {
     Parameter param = buildParam("p1", intSchema().toJson(), true);
@@ -296,7 +297,7 @@ class RequestValidatorImplTest {
     Parameter param = buildParam("p1", intSchema().toJson(), true);
     ValidatorException exception =
       assertThrows(ValidatorException.class, () -> validator.validateParameter(param, value));
-    String expectedMsg = "The related request does not contain the required path parameter p1";
+    String expectedMsg = "The related request / response does not contain the required path parameter p1";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
@@ -355,10 +356,10 @@ class RequestValidatorImplTest {
   }
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
-  @ValueSource(strings = {"plain/text", "foo/bar"})
+  @ValueSource(strings = {"text/plain", "foo/bar"})
   void testValidateBodyMediaTypeOrTransformerNull(String contentType) {
     RequestBody mockedRequestBody =
-      mockRequestBody(false, ImmutableMap.of(APPLICATION_JSON.toString(), mock(MediaType.class)));
+      mockRequestBody(false, ImmutableMap.of(TEXT_PLAIN.toString(), mock(MediaType.class)));
 
     ValidatableRequest mockedValidatableRequest = mock(ValidatableRequest.class);
     when(mockedValidatableRequest.getBody()).thenReturn(new RequestParameterImpl("foobar"));
@@ -383,7 +384,7 @@ class RequestValidatorImplTest {
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
     String expectedMsg =
-      "The value of the request body is invalid. Reason: " + reason;
+      "The value of the request / response body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 }

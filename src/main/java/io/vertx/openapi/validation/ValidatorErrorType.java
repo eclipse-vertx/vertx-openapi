@@ -17,7 +17,7 @@ import io.vertx.codegen.annotations.VertxGen;
 @VertxGen
 public enum ValidatorErrorType {
   /**
-   * A required parameter was not part of the request
+   * A required parameter was not part of the request or response
    */
   MISSING_REQUIRED_PARAMETER,
 
@@ -44,5 +44,10 @@ public enum ValidatorErrorType {
   /**
    * The request can't get validated due to missing operation information.
    */
-  MISSING_OPERATION
+  MISSING_OPERATION,
+
+  /**
+   * The response can't get validated due to missing response definition for the related status code information.
+   */
+  MISSING_RESPONSE
 }

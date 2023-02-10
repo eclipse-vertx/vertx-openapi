@@ -31,5 +31,9 @@ public interface RequestBody extends OpenAPIObject {
    */
   boolean isRequired();
 
+  /**
+   * @return a map containing descriptions of potential request payloads. The key is a media type or media
+   * type range and the value describes it.
+   */
   Map<String, MediaType> getContent();
 }

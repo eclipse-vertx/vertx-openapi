@@ -157,7 +157,7 @@ class RequestUtilsTest extends HttpServerTestBase {
       assertThat(params.getQuery().get(parameter.getName()).getString()).isEqualTo(expected);
       testContext.completeNow();
     }, mockOperation(parameter), testContext).compose(
-        v -> createRequest(HttpMethod.GET, "?" + query).map(req -> req.send()))
+        v -> createRequest(HttpMethod.GET, "?" + query).map(HttpClientRequest::send))
       .onFailure(testContext::failNow);
   }
 

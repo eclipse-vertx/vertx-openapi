@@ -68,7 +68,7 @@ class RequestBodyImplTest {
         "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with empty property \"content\""),
       Arguments.of("0001_RequestBody_With_Empty_Content", INVALID_SPEC,
         "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with empty property \"content\""),
-      Arguments.of("0002_RequestBody_With_Content_Type_Plain_Text", UNSUPPORTED_FEATURE,
+      Arguments.of("0002_RequestBody_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
         "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a request body with an unsupported media type. Supported: application/json")
     );
   }

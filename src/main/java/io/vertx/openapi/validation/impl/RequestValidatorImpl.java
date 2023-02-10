@@ -28,7 +28,6 @@ import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
 import io.vertx.openapi.validation.ValidatedRequest;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.transformer.ApplicationJsonTransformer;
 import io.vertx.openapi.validation.transformer.BodyTransformer;
 import io.vertx.openapi.validation.transformer.FormTransformer;
 import io.vertx.openapi.validation.transformer.LabelTransformer;
@@ -40,7 +39,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.LABEL;
@@ -51,28 +49,19 @@ import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_F
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueBody;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
-import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
 import static io.vertx.openapi.validation.ValidatorException.createOperationNotFound;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
 
-public class RequestValidatorImpl implements RequestValidator {
-  private final Vertx vertx;
-  private final OpenAPIContract contract;
+public class RequestValidatorImpl extends BaseValidator implements RequestValidator {
   private final Map<Style, ParameterTransformer> parameterTransformers;
 
-  private final Map<String, BodyTransformer> bodyTransformers;
-
   public RequestValidatorImpl(Vertx vertx, OpenAPIContract contract) {
-    this.vertx = vertx;
-    this.contract = contract;
+    super(vertx, contract);
     parameterTransformers = new EnumMap<>(Style.class);
     parameterTransformers.put(SIMPLE, new SimpleTransformer());
     parameterTransformers.put(LABEL, new LabelTransformer());
     parameterTransformers.put(MATRIX, new MatrixTransformer());
     parameterTransformers.put(FORM, new FormTransformer());
-
-    bodyTransformers = new HashMap<>();
-    bodyTransformers.put(APPLICATION_JSON.toString(), new ApplicationJsonTransformer());
   }
 
   @Override
@@ -86,22 +75,13 @@ public class RequestValidatorImpl implements RequestValidator {
 
   @Override
   public Future<ValidatedRequest> validate(HttpServerRequest request, String operationId) {
-    Operation operation = contract.operation(operationId);
-    if (operation == null) {
-      return failedFuture(createOperationIdInvalid(operationId));
-    }
-    return ValidatableRequest.of(request, operation)
-      .compose(validatableRequest -> validate(validatableRequest, operationId));
+    return getOperation(operationId).compose(op -> ValidatableRequest.of(request, op))
+      .compose(params -> validate(params, operationId));
   }
 
   @Override
   public Future<ValidatedRequest> validate(ValidatableRequest request, String operationId) {
-    Operation operation = contract.operation(operationId);
-    if (operation == null) {
-      return failedFuture(createOperationIdInvalid(operationId));
-    }
-
-    return vertx.executeBlocking(p -> {
+    return getOperation(operationId).compose(operation -> vertx.executeBlocking(p -> {
       Map<String, RequestParameter> cookies = new HashMap<>(request.getCookies().size());
       Map<String, RequestParameter> headers = new HashMap<>(request.getHeaders().size());
       Map<String, RequestParameter> path = new HashMap<>(request.getPathParameters().size());
@@ -125,7 +105,7 @@ public class RequestValidatorImpl implements RequestValidator {
 
       RequestParameter body = validateBody(operation.getRequestBody(), request);
       p.complete(new ValidatedRequestImpl(cookies, headers, path, query, body));
-    });
+    }));
   }
 
   // VisibleForTesting
