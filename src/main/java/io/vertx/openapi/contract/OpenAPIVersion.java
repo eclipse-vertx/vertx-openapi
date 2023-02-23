@@ -28,6 +28,7 @@ import java.util.Optional;
 
 import static io.vertx.json.schema.Draft.DRAFT202012;
 import static io.vertx.json.schema.Draft.DRAFT4;
+import static io.vertx.json.schema.OutputFormat.Basic;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedVersion;
 
@@ -76,7 +77,7 @@ public enum OpenAPIVersion {
   }
 
   public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
-    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri);
+    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri).setOutputFormat(Basic);
     return vertx.executeBlocking(p -> {
       SchemaRepository repo = SchemaRepository.create(opts).preloadMetaSchema(vertx.fileSystem());
       for (String ref : schemaFiles) {

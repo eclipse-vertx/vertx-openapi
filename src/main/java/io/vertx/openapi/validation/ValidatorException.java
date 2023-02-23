@@ -12,12 +12,11 @@
 
 package io.vertx.openapi.validation;
 
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.json.schema.OutputUnit;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.Parameter;
 
-import java.util.Objects;
+import java.util.Optional;
 
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
@@ -30,20 +29,13 @@ public class ValidatorException extends RuntimeException {
 
   private final ValidatorErrorType type;
 
-  private final OutputUnit outputUnit;
-
   public ValidatorException(String message, ValidatorErrorType type) {
     this(message, type, null);
   }
 
   public ValidatorException(String message, ValidatorErrorType type, Throwable cause) {
-    this(message, type, null, cause);
-  }
-
-  public ValidatorException(String message, ValidatorErrorType type, OutputUnit outputUnit, Throwable cause) {
     super(message, cause);
     this.type = type;
-    this.outputUnit = outputUnit;
   }
 
   public static ValidatorException createMissingRequiredParameter(Parameter parameter) {
@@ -71,15 +63,15 @@ public class ValidatorException extends RuntimeException {
     return new ValidatorException(msg, ILLEGAL_VALUE);
   }
 
-  public static ValidatorException createInvalidValue(Parameter parameter, OutputUnit reason) {
+  public static ValidatorException createInvalidValue(Parameter parameter, JsonSchemaValidationException cause) {
     String msg = String.format("The value of %s parameter %s is invalid. Reason: %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), extractErrorMsg(reason));
-    return new ValidatorException(msg, INVALID_VALUE, reason, null);
+      parameter.getIn().name().toLowerCase(), parameter.getName(), extractReason(cause));
+    return new ValidatorException(msg, INVALID_VALUE, cause);
   }
 
-  public static ValidatorException createInvalidValueBody(OutputUnit reason) {
-    String msg = String.format("The value of the request body is invalid. Reason: %s", extractErrorMsg(reason));
-    return new ValidatorException(msg, INVALID_VALUE, reason, null);
+  public static ValidatorException createInvalidValueBody(JsonSchemaValidationException cause) {
+    String msg = String.format("The value of the request body is invalid. Reason: %s", extractReason(cause));
+    return new ValidatorException(msg, INVALID_VALUE, cause);
   }
 
   public static ValidatorException createOperationIdInvalid(String operationId) {
@@ -92,22 +84,19 @@ public class ValidatorException extends RuntimeException {
     return new ValidatorException(msg, MISSING_OPERATION);
   }
 
-  private static String extractErrorMsg(OutputUnit outputUnit) {
-    if (outputUnit.getError() != null) {
-      return outputUnit.getError();
+  static String extractReason(JsonSchemaValidationException e) {
+    // Workaround until JsonSchemaValidationException provides instanceLocation
+    String location =
+      Optional.ofNullable(e.getStackTrace()).map(elements -> elements[0]).map(StackTraceElement::getMethodName)
+        .map(s -> s.substring(1, s.length() - 1)).orElse(null);
+    if (location == null) {
+      int hashTag = e.location().indexOf('#');
+      location = hashTag < 0 ? e.location() : e.location().substring(hashTag);
     }
-    return outputUnit.getErrors().stream().map(OutputUnit::getError).filter(Objects::nonNull).findFirst().orElse("n/a");
+    return e.getMessage() + (location.length() > 1 ? " at " + location : "");
   }
 
   public ValidatorErrorType type() {
     return type;
-  }
-
-  /**
-   * @return the related OutputUnit with the reason in case the Exception is of type {@link ValidatorErrorType#INVALID_VALUE}
-   */
-  @Nullable
-  public OutputUnit getReason() {
-    return outputUnit;
   }
 }

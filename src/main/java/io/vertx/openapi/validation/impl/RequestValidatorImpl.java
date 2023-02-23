@@ -15,6 +15,7 @@ package io.vertx.openapi.validation.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
@@ -143,10 +144,13 @@ public class RequestValidatorImpl implements RequestValidator {
     }
     Object transformedValue = transformer.transform(parameter, value.getString());
     OutputUnit result = contract.getSchemaRepository().validator(parameter.getSchema()).validate(transformedValue);
-    if (Boolean.TRUE.equals(result.getValid())) {
+
+    try {
+      result.checkValidity();
       return new RequestParameterImpl(transformedValue);
+    } catch (JsonSchemaValidationException e) {
+      throw createInvalidValue(parameter, e);
     }
-    throw createInvalidValue(parameter, result);
   }
 
   // VisibleForTesting
@@ -171,9 +175,12 @@ public class RequestValidatorImpl implements RequestValidator {
     }
     Object transformedValue = transformer.transform(mediaType, request.getBody().getBuffer());
     OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
-    if (Boolean.TRUE.equals(result.getValid())) {
+
+    try {
+      result.checkValidity();
       return new RequestParameterImpl(transformedValue);
+    } catch (JsonSchemaValidationException e) {
+      throw createInvalidValueBody(e);
     }
-    throw createInvalidValueBody(result);
   }
 }

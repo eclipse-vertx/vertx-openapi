@@ -18,7 +18,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.OutputUnit;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
@@ -286,7 +285,6 @@ class RequestValidatorImplTest {
       assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("3")));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected string";
-    assertThat(exception.getReason()).isInstanceOf(OutputUnit.class);
     String expectedMsg =
       "The value of path parameter p1 is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
@@ -384,7 +382,6 @@ class RequestValidatorImplTest {
       assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
-    assertThat(exception.getReason()).isInstanceOf(OutputUnit.class);
     String expectedMsg =
       "The value of the request body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
