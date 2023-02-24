@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.ValidationException;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -107,7 +107,7 @@ class OpenAPIContractTest {
     OpenAPIContract.from(vertx, invalidContractJson).onComplete(testContext.failing(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(OpenAPIContractException.class);
       assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid.");
-      assertThat(t).hasCauseThat().isInstanceOf(ValidationException.class);
+      assertThat(t).hasCauseThat().isInstanceOf(JsonSchemaValidationException.class);
       testContext.completeNow();
     })));
   }
