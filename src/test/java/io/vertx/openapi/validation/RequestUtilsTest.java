@@ -21,6 +21,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaType;
+import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.Location;
@@ -207,15 +208,6 @@ class RequestUtilsTest extends HttpServerTestBase {
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testExtractBody(VertxTestContext testContext) {
-    MediaType mockedMediaType = mock(MediaType.class);
-    when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
-
-    RequestBody mockedRequestBody = mock(RequestBody.class);
-    when(mockedRequestBody.isRequired()).thenReturn(true);
-    when(mockedRequestBody.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
-
-    Operation mockedOperation = mockOperation(emptyList());
-    when(mockedOperation.getRequestBody()).thenReturn(mockedRequestBody);
 
     JsonObject bodyJson = new JsonObject().put("foo", "bar");
 
@@ -224,7 +216,7 @@ class RequestUtilsTest extends HttpServerTestBase {
       assertThat(params.getBody().isBuffer()).isTrue();
       assertThat(params.getBody().getBuffer().toJsonObject()).isEqualTo(bodyJson);
       testContext.completeNow();
-    }, mockedOperation, testContext).compose(v -> createRequest(HttpMethod.POST, ""))
+    }, mockOperationWithSimpleRequestBody(), testContext).compose(v -> createRequest(HttpMethod.POST, ""))
       .map(req -> req.putHeader(HttpHeaderNames.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
         .send(bodyJson.toBuffer()))
       .onFailure(testContext::failNow);
@@ -234,6 +226,42 @@ class RequestUtilsTest extends HttpServerTestBase {
   @MethodSource
   void testFindPathSegment(String templatePath, String parameterName, int expected) {
     assertThat(RequestUtils.findPathSegment(templatePath, parameterName)).isEqualTo(expected);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testBodySupplier(VertxTestContext testContext) {
+    Checkpoint firstRead = testContext.checkpoint();
+    Checkpoint secondRead = testContext.checkpoint();
+    Checkpoint thirdRead = testContext.checkpoint();
+
+    Operation operation = mockOperationWithSimpleRequestBody();
+    JsonObject firstBody = new JsonObject().put("foo", "bar");
+    JsonObject secondBody = new JsonObject().put("foo", "bar");
+
+    createServer(request -> RequestUtils.extract(request, operation).compose(validatableRequest -> {
+      testContext.verify(() -> {
+        assertThat(validatableRequest.getBody().getBuffer().toJsonObject()).isEqualTo(firstBody);
+        firstRead.flag();
+      });
+      return RequestUtils.extract(request, operation).recover(t -> {
+        testContext.verify(() -> {
+          assertThat(t).isInstanceOf(IllegalStateException.class);
+          assertThat(t).hasMessageThat().isEqualTo("Request has already been read");
+          secondRead.flag();
+        });
+        return RequestUtils.extract(request, operation, () -> Future.succeededFuture(secondBody.toBuffer()));
+      });
+    }).onSuccess(validatableRequest -> {
+      testContext.verify(() -> {
+        assertThat(validatableRequest.getBody().getBuffer().toJsonObject()).isEqualTo(secondBody);
+        thirdRead.flag();
+      });
+      request.response().send().onFailure(testContext::failNow);
+    })).compose(v -> createRequest(HttpMethod.POST, ""))
+      .map(req -> req.putHeader(HttpHeaderNames.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
+        .send(firstBody.toBuffer()))
+      .onFailure(testContext::failNow);
   }
 
   private Future<Void> createValidationHandler(Consumer<ValidatableRequest> verifier, Operation operation,
@@ -254,5 +282,19 @@ class RequestUtilsTest extends HttpServerTestBase {
     Operation op = mock(Operation.class);
     when(op.getParameters()).thenReturn(parameters);
     return op;
+  }
+
+  private Operation mockOperationWithSimpleRequestBody() {
+    MediaType mockedMediaType = mock(MediaType.class);
+    when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
+
+    RequestBody mockedRequestBody = mock(RequestBody.class);
+    when(mockedRequestBody.isRequired()).thenReturn(true);
+    when(mockedRequestBody.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
+
+    Operation mockedOperation = mockOperation(emptyList());
+    when(mockedOperation.getRequestBody()).thenReturn(mockedRequestBody);
+
+    return mockedOperation;
   }
 }

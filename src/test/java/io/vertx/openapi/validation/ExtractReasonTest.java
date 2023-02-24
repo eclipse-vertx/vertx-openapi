@@ -117,16 +117,14 @@ class ExtractReasonTest extends HttpServerTestBase {
   private Future<Void> createValidationHandler(Consumer<ValidatorException> validatorException,
     VertxTestContext testContext) {
 
-    return createServer(request -> {
-      validator.validate(request).onSuccess(v -> testContext.failNow("A validation error is expected"))
+    return createServer(
+      request -> validator.validate(request).onSuccess(v -> testContext.failNow("A validation error is expected"))
         .onFailure(t -> testContext.verify(() -> {
           assertThat(t).isInstanceOf(ValidatorException.class);
           ValidatorException exception = (ValidatorException) t;
           assertThat(exception.type()).isEqualTo(INVALID_VALUE);
           validatorException.accept(exception);
           testContext.completeNow();
-        }));
-      request.end();
-    });
+        })));
   }
 }

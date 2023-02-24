@@ -13,6 +13,7 @@
 package io.vertx.openapi.validation;
 
 import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
@@ -51,6 +52,20 @@ public class RequestUtils {
    * @return A {@link Future} holding the ValidatableRequest.
    */
   public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation) {
+    return extract(request, operation, request::body);
+  }
+
+  /**
+   * Like {@link #extract(HttpServerRequest, Operation)}, but offers to pass a supplier fpr the body. This is
+   * helpful in case that the request has already been read.
+   *
+   * @param request      the incoming request.
+   * @param operation    the operation of the related request.
+   * @param bodySupplier the body supplier which can help in case that the request has already been read.
+   * @return A {@link Future} holding the ValidatableRequest.
+   */
+  public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation,
+    Supplier<Future<Buffer>> bodySupplier) {
     Map<String, RequestParameter> cookies = new HashMap<>();
     Map<String, RequestParameter> headers = new HashMap<>();
     Map<String, RequestParameter> pathParams = new HashMap<>();
@@ -78,10 +93,14 @@ public class RequestUtils {
     }
 
     String contentType = request.headers().get(HttpHeaders.CONTENT_TYPE);
-    return request.body().map(buffer -> {
-      RequestParameter body = new RequestParameterImpl(buffer);
-      return new ValidatableRequestImpl(cookies, headers, pathParams, query, body, contentType);
-    });
+    try {
+      return bodySupplier.get().map(buffer -> {
+        RequestParameter body = new RequestParameterImpl(buffer);
+        return new ValidatableRequestImpl(cookies, headers, pathParams, query, body, contentType);
+      });
+    } catch (RuntimeException e) {
+      return Future.failedFuture(e);
+    }
   }
 
   private static RequestParameter extractCookie(HttpServerRequest request, Parameter parameter) {
