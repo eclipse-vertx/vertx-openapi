@@ -34,7 +34,7 @@ class PathFinder {
    * <p>
    * [2, (/v1/users, /v1/friends) ]
    */
-  private final Map<Integer, List<Path>> segmentsWithoutTemplating = new HashMap<>();
+  private final Map<Integer, List<PathImpl>> segmentsWithoutTemplating = new HashMap<>();
 
   /**
    * /v1/user/{userid}/name
@@ -51,9 +51,9 @@ class PathFinder {
    */
   private final Map<Integer, Map<Path, String[]>> segmentsWithTemplating = new HashMap<>();
 
-  public PathFinder(List<Path> paths) {
-    for (Path path : paths) {
-      String[] segments = path.getName().substring(1).split("/");
+  public PathFinder(List<PathImpl> paths) {
+    for (PathImpl path : paths) {
+      String[] segments = path.getAbsolutePath().substring(1).split("/");
       if (path.getName().contains("{")) {
         segmentsWithTemplating.computeIfAbsent(segments.length, i -> new HashMap<>()).put(path, segments);
       } else {
@@ -65,8 +65,8 @@ class PathFinder {
   public Path findPath(String path) {
     String[] segments = path.substring(1).split("/");
 
-    for (Path p : segmentsWithoutTemplating.getOrDefault(segments.length, emptyList())) {
-      if (p.getName().equals(path)) {
+    for (PathImpl p : segmentsWithoutTemplating.getOrDefault(segments.length, emptyList())) {
+      if (p.getAbsolutePath().equals(path)) {
         return p;
       }
     }

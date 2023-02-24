@@ -47,7 +47,18 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath) {
-    return readYamlOrJson(vertx, unresolvedContractPath).compose(path -> from(vertx, path, emptyMap()));
+    return from(vertx, unresolvedContractPath, (ContractOptions) null);
+  }
+
+  /**
+   * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
+   *
+   * @param vertx                  The related Vert.x instance.
+   * @param unresolvedContractPath The path to the unresolved contract.
+   * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
+   */
+  static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath, ContractOptions options) {
+    return readYamlOrJson(vertx, unresolvedContractPath).compose(json -> from(vertx, json, emptyMap(), options));
   }
 
   /**
@@ -58,7 +69,18 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract) {
-    return from(vertx, unresolvedContract, emptyMap());
+    return from(vertx, unresolvedContract, (ContractOptions) null);
+  }
+
+  /**
+   * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
+   *
+   * @param vertx              The related Vert.x instance.
+   * @param unresolvedContract The unresolved contract.
+   * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
+   */
+  static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract, ContractOptions options) {
+    return from(vertx, unresolvedContract, emptyMap(), options);
   }
 
   /**
@@ -74,6 +96,22 @@ public interface OpenAPIContract {
    */
   static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath,
     Map<String, String> additionalContractFiles) {
+    return from(vertx, unresolvedContractPath, additionalContractFiles, null);
+  }
+
+  /**
+   * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
+   * <p>
+   * This method can be used in case that the contract is split into several files. These files can be passed in a
+   * Map that has the reference as key and the path to the file as value.
+   *
+   * @param vertx                   The related Vert.x instance.
+   * @param unresolvedContractPath  The path to the unresolved contract.
+   * @param additionalContractFiles The additional contract files
+   * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
+   */
+  static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath,
+    Map<String, String> additionalContractFiles, ContractOptions options) {
 
     Map<String, Future<JsonObject>> jsonFilesFuture = new HashMap<>();
     jsonFilesFuture.put(unresolvedContractPath, readYamlOrJson(vertx, unresolvedContractPath));
@@ -82,7 +120,7 @@ public interface OpenAPIContract {
     return CompositeFuture.all(new ArrayList<>(jsonFilesFuture.values())).compose(compFut -> {
       Map<String, JsonObject> resolvedFiles = new HashMap<>();
       additionalContractFiles.keySet().forEach(key -> resolvedFiles.put(key, jsonFilesFuture.get(key).result()));
-      return from(vertx, jsonFilesFuture.get(unresolvedContractPath).result(), resolvedFiles);
+      return from(vertx, jsonFilesFuture.get(unresolvedContractPath).result(), resolvedFiles, options);
     });
   }
 
@@ -99,6 +137,22 @@ public interface OpenAPIContract {
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
     Map<String, JsonObject> additionalContractFiles) {
+    return from(vertx, unresolvedContract, additionalContractFiles, null);
+  }
+
+  /**
+   * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
+   * <p>
+   * This method can be used in case that the contract is split into several files. These files can be passed in a
+   * Map that has the reference as key and the path to the file as value.
+   *
+   * @param vertx                   The related Vert.x instance.
+   * @param unresolvedContract      The unresolved contract.
+   * @param additionalContractFiles The additional contract files
+   * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
+   */
+  static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
+    Map<String, JsonObject> additionalContractFiles, ContractOptions options) {
     if (unresolvedContract == null) {
       return failedFuture(createInvalidContract("Spec must not be null"));
     }
@@ -134,7 +188,7 @@ public interface OpenAPIContract {
         } catch (JsonSchemaValidationException e) {
           return failedFuture(createInvalidContract(null, e));
         }
-      }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
+      }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository, options))
     ).onComplete(promise);
 
     return promise.future();

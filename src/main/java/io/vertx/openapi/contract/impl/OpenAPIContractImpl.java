@@ -16,6 +16,7 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
+import io.vertx.openapi.contract.ContractOptions;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
 import io.vertx.openapi.contract.Operation;
@@ -24,10 +25,11 @@ import io.vertx.openapi.contract.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -51,16 +53,24 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final PathFinder pathFinder;
 
-  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
+  // VisibleForTesting
+  final String basePath;
+
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository,
+    ContractOptions contractOptions) {
+    this.basePath = Optional.ofNullable(contractOptions).map(ContractOptions::getBasePath).orElse("");
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
-      .map(pathEntry -> new PathImpl(pathEntry.getKey(), (JsonObject) pathEntry.getValue())).collect(toList());
-    this.paths = unmodifiableList(applyMountOrder(unsortedPaths));
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue()))
+      .collect(toList());
+    List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
+    this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
       Operation::getOperationId, operation -> operation));
-    this.pathFinder = new PathFinder(paths);
+    // It is important that PathFinder gets the ordered Paths
+    this.pathFinder = new PathFinder(sortedPaths);
   }
 
   /**
