@@ -20,6 +20,11 @@ import java.util.Map;
 public interface ValidatedRequest {
 
   /**
+   * @return the cookie parameters.
+   */
+  Map<String, RequestParameter> getCookies();
+
+  /**
    * @return the path parameters.
    */
   Map<String, RequestParameter> getPathParameters();
@@ -28,11 +33,6 @@ public interface ValidatedRequest {
    * @return the query parameters.
    */
   Map<String, RequestParameter> getQuery();
-
-  /**
-   * @return the cookie parameters.
-   */
-  Map<String, RequestParameter> getCookies();
 
   /**
    * @return the header parameters.

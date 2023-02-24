@@ -16,30 +16,38 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.Response;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.contract.Location.QUERY;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class OperationImpl implements Operation {
   private static final Logger LOG = LoggerFactory.getLogger(OperationImpl.class);
 
+  private static final Pattern RESPONSE_CODE_PATTERN = Pattern.compile("\\d\\d\\d");
+
   private static final String KEY_OPERATION_ID = "operationId";
   private static final String KEY_TAGS = "tags";
   private static final String KEY_PARAMETERS = "parameters";
-
   private static final String KEY_REQUEST_BODY = "requestBody";
+  private static final String KEY_RESPONSES = "responses";
 
   private final String operationId;
   private final String path;
@@ -48,6 +56,8 @@ public class OperationImpl implements Operation {
   private final List<Parameter> parameters;
   private final RequestBody requestBody;
   private final List<String> tags;
+  private final Response defaultResponse;
+  private final Map<Integer, Response> responses;
 
   public OperationImpl(String path, HttpMethod method, JsonObject operationModel, List<Parameter> pathParameters) {
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
@@ -81,7 +91,7 @@ public class OperationImpl implements Operation {
     if (explodedQueryParams > 1) {
       String msg =
         "Found multiple exploded query parameters of style form with type object in operation: " + operationId;
-      throw OpenAPIContractException.createInvalidContract(msg);
+      throw createInvalidContract(msg);
     }
 
     this.parameters = unmodifiableList(operationParameters);
@@ -92,6 +102,17 @@ public class OperationImpl implements Operation {
     } else {
       this.requestBody = new RequestBodyImpl(requestBodyJson, operationId);
     }
+
+    JsonObject responsesJson = operationModel.getJsonObject(KEY_RESPONSES, EMPTY_JSON_OBJECT);
+    if (responsesJson.isEmpty()) {
+      String msg = "No responses were found in operation: " + operationId;
+      throw createInvalidContract(msg);
+    }
+    defaultResponse = responsesJson.stream().filter(entry -> "default".equalsIgnoreCase(entry.getKey())).findFirst()
+      .map(entry -> new ResponseImpl((JsonObject) entry.getValue(), operationId)).orElse(null);
+    responses =
+      unmodifiableMap(responsesJson.fieldNames().stream().filter(RESPONSE_CODE_PATTERN.asPredicate())
+        .collect(toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
   }
 
   @Override
@@ -127,5 +148,15 @@ public class OperationImpl implements Operation {
   @Override
   public RequestBody getRequestBody() {
     return requestBody;
+  }
+
+  @Override
+  public Response getDefaultResponse() {
+    return defaultResponse;
+  }
+
+  @Override
+  public Response getResponse(int responseCode) {
+    return responses.get(responseCode);
   }
 }

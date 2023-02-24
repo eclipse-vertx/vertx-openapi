@@ -17,7 +17,29 @@
             "type": "string"
           }
         }
-      ]
+      ],
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "200": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "0001_Filter_Path_Parameters": {
@@ -50,7 +72,19 @@
             "type": "string"
           }
         }
-      ]
+      ],
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "0002_Do_Not_Filter_Path_Parameters": {
@@ -83,7 +117,19 @@
             "type": "string"
           }
         }
-      ]
+      ],
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "0003_Test_RequestBody": {
@@ -102,6 +148,18 @@
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      },
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
             }
           }
         }

@@ -59,15 +59,13 @@ class UtilsTest {
   @Test
   public void testNumericYamlKeysAsString(Vertx vertx, VertxTestContext testContext) {
     Utils.readYamlOrJson(vertx, "quirks/test.yaml")
-      .onSuccess(json -> {
-        testContext.verify(() -> {
-          assertThat(json).isNotNull();
-          for (Object key : json.getMap().keySet()) {
-            assertThat(key).isInstanceOf(String.class);
-          }
-          testContext.completeNow();
-        });
-      })
+      .onSuccess(json -> testContext.verify(() -> {
+        assertThat(json).isNotNull();
+        for (Object key : json.getMap().keySet()) {
+          assertThat(key).isInstanceOf(String.class);
+        }
+        testContext.completeNow();
+      }))
       .onFailure(testContext::failNow);
   }
 

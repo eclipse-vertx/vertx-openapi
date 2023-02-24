@@ -5,9 +5,9 @@
     "content": {
     }
   },
-  "0002_RequestBody_With_Content_Type_Plain_Text": {
+  "0002_RequestBody_With_Content_Type_Text_Plain": {
     "content": {
-      "plain/text": {
+      "text/plain": {
         "schema": {
           "type": "string"
         }

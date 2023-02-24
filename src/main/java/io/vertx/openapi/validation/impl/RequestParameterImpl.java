@@ -13,10 +13,11 @@
 package io.vertx.openapi.validation.impl;
 
 import io.vertx.openapi.validation.RequestParameter;
+import io.vertx.openapi.validation.ResponseParameter;
 
 import java.util.Objects;
 
-public class RequestParameterImpl implements RequestParameter {
+public class RequestParameterImpl implements RequestParameter, ResponseParameter {
 
   private final Object value;
 

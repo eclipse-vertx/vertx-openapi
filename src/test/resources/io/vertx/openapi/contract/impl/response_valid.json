@@ -1,0 +1,50 @@
+{
+  "0000_Test_Getters_No_Headers": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "0001_Test_Getters_With_Headers": {
+    "headers": {
+      "myHeader": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "0002_Test_Getters_With_Headers_Ignore_Content_Type_Header": {
+    "headers": {
+      "myHeader": {
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "Content-Type": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "0003_Test_Getters_No_Headers_No_Content": {
+  }
+}

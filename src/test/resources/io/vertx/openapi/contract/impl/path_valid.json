@@ -17,7 +17,19 @@
               "type": "string"
             }
           }
-        ]
+        ],
+        "responses": {
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
       },
       "parameters": [
         {

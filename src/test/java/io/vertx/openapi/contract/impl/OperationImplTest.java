@@ -35,10 +35,10 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -62,7 +62,11 @@ class OperationImplTest {
   private static Stream<Arguments> provideErrorScenarios() {
     return Stream.of(
       Arguments.of("0000_Multiple_Exploded_Form_Parameters_In_Query_With_Content_Object", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type object in operation: showPetById")
+        "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type object in operation: showPetById"),
+      Arguments.of("0001_No_Responses", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: No responses were found in operation: getPets"),
+      Arguments.of("0002_Empty_Responses", INVALID_SPEC,
+        "The passed OpenAPI contract is invalid: No responses were found in operation: getPets")
     );
   }
 
@@ -114,6 +118,9 @@ class OperationImplTest {
     assertThat(params).hasSize(1);
     assertThat(params.get(0).getName()).isEqualTo("petId");
     assertThat(params.get(0).getIn()).isEqualTo(PATH);
+
+    assertThat(operation.getDefaultResponse()).isNotNull();
+    assertThat(operation.getResponse(200)).isNotNull();
   }
 
   @Test

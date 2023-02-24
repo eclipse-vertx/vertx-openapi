@@ -23,6 +23,7 @@ import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMAT;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_RESPONSE;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
 public class ValidatorException extends RuntimeException {
@@ -39,7 +40,7 @@ public class ValidatorException extends RuntimeException {
   }
 
   public static ValidatorException createMissingRequiredParameter(Parameter parameter) {
-    String msg = String.format("The related request does not contain the required %s parameter %s",
+    String msg = String.format("The related request / response does not contain the required %s parameter %s",
       parameter.getIn().name().toLowerCase(), parameter.getName());
     return new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
   }
@@ -70,7 +71,7 @@ public class ValidatorException extends RuntimeException {
   }
 
   public static ValidatorException createInvalidValueBody(JsonSchemaValidationException cause) {
-    String msg = String.format("The value of the request body is invalid. Reason: %s", extractReason(cause));
+    String msg = String.format("The value of the request / response body is invalid. Reason: %s", extractReason(cause));
     return new ValidatorException(msg, INVALID_VALUE, cause);
   }
 
@@ -82,6 +83,11 @@ public class ValidatorException extends RuntimeException {
   public static ValidatorException createOperationNotFound(HttpMethod method, String path) {
     String msg = String.format("No operation found for the request: %s %s", method.name(), path);
     return new ValidatorException(msg, MISSING_OPERATION);
+  }
+
+  public static ValidatorException createResponseNotFound(int statusCode, String operation) {
+    String msg = String.format("No response defined for status code %s in Operation %s", statusCode, operation);
+    return new ValidatorException(msg, MISSING_RESPONSE);
   }
 
   static String extractReason(JsonSchemaValidationException e) {

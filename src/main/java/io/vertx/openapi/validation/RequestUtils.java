@@ -149,7 +149,7 @@ public class RequestUtils {
     return (int) templatePath.subSequence(0, idx).chars().filter(c -> c == '/').count();
   }
 
-  private static String decodeUrl(String encoded) {
+  static String decodeUrl(String encoded) {
     try {
       return encoded == null ? null : URLDecoder.decode(encoded, StandardCharsets.UTF_8.name());
     } catch (Exception e) {

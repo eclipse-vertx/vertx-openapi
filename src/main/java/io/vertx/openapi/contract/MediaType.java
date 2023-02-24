@@ -15,6 +15,11 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.json.schema.JsonSchema;
 
+import java.util.List;
+
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static java.util.Collections.singletonList;
+
 /**
  * This interface represents the most important attributes of an OpenAPI Operation.
  * <br>
@@ -24,6 +29,12 @@ import io.vertx.json.schema.JsonSchema;
  */
 @VertxGen
 public interface MediaType extends OpenAPIObject {
+
+  List<String> SUPPORTED_MEDIA_TYPES = singletonList(APPLICATION_JSON.toString());
+
+  static boolean isMediaTypeSupported(String type) {
+    return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase());
+  }
 
   /**
    * @return the schema defining the content of the request.

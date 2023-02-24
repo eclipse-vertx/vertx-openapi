@@ -13,9 +13,14 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.validation.RequestValidator;
+import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
+import io.vertx.openapi.validation.ValidatableResponse;
+
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 
 public class ValidationExamples {
 
@@ -58,6 +63,27 @@ public class ValidationExamples {
       validatedRequest.getHeaders(); // returns the header
       // ..
       // ..
+    });
+  }
+
+  private void validatableResponse(Vertx vertx) {
+    OpenAPIContract contract = getContract();
+    ResponseValidator validator = ResponseValidator.create(vertx, contract);
+
+    JsonObject cat = new JsonObject().put("name", "foo");
+    ValidatableResponse response =
+      ValidatableResponse.create(200, cat.toBuffer(), APPLICATION_JSON.toString());
+
+    vertx.createHttpServer().requestHandler(httpServerRequest -> {
+      validator.validate(response, "yourOperationId")
+        .onSuccess(validatedResponse -> {
+          validatedResponse.getBody(); // returns the body
+          validatedResponse.getHeaders(); // returns the header
+          // ..
+          // ..
+          // send back the validated response
+          validatedResponse.send(httpServerRequest.response());
+        });
     });
   }
 }

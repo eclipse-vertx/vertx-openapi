@@ -31,7 +31,7 @@ class ValidatorExceptionTest {
   @Test
   void testCreateMissingRequiredParameter() {
     ValidatorException exception = ValidatorException.createMissingRequiredParameter(DUMMY_PARAMETER);
-    String expectedMsg = "The related request does not contain the required path parameter dummy";
+    String expectedMsg = "The related request / response does not contain the required path parameter dummy";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_REQUIRED_PARAMETER);
   }
@@ -74,5 +74,13 @@ class ValidatorExceptionTest {
     String expectedMsg = "No operation found for the request: GET /my/path";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_OPERATION);
+  }
+
+  @Test
+  void testCreateResponseNotFound() {
+    ValidatorException exception = ValidatorException.createResponseNotFound(1337, "getPets");
+    String expectedMsg = "No response defined for status code 1337 in Operation getPets";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+    assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_RESPONSE);
   }
 }
