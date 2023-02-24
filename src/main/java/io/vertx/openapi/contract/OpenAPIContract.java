@@ -22,6 +22,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import static io.vertx.core.Future.failedFuture;
-import static io.vertx.openapi.impl.Utils.readYamlOrJson;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.impl.Utils.readYamlOrJson;
 import static java.util.Collections.emptyMap;
 
 @VertxGen
@@ -114,11 +115,12 @@ public interface OpenAPIContract {
         // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
         //  method and reused below.
         Future<?> validationFuture = version.validate(vertx, repository, additionalContractFiles.get(ref)).map(res -> {
-          if (Boolean.FALSE.equals(res.getValid())) {
-            String msg = "Found issue in specification for reference: " + ref;
-            throw createInvalidContract(msg, res.toException(""));
-          } else {
+          try {
+            res.checkValidity();
             return repository.dereference(ref, JsonSchema.of(ref, additionalContractFiles.get(ref)));
+          } catch (JsonSchemaValidationException e) {
+            String msg = "Found issue in specification for reference: " + ref;
+            throw createInvalidContract(msg, e);
           }
         });
         validationFutures.add(validationFuture);
@@ -126,10 +128,11 @@ public interface OpenAPIContract {
       return CompositeFuture.all(validationFutures).map(repository);
     }).compose(repository ->
       version.validate(vertx, repository, unresolvedContract).compose(res -> {
-        if (Boolean.FALSE.equals(res.getValid())) {
-          return failedFuture(createInvalidContract(null, res.toException("")));
-        } else {
+        try {
+          res.checkValidity();
           return version.resolve(vertx, repository, unresolvedContract);
+        } catch (JsonSchemaValidationException e) {
+          return failedFuture(createInvalidContract(null, e));
         }
       }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
     ).onComplete(promise);
