@@ -20,24 +20,31 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.Server;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class OpenAPIContractImpl implements OpenAPIContract {
+  private static final String KEY_SERVERS = "servers";
   private static final String KEY_PATHS = "paths";
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
     path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
+
+  private final List<Server> servers;
 
   private final List<Path> paths;
 
@@ -51,16 +58,29 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final PathFinder pathFinder;
 
+  // VisibleForTesting
+  final String basePath;
+
   public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
+    servers = unmodifiableList(resolvedSpec.getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY).stream()
+      .map(server -> new ServerImpl((JsonObject) server)).collect(toList()));
+    if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
+      throw createUnsupportedFeature("Different base paths in server urls");
+    } else {
+      this.basePath = servers.isEmpty() ? "" : servers.get(0).getBasePath();
+    }
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
-      .map(pathEntry -> new PathImpl(pathEntry.getKey(), (JsonObject) pathEntry.getValue())).collect(toList());
-    this.paths = unmodifiableList(applyMountOrder(unsortedPaths));
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue()))
+      .collect(toList());
+    List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
+    this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
       Operation::getOperationId, operation -> operation));
-    this.pathFinder = new PathFinder(paths);
+    // It is important that PathFinder gets the ordered Paths
+    this.pathFinder = new PathFinder(sortedPaths);
   }
 
   /**
@@ -139,11 +159,18 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     return version;
   }
 
-  @Override public SchemaRepository getSchemaRepository() {
+  @Override
+  public SchemaRepository getSchemaRepository() {
     return schemaRepository;
   }
 
-  @Override public Path findPath(String urlPath) {
+  @Override
+  public List<Server> getServers() {
+    return servers;
+  }
+
+  @Override
+  public Path findPath(String urlPath) {
     return pathFinder.findPath(urlPath);
   }
 

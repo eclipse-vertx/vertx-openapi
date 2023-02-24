@@ -27,8 +27,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.nio.file.Path;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.impl.PathImpl.INVALID_CURLY_BRACES;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
@@ -36,7 +36,7 @@ class PathImplTest {
   private static final Path RESOURCE_PATH = ResourceHelper.getRelatedTestResourcePath(PathImplTest.class);
 
   private static final Path VALID_PATHS_JSON = RESOURCE_PATH.resolve("path_valid.json");
-
+  private static final String BASE_PATH = "";
   private static JsonObject validTestData;
 
   @BeforeAll
@@ -48,7 +48,7 @@ class PathImplTest {
     JsonObject testDataObject = testData.getJsonObject(id);
     String name = testDataObject.getString("name");
     JsonObject pathModel = testDataObject.getJsonObject("pathModel");
-    return new PathImpl(name, pathModel);
+    return new PathImpl(BASE_PATH, name, pathModel);
   }
 
   @Test
@@ -72,7 +72,7 @@ class PathImplTest {
   @Test
   void testWildcardInPath() {
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new PathImpl("/pets/*", EMPTY_JSON_OBJECT));
+      assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, "/pets/*", EMPTY_JSON_OBJECT));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -82,7 +82,7 @@ class PathImplTest {
     "/foo{param}bar"})
   void testWrongCurlyBracesInPath(String path) {
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new PathImpl(path, EMPTY_JSON_OBJECT));
+      assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT));
     String expectedMsg =
       "The passed OpenAPI contract is invalid: Curly brace MUST be the first/last character in a path segment (/{parameterName}/): " + path;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
@@ -97,6 +97,13 @@ class PathImplTest {
   @Test
   void testCutTrailingSlash() {
     String expected = "/pets";
-    assertThat(new PathImpl(expected + "/", EMPTY_JSON_OBJECT).getName()).isEqualTo(expected);
+    assertThat(new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT).getName()).isEqualTo(expected);
+  }
+
+  @Test
+  void testGetAbsolutePath() {
+    String expected = "/base/foo";
+    assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT).getAbsolutePath()).isEqualTo(expected);
+    assertThat(new PathImpl("/base/", "/foo", EMPTY_JSON_OBJECT).getAbsolutePath()).isEqualTo(expected);
   }
 }

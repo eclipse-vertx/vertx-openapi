@@ -58,8 +58,11 @@ public class OperationImpl implements Operation {
   private final List<String> tags;
   private final Response defaultResponse;
   private final Map<Integer, Response> responses;
+  private final String absolutePath;
 
-  public OperationImpl(String path, HttpMethod method, JsonObject operationModel, List<Parameter> pathParameters) {
+  public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
+    List<Parameter> pathParameters) {
+    this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
     this.path = path;
@@ -133,6 +136,11 @@ public class OperationImpl implements Operation {
   @Override
   public String getOpenAPIPath() {
     return path;
+  }
+
+  @Override
+  public String getAbsoluteOpenAPIPath() {
+    return absolutePath;
   }
 
   @Override

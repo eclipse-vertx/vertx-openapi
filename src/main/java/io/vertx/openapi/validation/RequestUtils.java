@@ -80,7 +80,7 @@ public class RequestUtils {
           headers.put(param.getName(), extractHeaders(request, param));
           break;
         case PATH:
-          int segment = findPathSegment(operation.getOpenAPIPath(), param.getName());
+          int segment = findPathSegment(operation.getAbsoluteOpenAPIPath(), param.getName());
           pathParams.put(param.getName(), extractPathParameters(request, segment));
           break;
         case QUERY:

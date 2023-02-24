@@ -7,7 +7,7 @@ info:
     identifier: MIT
     name: MIT License
 servers:
-  - url: https://example.com/guestbook/v1
+  - url: https://example.com/
 security:
   - BasicAuth: [ ]
 paths:

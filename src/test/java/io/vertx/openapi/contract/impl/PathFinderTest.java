@@ -13,7 +13,6 @@
 package io.vertx.openapi.contract.impl;
 
 import com.google.common.collect.ImmutableList;
-import io.vertx.openapi.contract.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -48,18 +47,20 @@ class PathFinderTest {
     assertThat(pathFinder.testSegments(pathSegments, pathTemplateSegments)).isEqualTo(equal);
   }
 
-  private Path mockPath(String path) {
-    Path mockedPath = Mockito.mock(Path.class);
+  private PathImpl mockPath(String basePath, String path) {
+    PathImpl mockedPath = Mockito.mock(PathImpl.class);
     when(mockedPath.getName()).thenReturn(path);
+    when(mockedPath.getAbsolutePath()).thenReturn(basePath + path);
     return mockedPath;
   }
 
+  // TODO add test with basepath
   @Test
   void testFindPath() {
-    Path v0 = mockPath("/v0/api/user");
-    Path variableVersion = mockPath("/{version}/api/user");
-    Path withUsername = mockPath("/{version}/api/user/{username}");
-    List<Path> paths = ImmutableList.of(v0, variableVersion, withUsername);
+    PathImpl v0 = mockPath("", "/v0/api/user");
+    PathImpl variableVersion = mockPath("", "/{version}/api/user");
+    PathImpl withUsername = mockPath("", "/{version}/api/user/{username}");
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername);
     PathFinder pathFinder = new PathFinder(paths);
 
     assertThat(pathFinder.findPath("/v0/api/user")).isEqualTo(v0);
@@ -71,5 +72,25 @@ class PathFinderTest {
 
     assertThat(pathFinder.findPath("/v0/api/user/foo/age")).isNull();
     assertThat(pathFinder.findPath("/v1/api/user/foo/age")).isNull();
+  }
+
+  @Test
+  void testFindPathWithBasePath() {
+    String basePath = "/base";
+    PathImpl v0 = mockPath(basePath, "/v0/api/user");
+    PathImpl variableVersion = mockPath(basePath, "/{version}/api/user");
+    PathImpl withUsername = mockPath(basePath, "/{version}/api/user/{username}");
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername);
+    PathFinder pathFinder = new PathFinder(paths);
+
+    assertThat(pathFinder.findPath(basePath + "/v0/api/user")).isEqualTo(v0);
+    assertThat(pathFinder.findPath(basePath + "/v1/api/user")).isEqualTo(variableVersion);
+    assertThat(pathFinder.findPath(basePath + "/v1/api/users")).isNull();
+
+    assertThat(pathFinder.findPath(basePath + "/v0/api/user/foo")).isEqualTo(withUsername);
+    assertThat(pathFinder.findPath(basePath + "/v1/api/user/foo")).isEqualTo(withUsername);
+
+    assertThat(pathFinder.findPath(basePath + "/v0/api/user/foo/age")).isNull();
+    assertThat(pathFinder.findPath(basePath + "/v1/api/user/foo/age")).isNull();
   }
 }

@@ -195,7 +195,7 @@ class RequestUtilsTest extends HttpServerTestBase {
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testExtractPath(Parameter parameter, Style style, String path, String expected, VertxTestContext testContext) {
     Operation mockedOperation = mockOperation(parameter);
-    when(mockedOperation.getOpenAPIPath()).thenReturn("/test/{foo}");
+    when(mockedOperation.getAbsoluteOpenAPIPath()).thenReturn("/test/{foo}");
 
     createValidationHandler(params -> {
       assertThat(params.getPathParameters().get(parameter.getName()).getString()).isEqualTo(expected);

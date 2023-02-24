@@ -33,9 +33,9 @@ import static io.vertx.core.http.HttpMethod.PATCH;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 import static io.vertx.core.http.HttpMethod.TRACE;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static java.util.Collections.unmodifiableList;
 
 public class PathImpl implements Path {
@@ -60,8 +60,10 @@ public class PathImpl implements Path {
   private final List<Operation> operations;
   private final List<Parameter> parameters;
   private final JsonObject pathModel;
+  private final String absolutePath;
 
-  public PathImpl(String name, JsonObject pathModel) {
+  public PathImpl(String basePath, String name, JsonObject pathModel) {
+    this.absolutePath = (basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath) + name;
     this.pathModel = pathModel;
     if (name.contains("*")) {
       throw createInvalidContract("Paths must not have a wildcard (asterisk): " + name);
@@ -74,11 +76,9 @@ public class PathImpl implements Path {
     this.parameters = unmodifiableList(parseParameters(name, pathModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY)));
 
     List<Operation> ops = new ArrayList<>();
-    SUPPORTED_METHODS.forEach((methodName, method) -> {
-      Optional.ofNullable(pathModel.getJsonObject(methodName))
-        .map(operationModel -> new OperationImpl(name, method, operationModel, parameters))
-        .ifPresent(ops::add);
-    });
+    SUPPORTED_METHODS.forEach((methodName, method) -> Optional.ofNullable(pathModel.getJsonObject(methodName))
+      .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters))
+      .ifPresent(ops::add));
     this.operations = unmodifiableList(ops);
   }
 
@@ -105,5 +105,9 @@ public class PathImpl implements Path {
   @Override
   public JsonObject getOpenAPIModel() {
     return pathModel.copy();
+  }
+
+  public String getAbsolutePath() {
+    return absolutePath;
   }
 }
