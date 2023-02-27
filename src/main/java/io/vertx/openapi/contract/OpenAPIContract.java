@@ -47,7 +47,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath) {
-    return readYamlOrJson(vertx, unresolvedContractPath).compose(path -> from(vertx, path, emptyMap()));
+    return readYamlOrJson(vertx, unresolvedContractPath).compose(json -> from(vertx, json));
   }
 
   /**
@@ -174,6 +174,11 @@ public interface OpenAPIContract {
    * @return the {@link SchemaRepository} to validate against.
    */
   SchemaRepository getSchemaRepository();
+
+  /**
+   * @return the servers of the contract.
+   */
+  List<Server> getServers();
 
   /**
    * Finds the related {@link Path} object based on the passed url path.

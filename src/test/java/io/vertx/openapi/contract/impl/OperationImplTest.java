@@ -76,7 +76,7 @@ class OperationImplTest {
     HttpMethod method = HttpMethod.valueOf(testDataObject.getString("method").toUpperCase());
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
-    return new OperationImpl(path, method, operationModel, pathParams);
+    return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams);
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
@@ -107,6 +107,7 @@ class OperationImplTest {
     OperationImpl operation = fromTestData(testId, validTestData);
     assertThat(operation.getOperationId()).isEqualTo("showPetById");
     assertThat(operation.getOpenAPIPath()).isEqualTo("/pets/{petId}");
+    assertThat(operation.getAbsoluteOpenAPIPath()).isEqualTo("/absolute/pets/{petId}");
     assertThat(operation.getHttpMethod()).isEqualTo(GET);
     assertThat(operation.getTags()).containsExactly("pets", "foo");
     assertThat(operation.getRequestBody()).isNull();

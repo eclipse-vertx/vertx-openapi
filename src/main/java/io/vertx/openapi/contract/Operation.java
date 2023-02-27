@@ -44,6 +44,11 @@ public interface Operation extends OpenAPIObject {
   String getOpenAPIPath();
 
   /**
+   * @return absolute path in OpenAPI style
+   */
+  String getAbsoluteOpenAPIPath();
+
+  /**
    * @return tags of this operation
    */
   List<String> getTags();

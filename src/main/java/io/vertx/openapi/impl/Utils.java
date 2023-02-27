@@ -68,6 +68,7 @@ public final class Utils {
    * @param yaml yaml map
    * @return json map
    */
+  @SuppressWarnings("unchecked")
   private static Map<String, Object> jsonify(Map<Object, Object> yaml) {
     final Map<String, Object> json = new LinkedHashMap<>();
 
