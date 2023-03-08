@@ -1,6 +1,7 @@
 # Vert.x OpenAPI
 
-[![CI](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci.yml/badge.svg)](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci.yml)
+[![Build Status (5.x)](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci-5.x.yml/badge.svg)](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci-5.x.yml)
+[![Build Status (4.x)](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci-4.x.yml/badge.svg)](https://github.com/eclipse-vertx/vertx-openapi/actions/workflows/ci-4.x.yml)
 
 Please see the in-source asciidoc documentation or the main documentation on the web-site for a full description
 of this component:
