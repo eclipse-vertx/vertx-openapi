@@ -20,6 +20,7 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.openapi.contract.Server;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import static java.util.stream.Collectors.toMap;
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SERVERS = "servers";
   private static final String KEY_PATHS = "paths";
+  private static final String KEY_SECURITY = "security";
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
     path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
@@ -57,6 +59,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   private final SchemaRepository schemaRepository;
 
   private final PathFinder pathFinder;
+  private final List<SecurityRequirement> securityRequirements;
 
   // VisibleForTesting
   final String basePath;
@@ -65,8 +68,19 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
+
     servers = unmodifiableList(resolvedSpec.getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY).stream()
       .map(server -> new ServerImpl((JsonObject) server)).collect(toList()));
+
+    this.securityRequirements =
+      resolvedSpec.containsKey(KEY_SECURITY) ?
+        unmodifiableList(
+          resolvedSpec.getJsonArray(KEY_SECURITY).stream()
+            .map(o -> (JsonObject) o)
+            .map(SecurityRequirementImpl::new)
+            .collect(toList())) :
+        null;
+
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
     } else {
@@ -185,5 +199,10 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       }
     }
     return null;
+  }
+
+  @Override
+  public List<SecurityRequirement> getSecurityRequirements() {
+    return securityRequirements;
   }
 }

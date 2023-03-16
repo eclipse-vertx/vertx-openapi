@@ -76,4 +76,11 @@ public interface Operation extends OpenAPIObject {
    * @return The related response, or null.
    */
   Response getResponse(int responseCode);
+
+  /**
+   * Returns the applicable list of security requirements (scopes) or empty list.
+   * @return The related security requirement.
+   */
+  @Nullable
+  List<SecurityRequirement> getSecurityRequirements();
 }
