@@ -196,4 +196,11 @@ public interface OpenAPIContract {
    * @return the found {@link Operation} object, or null if the passed path and method doesn't match any {@link Operation} object.
    */
   Operation findOperation(String urlPath, HttpMethod method);
+
+  /**
+   * Returns the applicable list of global security requirements (scopes) or empty list.
+   * @return The related security requirement.
+   */
+  @Nullable
+  List<SecurityRequirement> getSecurityRequirements();
 }
