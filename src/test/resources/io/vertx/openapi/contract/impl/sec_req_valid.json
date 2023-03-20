@@ -1,0 +1,25 @@
+{
+  "0000_Test_No_Name_No_Scopes_(EMPTY)": {
+  },
+  "0001_Test_One_Name_No_Scope": {
+    "api_key": []
+  },
+  "0002_Test_One_Name_Two_Scopes": {
+    "api_key": [
+      "scope1",
+      "scope2"
+    ]
+  },
+  "0003_Test_Two_Names_No_Scopes": {
+    "api_key": [],
+    "second_api_key": []
+  },
+  "0004_Test_Two_Names_One_Scope_Each": {
+    "api_key": [
+      "scope1"
+    ],
+    "second_api_key": [
+      "scope2"
+    ]
+  }
+}

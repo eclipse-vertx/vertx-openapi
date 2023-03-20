@@ -165,5 +165,29 @@
         }
       }
     }
+  },
+  "0004_Test_Security_Requirements": {
+    "path": "/pets",
+    "method": "GET",
+    "operationModel": {
+      "security": [
+        {
+          "api_key": []
+        }
+      ],
+      "operationId": "getPet",
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
