@@ -64,7 +64,7 @@ public class OperationImpl implements Operation {
   private final List<SecurityRequirement> securityRequirements;
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
-    List<Parameter> pathParameters) {
+                       List<Parameter> pathParameters, List<SecurityRequirement> globalSecReq) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
@@ -82,7 +82,7 @@ public class OperationImpl implements Operation {
             .map(o -> (JsonObject) o)
             .map(SecurityRequirementImpl::new)
             .collect(toList())) :
-        null;
+        globalSecReq;
 
     List<Parameter> operationParameters =
       parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));

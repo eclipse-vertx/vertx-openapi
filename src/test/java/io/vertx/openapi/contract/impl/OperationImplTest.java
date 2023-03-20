@@ -14,6 +14,7 @@ package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
@@ -30,6 +31,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -62,7 +64,8 @@ class OperationImplTest {
   private static Stream<Arguments> provideErrorScenarios() {
     return Stream.of(
       Arguments.of("0000_Multiple_Exploded_Form_Parameters_In_Query_With_Content_Object", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type object in operation: showPetById"),
+        "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type " +
+          "object in operation: showPetById"),
       Arguments.of("0001_No_Responses", INVALID_SPEC,
         "The passed OpenAPI contract is invalid: No responses were found in operation: getPets"),
       Arguments.of("0002_Empty_Responses", INVALID_SPEC,
@@ -70,13 +73,13 @@ class OperationImplTest {
     );
   }
 
-  private static OperationImpl fromTestData(String id, JsonObject testData) {
+  private static OperationImpl fromTestData(String id, JsonObject testData, SecurityRequirementImpl... secReqs) {
     JsonObject testDataObject = testData.getJsonObject(id);
     String path = testDataObject.getString("path");
     HttpMethod method = HttpMethod.valueOf(testDataObject.getString("method").toUpperCase());
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
-    return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams);
+    return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, Arrays.asList(secReqs));
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
@@ -111,6 +114,7 @@ class OperationImplTest {
     assertThat(operation.getHttpMethod()).isEqualTo(GET);
     assertThat(operation.getTags()).containsExactly("pets", "foo");
     assertThat(operation.getRequestBody()).isNull();
+    assertThat(operation.getSecurityRequirements()).isEmpty();
 
     JsonObject operationModel = validTestData.getJsonObject(testId).getJsonObject("operationModel");
     assertThat(operation.getOpenAPIModel()).isEqualTo(operationModel);
@@ -129,5 +133,17 @@ class OperationImplTest {
     String testId = "0003_Test_RequestBody";
     OperationImpl operation = fromTestData(testId, validTestData);
     assertThat(operation.getRequestBody()).isInstanceOf(RequestBody.class);
+  }
+
+  @Test
+  void testGetSecurityRequirements() {
+    SecurityRequirementImpl secReq = new SecurityRequirementImpl(new JsonObject().put("api_key", new JsonArray()));
+    OperationImpl operation = fromTestData("0000_Test_Getters", validTestData, secReq);
+    assertThat(operation.getSecurityRequirements()).hasSize(1);
+    assertThat(operation.getSecurityRequirements().get(0).getNames()).containsExactly("api_key");
+
+    OperationImpl operationWithSecReqs = fromTestData("0004_Test_Security_Requirements", validTestData);
+    assertThat(operationWithSecReqs.getSecurityRequirements()).hasSize(1);
+    assertThat(operationWithSecReqs.getSecurityRequirements().get(0).getNames()).containsExactly("api_key");
   }
 }
