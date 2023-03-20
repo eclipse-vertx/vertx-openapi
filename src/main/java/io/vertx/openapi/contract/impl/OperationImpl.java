@@ -20,6 +20,7 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.contract.SecurityRequirement;
 
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,7 @@ public class OperationImpl implements Operation {
   private static final String KEY_PARAMETERS = "parameters";
   private static final String KEY_REQUEST_BODY = "requestBody";
   private static final String KEY_RESPONSES = "responses";
+  private static final String KEY_SECURITY = "security";
 
   private final String operationId;
   private final String path;
@@ -59,9 +61,10 @@ public class OperationImpl implements Operation {
   private final Response defaultResponse;
   private final Map<Integer, Response> responses;
   private final String absolutePath;
+  private final List<SecurityRequirement> securityRequirements;
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
-    List<Parameter> pathParameters) {
+                       List<Parameter> pathParameters, List<SecurityRequirement> globalSecReq) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
@@ -71,6 +74,15 @@ public class OperationImpl implements Operation {
     this.tags =
       unmodifiableList(operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(
         toList()));
+
+    this.securityRequirements =
+      operationModel.containsKey(KEY_SECURITY) ?
+        unmodifiableList(
+          operationModel.getJsonArray(KEY_SECURITY).stream()
+            .map(o -> (JsonObject) o)
+            .map(SecurityRequirementImpl::new)
+            .collect(toList())) :
+        globalSecReq;
 
     List<Parameter> operationParameters =
       parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
@@ -166,5 +178,10 @@ public class OperationImpl implements Operation {
   @Override
   public Response getResponse(int responseCode) {
     return responses.get(responseCode);
+  }
+
+  @Override
+  public List<SecurityRequirement> getSecurityRequirements() {
+    return securityRequirements;
   }
 }

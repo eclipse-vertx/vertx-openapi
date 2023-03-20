@@ -20,6 +20,7 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.openapi.contract.Server;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import static java.util.stream.Collectors.toMap;
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SERVERS = "servers";
   private static final String KEY_PATHS = "paths";
+  private static final String KEY_SECURITY = "security";
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
     path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
@@ -57,6 +59,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   private final SchemaRepository schemaRepository;
 
   private final PathFinder pathFinder;
+  private final List<SecurityRequirement> securityRequirements;
 
   // VisibleForTesting
   final String basePath;
@@ -65,16 +68,22 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
+
     servers = unmodifiableList(resolvedSpec.getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY).stream()
       .map(server -> new ServerImpl((JsonObject) server)).collect(toList()));
+
+    this.securityRequirements =
+      unmodifiableList(resolvedSpec.getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY).stream().map(o -> (JsonObject) o)
+        .map(SecurityRequirementImpl::new).collect(toList()));
+
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
     } else {
       this.basePath = servers.isEmpty() ? "" : servers.get(0).getBasePath();
     }
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
-      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue()))
-      .collect(toList());
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
+        securityRequirements)).collect(toList());
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
     this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
@@ -84,7 +93,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   }
 
   /**
-   * From <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#paths-object">Paths documentation</a>:
+   * From
+   * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#paths-object">Paths documentation</a>:
    * <br>
    * Path templating is allowed. When matching URLs, concrete (non-templated) paths would be matched before their
    * templated counterparts. Templated paths with the same hierarchy but different templated names MUST NOT exist as
@@ -185,5 +195,10 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       }
     }
     return null;
+  }
+
+  @Override
+  public List<SecurityRequirement> getSecurityRequirements() {
+    return securityRequirements;
   }
 }
