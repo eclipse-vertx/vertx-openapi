@@ -25,8 +25,10 @@ import java.util.Date;
  */
 public class OpenAPIYamlConstructor extends SafeConstructor {
 
+  private static final LoaderOptions DEFAULT_OPTIONS = new LoaderOptions();
+
   public OpenAPIYamlConstructor() {
-    super(new LoaderOptions());
+    super(DEFAULT_OPTIONS);
     this.yamlConstructors.put(Tag.TIMESTAMP, new ConstructInstantTimestamp());
   }
 
