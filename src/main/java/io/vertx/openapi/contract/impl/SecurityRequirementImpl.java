@@ -1,12 +1,31 @@
+/*
+ * Copyright (c) 2023, SAP SE
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *
+ */
+
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.SecurityRequirement;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static java.util.Collections.unmodifiableList;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 
 public class SecurityRequirementImpl implements SecurityRequirement {
@@ -15,25 +34,24 @@ public class SecurityRequirementImpl implements SecurityRequirement {
   private final Set<String> names;
   private final Map<String, List<String>> scopes;
   private final boolean empty;
-  private final int size;
 
   SecurityRequirementImpl(JsonObject securityRequirementModel) {
     this.securityRequirementModel = securityRequirementModel;
     this.empty = securityRequirementModel.isEmpty();
-    this.size = securityRequirementModel.size();
 
-    if (!securityRequirementModel.isEmpty()) {
-      this.names = unmodifiableSet(securityRequirementModel.fieldNames());
-      this.scopes = new HashMap<>();
-      for (String name : this.names) {
-        this.scopes.put(name, unmodifiableList(securityRequirementModel.getJsonArray(name).stream()
-          .map(Object::toString)
-          .collect(toList())));
-      }
+    if (securityRequirementModel.isEmpty()) {
+      this.names = emptySet();
+      this.scopes = emptyMap();
     } else {
-      this.names = null;
-      this.scopes = null;
+      this.names = unmodifiableSet(securityRequirementModel.fieldNames());
+      this.scopes = unmodifiableMap(this.names.stream().collect(Collectors.toMap(identity(),
+        name -> extractScopes(securityRequirementModel, name))));
     }
+  }
+
+  private static List<String> extractScopes(JsonObject securityRequirementModel, String name) {
+    return securityRequirementModel.getJsonArray(name, EMPTY_JSON_ARRAY).stream().map(Object::toString)
+      .collect(toList());
   }
 
   @Override
@@ -56,11 +74,11 @@ public class SecurityRequirementImpl implements SecurityRequirement {
 
   @Override
   public boolean isEmpty() {
-    return empty;
+    return names.isEmpty();
   }
 
   @Override
   public int size() {
-    return size;
+    return names.size();
   }
 }

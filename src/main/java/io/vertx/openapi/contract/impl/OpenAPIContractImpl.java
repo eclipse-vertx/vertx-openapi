@@ -16,7 +16,12 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.contract.*;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.OpenAPIVersion;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.SecurityRequirement;
+import io.vertx.openapi.contract.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,13 +73,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       .map(server -> new ServerImpl((JsonObject) server)).collect(toList()));
 
     this.securityRequirements =
-      resolvedSpec.containsKey(KEY_SECURITY) ?
-        unmodifiableList(
-          resolvedSpec.getJsonArray(KEY_SECURITY).stream()
-            .map(o -> (JsonObject) o)
-            .map(SecurityRequirementImpl::new)
-            .collect(toList())) :
-        null;
+      unmodifiableList(resolvedSpec.getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY).stream().map(o -> (JsonObject) o)
+        .map(SecurityRequirementImpl::new).collect(toList()));
 
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
@@ -82,8 +82,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       this.basePath = servers.isEmpty() ? "" : servers.get(0).getBasePath();
     }
     List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
-      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue()))
-      .collect(toList());
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
+        securityRequirements)).collect(toList());
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
     this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
@@ -93,7 +93,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   }
 
   /**
-   * From <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#paths-object">Paths documentation</a>:
+   * From
+   * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#paths-object">Paths documentation</a>:
    * <br>
    * Path templating is allowed. When matching URLs, concrete (non-templated) paths would be matched before their
    * templated counterparts. Templated paths with the same hierarchy but different templated names MUST NOT exist as

@@ -16,7 +16,11 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.*;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.contract.SecurityRequirement;
 
 import java.util.List;
 import java.util.Map;
@@ -60,7 +64,7 @@ public class OperationImpl implements Operation {
   private final List<SecurityRequirement> securityRequirements;
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
-    List<Parameter> pathParameters) {
+                       List<Parameter> pathParameters, List<SecurityRequirement> globalSecReq) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
@@ -78,7 +82,7 @@ public class OperationImpl implements Operation {
             .map(o -> (JsonObject) o)
             .map(SecurityRequirementImpl::new)
             .collect(toList())) :
-        null;
+        globalSecReq;
 
     List<Parameter> operationParameters =
       parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
