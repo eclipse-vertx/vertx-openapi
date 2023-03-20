@@ -201,6 +201,5 @@ public interface OpenAPIContract {
    * Returns the applicable list of global security requirements (scopes) or empty list.
    * @return The related security requirement.
    */
-  @Nullable
   List<SecurityRequirement> getSecurityRequirements();
 }
