@@ -186,6 +186,7 @@ public interface OpenAPIContract {
    * @param urlPath The path of the request.
    * @return the found {@link Path} object, or null if the passed path doesn't match any {@link Path} object.
    */
+  @Nullable
   Path findPath(String urlPath);
 
   /**
@@ -195,6 +196,7 @@ public interface OpenAPIContract {
    * @param method  The method of the request.
    * @return the found {@link Operation} object, or null if the passed path and method doesn't match any {@link Operation} object.
    */
+  @Nullable
   Operation findOperation(String urlPath, HttpMethod method);
 
   /**
@@ -202,4 +204,13 @@ public interface OpenAPIContract {
    * @return The related security requirement.
    */
   List<SecurityRequirement> getSecurityRequirements();
+
+  /**
+   * Finds the related {@link SecurityScheme} object based on the passed name.
+   *
+   * @param name The name of the security scheme.
+   * @return the found {@link SecurityScheme} object, or null if the passed path and method doesn't match any {@link Operation} object.
+   */
+  @Nullable
+  SecurityScheme findSecurityScheme(String name);
 }
