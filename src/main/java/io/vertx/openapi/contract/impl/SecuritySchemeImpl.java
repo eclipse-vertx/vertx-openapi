@@ -8,7 +8,6 @@ public class SecuritySchemeImpl implements SecurityScheme {
 
   private final JsonObject model;
   private final String type;
-  private final String description;
   private final String name;
   private final String in;
   private final String scheme;
@@ -21,7 +20,6 @@ public class SecuritySchemeImpl implements SecurityScheme {
     this.model = json;
 
     this.type = json.getString("type");
-    this.description = json.getString("description");
     this.name = json.getString("name");
     this.in = json.getString("in");
     this.scheme = json.getString("scheme");
@@ -41,11 +39,6 @@ public class SecuritySchemeImpl implements SecurityScheme {
   @Override
   public String getType() {
     return type;
-  }
-
-  @Override
-  public String getDescription() {
-    return description;
   }
 
   @Override
