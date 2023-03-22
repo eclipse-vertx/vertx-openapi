@@ -30,11 +30,6 @@ public interface SecurityScheme extends OpenAPIObject {
   String getType();
 
   /**
-   * A description for security scheme. CommonMark syntax MAY be used for rich text representation.
-   */
-  String getDescription();
-
-  /**
    * The name of the header, query or cookie parameter to be used.
    */
   String getName();
