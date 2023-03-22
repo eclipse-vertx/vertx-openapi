@@ -16,12 +16,7 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.openapi.contract.OpenAPIVersion;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Path;
-import io.vertx.openapi.contract.SecurityRequirement;
-import io.vertx.openapi.contract.Server;
+import io.vertx.openapi.contract.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +56,9 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   private final PathFinder pathFinder;
   private final List<SecurityRequirement> securityRequirements;
 
+  private final Map<String, SecurityScheme> securitySchemes;
+
+
   // VisibleForTesting
   final String basePath;
 
@@ -90,6 +88,13 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       Operation::getOperationId, operation -> operation));
     // It is important that PathFinder gets the ordered Paths
     this.pathFinder = new PathFinder(sortedPaths);
+
+    this.securitySchemes =
+      resolvedSpec
+        .getJsonObject("components", EMPTY_JSON_OBJECT)
+        .getJsonObject("securitySchemes", EMPTY_JSON_OBJECT)
+        .stream()
+        .collect(toMap(Map.Entry::getKey, value -> new SecuritySchemeImpl((JsonObject) value.getValue())));
   }
 
   /**
@@ -200,5 +205,12 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   @Override
   public List<SecurityRequirement> getSecurityRequirements() {
     return securityRequirements;
+  }
+
+  @Override
+  public SecurityScheme findSecurityScheme(String name) {
+    return securityRequirements != null ?
+      securitySchemes.get(name) :
+      null;
   }
 }
