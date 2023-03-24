@@ -73,7 +73,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath,
-    Map<String, String> additionalContractFiles) {
+                                      Map<String, String> additionalContractFiles) {
 
     Map<String, Future<JsonObject>> jsonFilesFuture = new HashMap<>();
     jsonFilesFuture.put(unresolvedContractPath, readYamlOrJson(vertx, unresolvedContractPath));
@@ -98,7 +98,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
-    Map<String, JsonObject> additionalContractFiles) {
+                                      Map<String, JsonObject> additionalContractFiles) {
     if (unresolvedContract == null) {
       return failedFuture(createInvalidContract("Spec must not be null"));
     }
@@ -194,23 +194,26 @@ public interface OpenAPIContract {
    *
    * @param urlPath The path of the request.
    * @param method  The method of the request.
-   * @return the found {@link Operation} object, or null if the passed path and method doesn't match any {@link Operation} object.
+   * @return the found {@link Operation} object, or null if the passed path and method doesn't match any
+   * {@link Operation} object.
    */
   @Nullable
   Operation findOperation(String urlPath, HttpMethod method);
 
   /**
    * Returns the applicable list of global security requirements (scopes) or empty list.
+   *
    * @return The related security requirement.
    */
   List<SecurityRequirement> getSecurityRequirements();
 
   /**
-   * Finds the related {@link SecurityScheme} object based on the passed name.
+   * Gets the related {@link SecurityScheme} object based on the passed name.
    *
    * @param name The name of the security scheme.
-   * @return the found {@link SecurityScheme} object, or null if the passed path and method doesn't match any {@link Operation} object.
+   * @return the found {@link SecurityScheme} object, or null if the passed path and method doesn't match any
+   * {@link Operation} object.
    */
   @Nullable
-  SecurityScheme findSecurityScheme(String name);
+  SecurityScheme securityScheme(String name);
 }
