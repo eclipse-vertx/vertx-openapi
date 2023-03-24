@@ -90,12 +90,4 @@ class SecuritySchemeImplTest {
     SecuritySchemeImpl secReq = fromTestData(testId, validTestData);
     verifier.accept(secReq);
   }
-
-//  @Test
-//  void testGetScopesError() {
-//    SecuritySchemeImpl secReq = fromTestData("0001_Test_One_Name_No_Scope", validTestData);
-//    IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
-//      () -> secReq.getScopes("Hodor"));
-//    assertThat(exception).hasMessageThat().isEqualTo("No security requirement with name Hodor");
-//  }
 }

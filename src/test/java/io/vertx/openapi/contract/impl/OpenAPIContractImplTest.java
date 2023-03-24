@@ -157,6 +157,7 @@ class OpenAPIContractImplTest {
 
     assertThat(contract.findOperation("/v1/pets/123/134", GET)).isNull();
     assertThat(contract.findOperation("/v1/pets/123", PATCH)).isNull();
+    assertThat(contract.securityScheme("BasicAuth")).isNotNull();
   }
 
   @Test
