@@ -16,7 +16,13 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.contract.*;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.OpenAPIVersion;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.SecurityRequirement;
+import io.vertx.openapi.contract.SecurityScheme;
+import io.vertx.openapi.contract.Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -208,9 +214,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   }
 
   @Override
-  public SecurityScheme findSecurityScheme(String name) {
-    return securityRequirements != null ?
-      securitySchemes.get(name) :
-      null;
+  public SecurityScheme securityScheme(String name) {
+    return securitySchemes.get(name);
   }
 }
