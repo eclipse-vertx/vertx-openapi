@@ -16,11 +16,8 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.RequestBody;
-import io.vertx.openapi.contract.Response;
-import io.vertx.openapi.contract.SecurityRequirement;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.*;
 
 import java.util.List;
 import java.util.Map;
@@ -79,7 +76,7 @@ public class OperationImpl implements Operation {
       operationModel.containsKey(KEY_SECURITY) ?
         unmodifiableList(
           operationModel.getJsonArray(KEY_SECURITY).stream()
-            .map(o -> (JsonObject) o)
+            .map(JsonObject.class::cast)
             .map(SecurityRequirementImpl::new)
             .collect(toList())) :
         globalSecReq;
@@ -126,8 +123,13 @@ public class OperationImpl implements Operation {
     defaultResponse = responsesJson.stream().filter(entry -> "default".equalsIgnoreCase(entry.getKey())).findFirst()
       .map(entry -> new ResponseImpl((JsonObject) entry.getValue(), operationId)).orElse(null);
     responses =
-      unmodifiableMap(responsesJson.fieldNames().stream().filter(RESPONSE_CODE_PATTERN.asPredicate())
-        .collect(toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
+      unmodifiableMap(
+        responsesJson
+          .fieldNames()
+          .stream()
+          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+          .filter(RESPONSE_CODE_PATTERN.asPredicate())
+          .collect(toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
   }
 
   @Override

@@ -120,9 +120,11 @@ public class ParameterImpl implements Parameter {
   }
 
   public static List<Parameter> parseParameters(String path, JsonArray parametersArray) {
-    return parametersArray.stream().map(JsonObject.class::cast)
-      .map(parameterModel -> new ParameterImpl(path, parameterModel)).collect(
-        toList());
+    return parametersArray
+      .stream()
+      .map(JsonObject.class::cast)
+      .map(parameterModel -> new ParameterImpl(path, parameterModel))
+      .collect(toList());
   }
 
   @Override

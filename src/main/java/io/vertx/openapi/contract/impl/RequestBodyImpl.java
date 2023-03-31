@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.RequestBody;
 
@@ -42,8 +43,13 @@ public class RequestBodyImpl implements RequestBody {
     this.requestBodyModel = requestBodyModel;
     this.required = requestBodyModel.getBoolean(KEY_REQUIRED, false);
     JsonObject contentObject = requestBodyModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
-    this.content = unmodifiableMap(contentObject.fieldNames().stream()
-      .collect(toMap(identity(), key -> new MediaTypeImpl(contentObject.getJsonObject(key)))));
+    this.content = unmodifiableMap(
+      contentObject
+        .fieldNames()
+        .stream()
+        .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+        .collect(toMap(identity(), key -> new MediaTypeImpl(contentObject.getJsonObject(key)))));
+
     if (content.isEmpty()) {
       String msg =
         String.format("Operation %s defines a request body without or with empty property \"content\"", operationId);

@@ -5,8 +5,10 @@
     "title": "Swagger Petstore",
     "license": {
       "identifier": "MIT",
-      "name": "MIT License"
-    }
+      "name": "MIT License",
+      "__absolute_uri__": "app:///#/info/license"
+    },
+    "__absolute_uri__": "app:///#/info"
   },
   "servers": [
     {
@@ -40,18 +42,25 @@
                 "properties": {
                   "id": {
                     "type": "integer",
-                    "format": "int64"
+                    "format": "int64",
+                    "__absolute_uri__": "https://example.com/petstore#/components/schemas/Pet/properties/id"
                   },
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "__absolute_uri__": "https://example.com/petstore#/components/schemas/Pet/properties/name"
                   },
                   "tag": {
-                    "type": "string"
+                    "type": "string",
+                    "__absolute_uri__": "https://example.com/petstore#/components/schemas/Pet/properties/tag"
                   }
-                }
-              }
-            }
-          }
+                },
+                "__absolute_uri__": "https://example.com/petstore#/components/schemas/Pet"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody/content/application~1json"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody/content"
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody"
         },
         "responses": {
           "default": {
@@ -67,18 +76,26 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "https://example.com/petstore#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "https://example.com/petstore#/components/schemas/Error/properties/message"
                     }
-                  }
+                  },
+                  "__absolute_uri__": "https://example.com/petstore#/components/schemas/Error"
                 }
               }
             }
-          }
-        }
-      }
-    }
-  }
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets/post/responses"
+        },
+        "__absolute_uri__": "app:///#/paths/~1pets/post"
+      },
+      "__absolute_uri__": "app:///#/paths/~1pets"
+    },
+    "__absolute_uri__": "app:///#/paths"
+  },
+  "__absolute_uri__": "app:///"
 }

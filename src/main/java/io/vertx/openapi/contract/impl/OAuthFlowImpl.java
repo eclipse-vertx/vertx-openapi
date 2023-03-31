@@ -1,10 +1,14 @@
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.OAuthFlow;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.unmodifiableSet;
 
 public class OAuthFlowImpl implements OAuthFlow {
 
@@ -22,7 +26,14 @@ public class OAuthFlowImpl implements OAuthFlow {
     this.tokenUrl = json.getString("tokenUrl");
     this.refreshUrl = json.getString("refreshUrl");
     this.scopes = json.containsKey("scopes") ?
-      json.getJsonObject("scopes").fieldNames() :
+      unmodifiableSet(
+        json
+          .getJsonObject("scopes")
+          .fieldNames()
+          .stream()
+          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+          .collect(Collectors.toSet()))
+      :
       Collections.emptySet();
   }
 

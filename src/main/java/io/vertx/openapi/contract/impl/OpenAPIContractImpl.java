@@ -15,6 +15,7 @@ package io.vertx.openapi.contract.impl;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIVersion;
@@ -73,21 +74,34 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.version = version;
     this.schemaRepository = schemaRepository;
 
-    servers = unmodifiableList(resolvedSpec.getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY).stream()
-      .map(server -> new ServerImpl((JsonObject) server)).collect(toList()));
+    servers = unmodifiableList(
+      resolvedSpec
+        .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
+        .stream()
+        .map(JsonObject.class::cast)
+        .map(ServerImpl::new)
+        .collect(toList()));
 
-    this.securityRequirements =
-      unmodifiableList(resolvedSpec.getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY).stream().map(o -> (JsonObject) o)
-        .map(SecurityRequirementImpl::new).collect(toList()));
+    this.securityRequirements = unmodifiableList(
+      resolvedSpec
+        .getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY)
+        .stream()
+        .map(JsonObject.class::cast)
+        .map(SecurityRequirementImpl::new)
+        .collect(toList()));
 
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
     } else {
       this.basePath = servers.isEmpty() ? "" : servers.get(0).getBasePath();
     }
-    List<PathImpl> unsortedPaths = resolvedSpec.getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT).stream()
-      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
-        securityRequirements)).collect(toList());
+    List<PathImpl> unsortedPaths = resolvedSpec
+      .getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT)
+      .stream()
+      .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(), securityRequirements))
+      .collect(toList());
+
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
     this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
@@ -100,6 +114,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
         .getJsonObject("components", EMPTY_JSON_OBJECT)
         .getJsonObject("securitySchemes", EMPTY_JSON_OBJECT)
         .stream()
+        .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
         .collect(toMap(Map.Entry::getKey, value -> new SecuritySchemeImpl((JsonObject) value.getValue())));
   }
 
