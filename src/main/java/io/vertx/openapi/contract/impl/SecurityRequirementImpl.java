@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.SecurityRequirement;
 
 import java.util.List;
@@ -21,10 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Collections.*;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 
@@ -43,9 +41,17 @@ public class SecurityRequirementImpl implements SecurityRequirement {
       this.names = emptySet();
       this.scopes = emptyMap();
     } else {
-      this.names = unmodifiableSet(securityRequirementModel.fieldNames());
-      this.scopes = unmodifiableMap(this.names.stream().collect(Collectors.toMap(identity(),
-        name -> extractScopes(securityRequirementModel, name))));
+      this.names = unmodifiableSet(
+        securityRequirementModel
+          .fieldNames()
+          .stream()
+          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+          .collect(Collectors.toSet()));
+
+      this.scopes = unmodifiableMap(
+        this.names
+          .stream()
+          .collect(Collectors.toMap(identity(), name -> extractScopes(securityRequirementModel, name))));
     }
   }
 

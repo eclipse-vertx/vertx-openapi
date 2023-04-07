@@ -73,7 +73,12 @@ public enum OpenAPIVersion {
   }
 
   public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
-    return vertx.executeBlocking(p -> p.complete(repo.resolve(JsonSchema.of(contract))));
+    return vertx.executeBlocking(p -> {
+      JsonSchema schema =JsonSchema.of(contract);
+      repo.dereference(schema);
+      JsonObject resolved = repo.resolve(contract);
+      p.complete(resolved);
+    });
   }
 
   public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
