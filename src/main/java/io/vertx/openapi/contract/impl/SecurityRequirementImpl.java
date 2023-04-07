@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.SecurityRequirement;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 public class SecurityRequirementImpl implements SecurityRequirement {
 
@@ -43,9 +45,17 @@ public class SecurityRequirementImpl implements SecurityRequirement {
       this.names = emptySet();
       this.scopes = emptyMap();
     } else {
-      this.names = unmodifiableSet(securityRequirementModel.fieldNames());
-      this.scopes = unmodifiableMap(this.names.stream().collect(toMap(identity(),
-        name -> extractScopes(securityRequirementModel, name))));
+      this.names = unmodifiableSet(
+        securityRequirementModel
+          .fieldNames()
+          .stream()
+          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+          .collect(toSet()));
+
+      this.scopes = unmodifiableMap(
+        this.names
+          .stream()
+          .collect(toMap(identity(), name -> extractScopes(securityRequirementModel, name))));
     }
   }
 

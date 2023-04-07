@@ -5,8 +5,10 @@
     "title": "Swagger Petstore",
     "license": {
       "identifier": "MIT",
-      "name": "MIT License"
-    }
+      "name": "MIT License",
+      "__absolute_uri__": "app:///#/info/license"
+    },
+    "__absolute_uri__": "app:///#/info"
   },
   "servers": [
     {
@@ -46,9 +48,12 @@
               "x-next": {
                 "description": "A link to the next page of responses",
                 "schema": {
-                  "type": "string"
-                }
-              }
+                  "type": "string",
+                  "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200/headers/x-next/schema"
+                },
+                "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200/headers/x-next"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200/headers"
             },
             "content": {
               "application/json": {
@@ -64,19 +69,27 @@
                     "properties": {
                       "id": {
                         "type": "integer",
-                        "format": "int64"
+                        "format": "int64",
+                        "__absolute_uri__": "app:///#/components/schemas/Pet/properties/id"
                       },
                       "name": {
-                        "type": "string"
+                        "type": "string",
+                        "__absolute_uri__": "app:///#/components/schemas/Pet/properties/name"
                       },
                       "tag": {
-                        "type": "string"
+                        "type": "string",
+                        "__absolute_uri__": "app:///#/components/schemas/Pet/properties/tag"
                       }
-                    }
-                  }
-                }
-              }
-            }
+                    },
+                    "__absolute_uri__": "app:///#/components/schemas/Pet"
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Pets"
+                },
+                "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200/content/application~1json"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200/content"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets/get/responses/200"
           },
           "default": {
             "description": "unexpected error",
@@ -91,17 +104,22 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
                     }
-                  }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Error"
                 }
               }
             }
-          }
-        }
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets/get/responses"
+        },
+        "__absolute_uri__": "app:///#/paths/~1pets/get"
       },
       "post": {
         "summary": "Create a pet",
@@ -123,22 +141,30 @@
                 "properties": {
                   "id": {
                     "type": "integer",
-                    "format": "int64"
+                    "format": "int64",
+                    "__absolute_uri__": "app:///#/components/schemas/Pet/properties/id"
                   },
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "__absolute_uri__": "app:///#/components/schemas/Pet/properties/name"
                   },
                   "tag": {
-                    "type": "string"
+                    "type": "string",
+                    "__absolute_uri__": "app:///#/components/schemas/Pet/properties/tag"
                   }
-                }
-              }
-            }
-          }
+                },
+                "__absolute_uri__": "app:///#/components/schemas/Pet"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody/content/application~1json"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody/content"
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets/post/requestBody"
         },
         "responses": {
           "201": {
-            "description": "Null response"
+            "description": "Null response",
+            "__absolute_uri__": "app:///#/paths/~1pets/post/responses/201"
           },
           "400": {
             "description": "Bad Request",
@@ -153,15 +179,21 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
                     }
-                  }
-                }
-              }
-            }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Error"
+                },
+                "__absolute_uri__": "app:///#/paths/~1pets/post/responses/400/content/application~1json"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets/post/responses/400/content"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets/post/responses/400"
           },
           "default": {
             "description": "unexpected error",
@@ -176,18 +208,24 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
                     }
-                  }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Error"
                 }
               }
             }
-          }
-        }
-      }
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets/post/responses"
+        },
+        "__absolute_uri__": "app:///#/paths/~1pets/post"
+      },
+      "__absolute_uri__": "app:///#/paths/~1pets"
     },
     "/pets/{petId}": {
       "get": {
@@ -221,18 +259,25 @@
                   "properties": {
                     "id": {
                       "type": "integer",
-                      "format": "int64"
+                      "format": "int64",
+                      "__absolute_uri__": "app:///#/components/schemas/Pet/properties/id"
                     },
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Pet/properties/name"
                     },
                     "tag": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Pet/properties/tag"
                     }
-                  }
-                }
-              }
-            }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Pet"
+                },
+                "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/200/content/application~1json"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/200/content"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/200"
           },
           "400": {
             "description": "Bad Request",
@@ -247,15 +292,21 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
                     }
-                  }
-                }
-              }
-            }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Error"
+                },
+                "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/400/content/application~1json"
+              },
+              "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/400/content"
+            },
+            "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses/400"
           },
           "default": {
             "description": "unexpected error",
@@ -270,19 +321,26 @@
                   "properties": {
                     "code": {
                       "type": "integer",
-                      "format": "int32"
+                      "format": "int32",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
                     }
-                  }
+                  },
+                  "__absolute_uri__": "app:///#/components/schemas/Error"
                 }
               }
             }
-          }
-        }
-      }
-    }
+          },
+          "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get/responses"
+        },
+        "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D/get"
+      },
+      "__absolute_uri__": "app:///#/paths/~1pets~1%7BpetId%7D"
+    },
+    "__absolute_uri__": "app:///#/paths"
   },
   "components": {
     "schemas": {
@@ -295,15 +353,19 @@
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "__absolute_uri__": "app:///#/components/schemas/Pet/properties/id"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "__absolute_uri__": "app:///#/components/schemas/Pet/properties/name"
           },
           "tag": {
-            "type": "string"
+            "type": "string",
+            "__absolute_uri__": "app:///#/components/schemas/Pet/properties/tag"
           }
-        }
+        },
+        "__absolute_uri__": "app:///#/components/schemas/Pet"
       },
       "Pets": {
         "type": "array",
@@ -317,16 +379,21 @@
           "properties": {
             "id": {
               "type": "integer",
-              "format": "int64"
+              "format": "int64",
+              "__absolute_uri__": "app:///#/components/schemas/Pet/properties/id"
             },
             "name": {
-              "type": "string"
+              "type": "string",
+              "__absolute_uri__": "app:///#/components/schemas/Pet/properties/name"
             },
             "tag": {
-              "type": "string"
+              "type": "string",
+              "__absolute_uri__": "app:///#/components/schemas/Pet/properties/tag"
             }
-          }
-        }
+          },
+          "__absolute_uri__": "app:///#/components/schemas/Pet"
+        },
+        "__absolute_uri__": "app:///#/components/schemas/Pets"
       },
       "Error": {
         "type": "object",
@@ -337,19 +404,27 @@
         "properties": {
           "code": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "__absolute_uri__": "app:///#/components/schemas/Error/properties/code"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "__absolute_uri__": "app:///#/components/schemas/Error/properties/message"
           }
-        }
-      }
+        },
+        "__absolute_uri__": "app:///#/components/schemas/Error"
+      },
+      "__absolute_uri__": "app:///#/components/schemas"
     },
     "securitySchemes": {
       "BasicAuth": {
         "scheme": "basic",
-        "type": "http"
-      }
-    }
-  }
+        "type": "http",
+        "__absolute_uri__": "app:///#/components/securitySchemes/BasicAuth"
+      },
+      "__absolute_uri__": "app:///#/components/securitySchemes"
+    },
+    "__absolute_uri__": "app:///#/components"
+  },
+  "__absolute_uri__": "app:///"
 }
