@@ -110,7 +110,7 @@ public interface OpenAPIContract {
     Promise<OpenAPIContract> promise = ctx.promise();
 
     version.getRepository(vertx, baseUri).compose(repository -> {
-      List<Future> validationFutures = new ArrayList<>(additionalContractFiles.size());
+      List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
       for (String ref : additionalContractFiles.keySet()) {
         // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
         //  method and reused below.
