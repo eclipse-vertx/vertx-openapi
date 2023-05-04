@@ -54,13 +54,14 @@ class PathFinderTest {
     return mockedPath;
   }
 
-  // TODO add test with basepath
   @Test
   void testFindPath() {
     PathImpl v0 = mockPath("", "/v0/api/user");
     PathImpl variableVersion = mockPath("", "/{version}/api/user");
     PathImpl withUsername = mockPath("", "/{version}/api/user/{username}");
-    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername);
+    PathImpl root = mockPath("", "/");
+    PathImpl rootWithVersion = mockPath("", "/{version}");
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, root, rootWithVersion);
     PathFinder pathFinder = new PathFinder(paths);
 
     assertThat(pathFinder.findPath("/v0/api/user")).isEqualTo(v0);
@@ -72,6 +73,12 @@ class PathFinderTest {
 
     assertThat(pathFinder.findPath("/v0/api/user/foo/age")).isNull();
     assertThat(pathFinder.findPath("/v1/api/user/foo/age")).isNull();
+
+    assertThat(pathFinder.findPath("/")).isEqualTo(root);
+    assertThat(pathFinder.findPath("//")).isNull();
+
+    assertThat(pathFinder.findPath("/v0")).isEqualTo(rootWithVersion);
+    assertThat(pathFinder.findPath("/v0/foo")).isNull();
   }
 
   @Test

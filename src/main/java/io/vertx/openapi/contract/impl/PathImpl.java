@@ -73,7 +73,11 @@ public class PathImpl implements Path {
       throw createInvalidContract(
         "Curly brace MUST be the first/last character in a path segment (/{parameterName}/): " + name);
     }
-    this.name = name.endsWith("/") ? name.substring(0, name.length() - 1) : name;
+    if (name.length() > 1 && name.endsWith("/")) {
+      this.name = name.substring(0, name.length() - 1);
+    } else {
+      this.name = name;
+    }
     this.parameters = unmodifiableList(parseParameters(name, pathModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY)));
 
     List<Operation> ops = new ArrayList<>();
