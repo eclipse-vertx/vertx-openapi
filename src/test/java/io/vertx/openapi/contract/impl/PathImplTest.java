@@ -104,6 +104,12 @@ class PathImplTest {
   }
 
   @Test
+  void testRootPath() {
+    String expected = "/";
+    assertThat(new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList()).getName()).isEqualTo(expected);
+  }
+
+  @Test
   void testGetAbsolutePath() {
     String expected = "/base/foo";
     assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT, emptyList()).getAbsolutePath()).isEqualTo(expected);
