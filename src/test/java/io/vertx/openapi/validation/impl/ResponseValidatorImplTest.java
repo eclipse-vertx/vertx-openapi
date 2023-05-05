@@ -18,6 +18,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
@@ -47,7 +48,9 @@ import java.util.stream.Stream;
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
+import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
@@ -170,15 +173,25 @@ class ResponseValidatorImplTest {
     assertThat(validated.getInteger()).isEqualTo(5);
   }
 
-  @Test
-  void testValidateParameterThrowInvalidValue() {
-    Parameter param = buildParam("p1", stringSchema().toJson(), false);
+  static Stream<Arguments> testValidateParameterThrowInvalidValue() {
+    return Stream.of(
+      Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
+      Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
+      Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean")
+    );
+  }
+
+  @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
+  @MethodSource
+  void testValidateParameterThrowInvalidValue(SchemaBuilder<?,?> schema, Object value, String reason) {
+    Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("3")));
+      assertThrows(
+        ValidatorException.class,
+        () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
-    String reason = "Instance type number is invalid. Expected string";
-    String expectedMsg =
-      "The value of header parameter p1 is invalid. Reason: " + reason;
+    String expectedMsg = "The value of header parameter p1 is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 

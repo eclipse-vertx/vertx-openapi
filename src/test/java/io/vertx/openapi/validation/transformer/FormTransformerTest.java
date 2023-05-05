@@ -25,7 +25,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
@@ -33,33 +32,43 @@ import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Style.FORM;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class FormTransformerTest {
-  private static final Parameter DUMMY_PARAM = mockFormParameter("dummy", false);
-  private static final Parameter DUMMY_PARAM_EXPLODE = mockFormParameter("dummy", true);
+class FormTransformerTest implements SchemaSupport {
+
+  private static final Parameter OBJECT_PARAM = mockFormParameter(OBJECT_SCHEMA, false);
+  private static final Parameter ARRAY_PARAM = mockFormParameter(ARRAY_SCHEMA, false);
+  private static final Parameter STRING_PARAM = mockFormParameter(STRING_SCHEMA, false);
+  private static final Parameter NUMBER_PARAM = mockFormParameter(NUMBER_SCHEMA, false);
+  private static final Parameter INTEGER_PARAM = mockFormParameter(INTEGER_SCHEMA, false);
+  private static final Parameter BOOLEAN_PARAM = mockFormParameter(BOOLEAN_SCHEMA, false);
+
+  private static final Parameter OBJECT_PARAM_EXPLODE = mockFormParameter(OBJECT_SCHEMA, true);
+  private static final Parameter ARRAY_PARAM_EXPLODE = mockFormParameter(ARRAY_SCHEMA, true);
+
   private static final FormTransformer TRANSFORMER = new FormTransformer();
 
-  private static Parameter mockFormParameter(String name, boolean explode) {
-    return mockParameter(name, COOKIE, FORM, explode, JsonSchema.of(stringSchema().toJson()));
+  private static Parameter mockFormParameter(JsonSchema schema, boolean explode) {
+    return mockParameter(NAME, COOKIE, FORM, explode, schema);
   }
 
   private static Stream<Arguments> provideValidPrimitiveValues() {
     return Stream.of(
-      Arguments.of("(String) empty", "", ""),
-      Arguments.of("(String) \"foobar\"", "foobar", "foobar"),
-      Arguments.of("(Number) 14.6767", "14.6767", 14.6767),
-      Arguments.of("(Integer) 42", "42", 42),
-      Arguments.of("(Boolean) true", "true", true)
+      Arguments.of("(String) empty", STRING_PARAM, "", ""),
+      Arguments.of("(String) 42", STRING_PARAM, "42", "42"),
+      Arguments.of("(String) \"foobar\"", STRING_PARAM, "foobar", "foobar"),
+      Arguments.of("(Number) 14.6767", NUMBER_PARAM, "14.6767", 14.6767),
+      Arguments.of("(Integer) 42", INTEGER_PARAM, "42", 42),
+      Arguments.of("(Boolean) true", BOOLEAN_PARAM, "true", true)
     );
   }
 
   private static Stream<Arguments> provideValidArrayValues() {
     JsonArray expectedComplex = new JsonArray().add("Hello").add(1).add(false).add(13.37);
     return Stream.of(
-      Arguments.of("empty", DUMMY_PARAM, "", EMPTY_JSON_ARRAY),
-      Arguments.of("3", DUMMY_PARAM, "3", new JsonArray().add(3)),
-      Arguments.of("dummy=3 (exploded)", DUMMY_PARAM_EXPLODE, "dummy=3", new JsonArray().add(3)),
-      Arguments.of("Hello,1,false,13.37", DUMMY_PARAM, "Hello,1,false,13.37", expectedComplex),
-      Arguments.of("dummy=Hello&dummy=1&dummy=false&dummy=13.37 (exploded)", DUMMY_PARAM_EXPLODE,
+      Arguments.of("empty", ARRAY_PARAM, "", EMPTY_JSON_ARRAY),
+      Arguments.of("3", ARRAY_PARAM, "3", new JsonArray().add(3)),
+      Arguments.of("dummy=3 (exploded)", ARRAY_PARAM_EXPLODE, "dummy=3", new JsonArray().add(3)),
+      Arguments.of("Hello,1,false,13.37", ARRAY_PARAM, "Hello,1,false,13.37", expectedComplex),
+      Arguments.of("dummy=Hello&dummy=1&dummy=false&dummy=13.37 (exploded)", ARRAY_PARAM_EXPLODE,
         "dummy=Hello&dummy=1&dummy=false&dummy=13.37", expectedComplex)
     );
   }
@@ -71,17 +80,17 @@ class FormTransformerTest {
       new JsonObject().put("string", "foo").put("integer", 42).put("boolean", true).put("number", 13.37);
 
     return Stream.of(
-      Arguments.of("empty", DUMMY_PARAM, "", EMPTY_JSON_OBJECT),
-      Arguments.of("empty (exploded)", DUMMY_PARAM_EXPLODE, "", EMPTY_JSON_OBJECT),
-      Arguments.of(complexRaw, DUMMY_PARAM, complexRaw, expected),
-      Arguments.of(complexExplodedRaw + " (exploded)", DUMMY_PARAM_EXPLODE, complexExplodedRaw, expected)
+      Arguments.of("empty", OBJECT_PARAM, "", EMPTY_JSON_OBJECT),
+      Arguments.of("empty (exploded)", OBJECT_PARAM_EXPLODE, "", EMPTY_JSON_OBJECT),
+      Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expected),
+      Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw, expected)
     );
   }
 
   @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
-  void testTransformPrimitiveValid(String scenario, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue)).isEqualTo(expectedValue);
+  void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
+    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue)).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with array value: {0}")
@@ -100,7 +109,7 @@ class FormTransformerTest {
   void testInvalidValues() {
     String invalidObject = "string,foo,number";
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(DUMMY_PARAM, invalidObject));
+      assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(STRING_PARAM, invalidObject));
     String expectedMsg = "The formatting of the value of cookie parameter dummy doesn't match to style form.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
