@@ -66,7 +66,8 @@ class ResponseImplTest {
   private static Stream<Arguments> testExceptions() {
     return Stream.of(
       Arguments.of("0000_Response_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
-        "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a response with an unsupported media type. Supported: application/json")
+        "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
+          "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8")
     );
   }
 

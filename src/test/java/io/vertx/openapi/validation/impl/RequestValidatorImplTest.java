@@ -53,7 +53,6 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
@@ -111,11 +110,12 @@ class RequestValidatorImplTest {
     parameters.add(buildParam("QueryParamTrace", QUERY, FORM, booleanSchema().toJson(), true));
 
     MediaType mockedMediaType = mock(MediaType.class);
+    when(mockedMediaType.getIdentifier()).thenReturn(MediaType.APPLICATION_JSON);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
 
     RequestBody mockedRequestBody = mock(RequestBody.class);
     when(mockedRequestBody.isRequired()).thenReturn(true);
-    when(mockedRequestBody.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
+    when(mockedRequestBody.determineContentType(anyString())).thenReturn(mockedMediaType);
 
     JsonObject body = new JsonObject().put("foo", "bar");
 
@@ -205,7 +205,8 @@ class RequestValidatorImplTest {
   @MethodSource
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testValidateWithValidatableRequestAndOperationId(List<Parameter> parameters, RequestBody requestBody,
-    ValidatableRequest request, ValidatedRequest expected, VertxTestContext testContext) {
+                                                        ValidatableRequest request, ValidatedRequest expected,
+                                                        VertxTestContext testContext) {
     Operation mockedOperation = mock(Operation.class);
     when(mockedOperation.getParameters()).thenReturn(parameters);
     when(mockedOperation.getRequestBody()).thenReturn(requestBody);
@@ -290,12 +291,12 @@ class RequestValidatorImplTest {
 
   @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
   @MethodSource
-  void testValidateParameterThrowInvalidValue(SchemaBuilder<?,?> schema, Object value, String reason) {
+  void testValidateParameterThrowInvalidValue(SchemaBuilder<?, ?> schema, Object value, String reason) {
     Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
-        assertThrows(
-            ValidatorException.class,
-            () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+      assertThrows(
+        ValidatorException.class,
+        () -> validator.validateParameter(param, new RequestParameterImpl(value)));
 
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String expectedMsg = "The value of path parameter p1 is invalid. Reason: " + reason;
@@ -340,13 +341,14 @@ class RequestValidatorImplTest {
   private RequestBody mockRequestBody(boolean isRequired) {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
-    return mockRequestBody(isRequired, ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
+    when(mockedMediaType.getIdentifier()).thenReturn(MediaType.APPLICATION_JSON);
+    return mockRequestBody(isRequired, mockedMediaType);
   }
 
-  private RequestBody mockRequestBody(boolean isRequired, Map<String, MediaType> content) {
+  private RequestBody mockRequestBody(boolean isRequired, MediaType determinedContent) {
     RequestBody mockedRequestBody = mock(RequestBody.class);
     when(mockedRequestBody.isRequired()).thenReturn(isRequired);
-    when(mockedRequestBody.getContent()).thenReturn(content);
+    when(mockedRequestBody.determineContentType(anyString())).thenReturn(determinedContent);
     return mockedRequestBody;
   }
 
@@ -376,8 +378,7 @@ class RequestValidatorImplTest {
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
   @ValueSource(strings = {"text/plain", "foo/bar"})
   void testValidateBodyMediaTypeOrTransformerNull(String contentType) {
-    RequestBody mockedRequestBody =
-      mockRequestBody(false, ImmutableMap.of(TEXT_PLAIN.toString(), mock(MediaType.class)));
+    RequestBody mockedRequestBody = mockRequestBody(false, mock(MediaType.class));
 
     ValidatableRequest mockedValidatableRequest = mock(ValidatableRequest.class);
     when(mockedValidatableRequest.getBody()).thenReturn(new RequestParameterImpl("foobar"));

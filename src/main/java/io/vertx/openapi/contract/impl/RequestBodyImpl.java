@@ -26,7 +26,6 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.lang.String.join;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 public class RequestBodyImpl implements RequestBody {
@@ -43,20 +42,25 @@ public class RequestBodyImpl implements RequestBody {
     this.requestBodyModel = requestBodyModel;
     this.required = requestBodyModel.getBoolean(KEY_REQUIRED, false);
     JsonObject contentObject = requestBodyModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
+
     this.content = unmodifiableMap(
       contentObject
         .fieldNames()
         .stream()
         .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-        .collect(toMap(identity(), key -> new MediaTypeImpl(contentObject.getJsonObject(key)))));
+        .filter(mediaTypeIdentifier -> {
+          if (isMediaTypeSupported(mediaTypeIdentifier)) {
+            return true;
+          }
+          String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
+          throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
+        })
+        .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
     if (content.isEmpty()) {
       String msg =
         String.format("Operation %s defines a request body without or with empty property \"content\"", operationId);
       throw createInvalidContract(msg);
-    } else if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type))) {
-      String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
-      throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(",", SUPPORTED_MEDIA_TYPES)));
     }
   }
 
@@ -73,5 +77,24 @@ public class RequestBodyImpl implements RequestBody {
   @Override
   public Map<String, MediaType> getContent() {
     return content;
+  }
+
+  @Override
+  public MediaType determineContentType(String contentType) {
+    String condensedIdentifier = removeWhiteSpaces(contentType);
+    if (content.containsKey(condensedIdentifier)) {
+      return content.get(condensedIdentifier);
+    }
+
+    for (Map.Entry<String, MediaType> declaredType : content.entrySet()) {
+      if (condensedIdentifier.startsWith(removeWhiteSpaces(declaredType.getKey()))) {
+        return declaredType.getValue();
+      }
+    }
+    return null;
+  }
+
+  private String removeWhiteSpaces(String s) {
+    return s.replaceAll("\\s+", "");
   }
 }
