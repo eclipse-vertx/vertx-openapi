@@ -19,19 +19,22 @@ import io.vertx.openapi.contract.OpenAPIContractException;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MediaTypeImplTest {
+  private static final String DUMMY_IDENTIFIER = APPLICATION_JSON.toString();
 
   @Test
   void testGetters() {
     JsonObject model = new JsonObject().put("schema", stringSchema().toJson());
-    MediaType mediaType = new MediaTypeImpl(model);
+    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, model);
 
     assertThat(mediaType.getOpenAPIModel()).isEqualTo(model);
     assertThat(mediaType.getSchema().fieldNames()).containsExactly("type", "$id");
+    assertThat(mediaType.getIdentifier()).isEqualTo(DUMMY_IDENTIFIER);
   }
 
   @Test
@@ -39,13 +42,14 @@ class MediaTypeImplTest {
     String msg = "The passed OpenAPI contract contains a feature that is not supported: Media Type without a schema";
 
     OpenAPIContractException exceptionNull =
-      assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(new JsonObject().putNull("schema")));
+      assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER,
+        new JsonObject().putNull("schema")));
     assertThat(exceptionNull.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionNull).hasMessageThat().isEqualTo(msg);
 
     OpenAPIContractException exceptionEmpty =
       assertThrows(OpenAPIContractException.class,
-        () -> new MediaTypeImpl(new JsonObject().put("schema", EMPTY_JSON_OBJECT)));
+        () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT)));
     assertThat(exceptionEmpty.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionEmpty).hasMessageThat().isEqualTo(msg);
   }

@@ -36,4 +36,19 @@ public interface RequestBody extends OpenAPIObject {
    * type range and the value describes it.
    */
   Map<String, MediaType> getContent();
+
+  /**
+   * This method tries to determine the best fitting {@link MediaType} based on the passed content type.
+   * <br>
+   * <br>
+   * This is necessary, to avoid that an incoming request of type <i>application/json; charset=utf-8</i> is failing,
+   * because we only declared <i>application/json</i> in the OpenAPI spec.
+   * <br>
+   * <br>
+   * <b>Important:</b> If <i>application/json</i> is declared in the contract, <i>application/json; charset=utf-8</i>
+   * would fit, but not the other way around.
+   *
+   * @return A fitting media type, or null.
+   */
+  MediaType determineContentType(String mediaTypeIdentifier);
 }
