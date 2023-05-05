@@ -82,7 +82,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
         return new RequestParameterImpl(null);
       }
     }
-    Object transformedValue = TRANSFORMER.transform(parameter, value.getString());
+    Object transformedValue = TRANSFORMER.transform(parameter, String.valueOf(value.get()));
 
     OutputUnit result = contract.getSchemaRepository().validator(parameter.getSchema()).validate(transformedValue);
 

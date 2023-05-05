@@ -27,8 +27,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
-import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
@@ -38,23 +36,32 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-class LabelTransformerTest {
-  private static final Parameter DUMMY_PARAM = mockLabelParameter("dummy", false);
-  private static final Parameter DUMMY_PARAM_EXPLODE = mockLabelParameter("dummy", true);
+class LabelTransformerTest implements SchemaSupport {
+
+  private static final Parameter OBJECT_PARAM = mockLabelParameter(OBJECT_SCHEMA, false);
+  private static final Parameter ARRAY_PARAM = mockLabelParameter(ARRAY_SCHEMA, false);
+  private static final Parameter STRING_PARAM = mockLabelParameter(STRING_SCHEMA, false);
+  private static final Parameter NUMBER_PARAM = mockLabelParameter(NUMBER_SCHEMA, false);
+  private static final Parameter INTEGER_PARAM = mockLabelParameter(INTEGER_SCHEMA, false);
+  private static final Parameter BOOLEAN_PARAM = mockLabelParameter(BOOLEAN_SCHEMA, false);
+
+  private static final Parameter OBJECT_PARAM_EXPLODE = mockLabelParameter(OBJECT_SCHEMA, true);
+  private static final Parameter ARRAY_PARAM_EXPLODE = mockLabelParameter(ARRAY_SCHEMA, true);
 
   private static final LabelTransformer TRANSFORMER = new LabelTransformer();
 
-  private static Parameter mockLabelParameter(String name, boolean explode) {
-    return mockParameter(name, PATH, LABEL, explode, JsonSchema.of(stringSchema().toJson()));
+  private static Parameter mockLabelParameter(JsonSchema schema, boolean explode) {
+    return mockParameter(NAME, PATH, LABEL, explode, schema);
   }
 
   private static Stream<Arguments> provideValidPrimitiveValues() {
     return Stream.of(
-      Arguments.of("(String) empty", ".", ""),
-      Arguments.of("(String) \".foobar\"", ".foobar", "foobar"),
-      Arguments.of("(Number) .14.6767", ".14.6767", 14.6767),
-      Arguments.of("(Integer) .42", ".42", 42),
-      Arguments.of("(Boolean) .true", ".true", true)
+      Arguments.of("(String) empty", STRING_PARAM, ".", ""),
+      Arguments.of("(String) .44", STRING_PARAM, ".44", "44"),
+      Arguments.of("(String) \".foobar\"", STRING_PARAM, ".foobar", "foobar"),
+      Arguments.of("(Number) .14.6767", NUMBER_PARAM, ".14.6767", 14.6767),
+      Arguments.of("(Integer) .42", INTEGER_PARAM, ".42", 42),
+      Arguments.of("(Boolean) .true", BOOLEAN_PARAM, ".true", true)
     );
   }
 
@@ -62,11 +69,11 @@ class LabelTransformerTest {
     JsonArray expectedNoNumber = new JsonArray().add("Hello").add(1).add(false);
     JsonArray expectedComplex = expectedNoNumber.copy().add(13.37);
     return Stream.of(
-      Arguments.of("empty .", DUMMY_PARAM, ".", EMPTY_JSON_ARRAY),
-      Arguments.of(".3", DUMMY_PARAM, ".3", new JsonArray().add(3)),
-      Arguments.of(".3 (exploded)", DUMMY_PARAM_EXPLODE, ".3", new JsonArray().add(3)),
-      Arguments.of(".Hello,1,false,13.37", DUMMY_PARAM, ".Hello,1,false,13.37", expectedComplex),
-      Arguments.of(".Hello.1.false (exploded)", DUMMY_PARAM_EXPLODE, ".Hello.1.false", expectedNoNumber)
+      Arguments.of("empty .", ARRAY_PARAM, ".", EMPTY_JSON_ARRAY),
+      Arguments.of(".3", ARRAY_PARAM, ".3", new JsonArray().add(3)),
+      Arguments.of(".3 (exploded)", ARRAY_PARAM_EXPLODE, ".3", new JsonArray().add(3)),
+      Arguments.of(".Hello,1,false,13.37", ARRAY_PARAM, ".Hello,1,false,13.37", expectedComplex),
+      Arguments.of(".Hello.1.false (exploded)", ARRAY_PARAM_EXPLODE, ".Hello.1.false", expectedNoNumber)
     );
   }
 
@@ -78,19 +85,19 @@ class LabelTransformerTest {
     JsonObject expectedComplex = expectedNoNumber.copy().put("number", 13.37);
 
     return Stream.of(
-      Arguments.of("empty", DUMMY_PARAM, ".", EMPTY_JSON_OBJECT),
-      Arguments.of("empty (exploded)", DUMMY_PARAM_EXPLODE, ".", EMPTY_JSON_OBJECT),
-      Arguments.of(complexRaw, DUMMY_PARAM, complexRaw, expectedComplex),
-      Arguments.of(complexExplodedRaw + " (exploded)", DUMMY_PARAM_EXPLODE, complexExplodedRaw,
+      Arguments.of("empty", OBJECT_PARAM, ".", EMPTY_JSON_OBJECT),
+      Arguments.of("empty (exploded)", OBJECT_PARAM_EXPLODE, ".", EMPTY_JSON_OBJECT),
+      Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expectedComplex),
+      Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw,
         expectedNoNumber)
     );
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
-  void testTransformPrimitiveValid(String scenario, String rawValue, Object expectedValue) {
+  void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
     // Leading dot will be removed in transform method
-    assertThat(TRANSFORMER.transformPrimitive(DUMMY_PARAM, rawValue.substring(1))).isEqualTo(expectedValue);
+    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue.substring(1))).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with array value: {0}")
@@ -111,7 +118,7 @@ class LabelTransformerTest {
   void testInvalidValues() {
     String invalidObject = ".string,foo,number";
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(DUMMY_PARAM, invalidObject));
+      assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(OBJECT_PARAM, invalidObject));
     String expectedMsg = "The formatting of the value of path parameter dummy doesn't match to style label.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -120,7 +127,7 @@ class LabelTransformerTest {
   @ValueSource(strings = {"", "notStartingWithDot"})
   void testTransformException(String invalidValue) {
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> TRANSFORMER.transform(DUMMY_PARAM, invalidValue));
+      assertThrows(ValidatorException.class, () -> TRANSFORMER.transform(STRING_PARAM, invalidValue));
     String expectedMsg = "The formatting of the value of path parameter dummy doesn't match to style label.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -128,10 +135,8 @@ class LabelTransformerTest {
   @Test
   @DisplayName("Ensure that values with leading dot are forwarded to the related transform methods")
   void testTransform() {
-    JsonSchema schema = JsonSchema.of(arraySchema().toJson());
-    Parameter param = mockParameter("dummy", PATH, LABEL, false, schema);
     LabelTransformer spyTransformer = spy(new LabelTransformer());
-    spyTransformer.transform(param, ".5");
-    verify(spyTransformer).transform(param, ".5");
+    spyTransformer.transform(STRING_PARAM, ".5");
+    verify(spyTransformer).transform(STRING_PARAM, ".5");
   }
 }

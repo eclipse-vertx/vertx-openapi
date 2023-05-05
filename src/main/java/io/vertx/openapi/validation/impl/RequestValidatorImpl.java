@@ -122,7 +122,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
     if (transformer == null) {
       throw createUnsupportedValueFormat(parameter);
     }
-    Object transformedValue = transformer.transform(parameter, value.getString());
+    Object transformedValue = transformer.transform(parameter, String.valueOf(value.get()));
     OutputUnit result = contract.getSchemaRepository().validator(parameter.getSchema()).validate(transformedValue);
 
     try {
