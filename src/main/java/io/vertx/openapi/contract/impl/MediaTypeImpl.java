@@ -21,10 +21,12 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 public class MediaTypeImpl implements MediaType {
   private static final String KEY_SCHEMA = "schema";
   private final JsonObject mediaTypeModel;
+  private final String identifier;
 
   private final JsonSchema schema;
 
-  public MediaTypeImpl(JsonObject mediaTypeModel) {
+  public MediaTypeImpl(String identifier, JsonObject mediaTypeModel) {
+    this.identifier = identifier;
     this.mediaTypeModel = mediaTypeModel;
     JsonObject schemaJson = mediaTypeModel.getJsonObject(KEY_SCHEMA);
     if (schemaJson == null || schemaJson.isEmpty()) {
@@ -36,6 +38,11 @@ public class MediaTypeImpl implements MediaType {
   @Override
   public JsonSchema getSchema() {
     return schema;
+  }
+
+  @Override
+  public String getIdentifier() {
+    return identifier;
   }
 
   @Override
