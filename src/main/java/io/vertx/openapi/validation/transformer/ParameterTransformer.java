@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.Parameter;
 
+import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createCantDecodeValue;
@@ -56,6 +57,11 @@ public abstract class ParameterTransformer {
    * @return An {@link Object} holding the transformed value.
    */
   public Object transformPrimitive(Parameter parameter, String rawValue) {
+    boolean isString = STRING.equals(parameter.getSchemaType());
+    if (isString && rawValue.matches("\\w+")) {
+      return rawValue;
+    }
+
     try {
       return Json.decodeValue(rawValue);
     } catch (DecodeException de) {
