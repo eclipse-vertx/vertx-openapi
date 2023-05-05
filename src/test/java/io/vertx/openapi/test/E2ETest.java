@@ -12,9 +12,11 @@
 
 package io.vertx.openapi.test;
 
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
@@ -25,6 +27,7 @@ import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedRequest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,7 +38,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.openapi.ResourceHelper.loadJson;
 
@@ -71,7 +73,7 @@ class E2ETest extends HttpServerTestBase {
         int petId = req.getPathParameters().get("petId").getInteger();
         assertThat(petId).isEqualTo(expectedPetId);
       });
-      return ValidatableResponse.create(200, expectedPet.toBuffer(), APPLICATION_JSON.toString());
+      return ValidatableResponse.create(200, expectedPet.toBuffer(), HttpHeaderValues.APPLICATION_JSON.toString());
     }, contract.operation("showPetById").getOperationId(), testContext)).compose(v -> {
       String bp = basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath;
       Future<HttpClientRequest> req = createRequest(HttpMethod.GET, bp + "/pets/" + expectedPetId);
@@ -84,15 +86,32 @@ class E2ETest extends HttpServerTestBase {
     }).onFailure(testContext::failNow);
   }
 
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @ParameterizedTest(name = "{index} Request with content type {0} passes validation")
+  @ValueSource(strings = {"application/json", "application/json; charset=utf-8"})
+  @DisplayName("Test that the request content type check is less restrictive")
+  void testLessRestrictiveContentType(String requestContentType, VertxTestContext testContext) {
+    JsonObject expectedPet = new JsonObject().put("id", 1).put("name", "FooBar");
+
+    setupContract("", testContext).compose(v -> createValidationHandler(req -> {
+        testContext.completeNow();
+        return ValidatableResponse.create(201);
+      }, contract.operation("createPets").getOperationId(), testContext))
+      .compose(v -> createRequest(HttpMethod.POST, "/pets"))
+      .map(request -> request.putHeader(HttpHeaders.CONTENT_TYPE, requestContentType))
+      .compose(request -> request.send(expectedPet.toBuffer()))
+      .onFailure(testContext::failNow);
+  }
+
   private Future<Void> request(Future<HttpClientRequest> request, Consumer<HttpClientResponse> verifier,
-    VertxTestContext testContext) {
+                               VertxTestContext testContext) {
     return request.compose(HttpClientRequest::send)
       .onSuccess(response -> testContext.verify(() -> verifier.accept(response))).onFailure(testContext::failNow)
       .mapEmpty();
   }
 
   private Future<Void> createValidationHandler(Function<ValidatedRequest, ValidatableResponse> processor,
-    String operationId, VertxTestContext testContext) {
+                                               String operationId, VertxTestContext testContext) {
     return createServer(request -> requestValidator.validate(request, operationId)
       .map(processor).compose(validatableResponse -> responseValidator.validate(validatableResponse, operationId))
       .compose(validatedResponse -> validatedResponse.send(request.response()))

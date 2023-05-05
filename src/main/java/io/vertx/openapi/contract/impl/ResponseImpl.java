@@ -37,7 +37,6 @@ import static java.util.stream.Collectors.toMap;
 
 public class ResponseImpl implements Response {
   private static final String KEY_HEADERS = "headers";
-  private static final String KEY_SCHEMA = "schema";
   private static final String KEY_CONTENT = "content";
 
   private static final Predicate<String> FILTER_CONTENT_TYPE = name -> !name.equalsIgnoreCase(CONTENT_TYPE.toString());
@@ -59,7 +58,8 @@ public class ResponseImpl implements Response {
         .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
         .filter(FILTER_CONTENT_TYPE)
         .map(name -> {
-          JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in", HEADER.toString());
+          JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in",
+            HEADER.toString());
           return new ParameterImpl("", headerModel);
         })
         .collect(Collectors.toList()));
@@ -70,11 +70,11 @@ public class ResponseImpl implements Response {
         .fieldNames()
         .stream()
         .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-        .collect(toMap(identity(), key -> new MediaTypeImpl(contentObject.getJsonObject(key)))));
+        .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
     if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type))) {
       String msgTemplate = "Operation %s defines a response with an unsupported media type. Supported: %s";
-      throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(",", SUPPORTED_MEDIA_TYPES)));
+      throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
     }
   }
 

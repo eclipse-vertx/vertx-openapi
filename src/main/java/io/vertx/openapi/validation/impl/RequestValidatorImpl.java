@@ -147,10 +147,9 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       }
     }
 
-    String mediaTypeIdentifier = request.getContentType();
-    MediaType mediaType = requestBody.getContent().get(mediaTypeIdentifier);
-    BodyTransformer transformer = bodyTransformers.get(mediaTypeIdentifier);
-    if (transformer == null || mediaType == null) {
+    MediaType mediaType = requestBody.determineContentType(request.getContentType());
+    BodyTransformer transformer = mediaType == null ? null : bodyTransformers.get(mediaType.getIdentifier());
+    if (transformer == null) {
       throw new ValidatorException("The format of the request body is not supported", UNSUPPORTED_VALUE_FORMAT);
     }
     Object transformedValue = transformer.transform(mediaType, request.getBody().getBuffer());
