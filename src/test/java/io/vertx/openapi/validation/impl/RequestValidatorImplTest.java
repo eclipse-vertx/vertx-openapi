@@ -18,6 +18,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
@@ -279,16 +280,33 @@ class RequestValidatorImplTest {
     assertThat(validated.getInteger()).isEqualTo(5);
   }
 
-  @Test
-  void testValidateParameterThrowInvalidValue() {
-    Parameter param = buildParam("p1", stringSchema().toJson(), false);
+  static Stream<Arguments> testValidateParameterThrowInvalidValue() {
+    return Stream.of(
+      Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
+      Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
+      Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean")
+    );
+  }
+
+  @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
+  @MethodSource
+  void testValidateParameterThrowInvalidValue(SchemaBuilder<?,?> schema, Object value, String reason) {
+    Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("3")));
+        assertThrows(
+            ValidatorException.class,
+            () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
-    String reason = "Instance type number is invalid. Expected string";
-    String expectedMsg =
-      "The value of path parameter p1 is invalid. Reason: " + reason;
+    String expectedMsg = "The value of path parameter p1 is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  void testStringParameterValidatesNotAsIntegerType() {
+    Parameter param = buildParam("p1", stringSchema().toJson(), false);
+    RequestParameter validated = validator.validateParameter(param, new RequestParameterImpl("3"));
+    assertThat(validated.getString()).isEqualTo("3");
   }
 
   @ParameterizedTest(name = "{index} Throw error when required param is missing: {0}")
