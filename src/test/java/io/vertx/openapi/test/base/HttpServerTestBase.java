@@ -35,6 +35,7 @@ public class HttpServerTestBase {
 
   protected int port;
   protected Vertx vertx;
+  private HttpClient client;
 
   /**
    * Creates a new HttpServer with the passed requestHandler.
@@ -52,6 +53,7 @@ public class HttpServerTestBase {
   @BeforeEach
   void setup(Vertx vertx) {
     this.vertx = vertx;
+    this.client = vertx.createHttpClient(new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost"));
   }
 
   @AfterEach
@@ -72,8 +74,6 @@ public class HttpServerTestBase {
    * @return a pre-configured HTTP request.
    */
   protected Future<HttpClientRequest> createRequest(HttpMethod method, String path) {
-    HttpClient client =
-      vertx.createHttpClient(new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost"));
     return client.request(method, path);
   }
 }
