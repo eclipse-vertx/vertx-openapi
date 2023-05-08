@@ -15,11 +15,7 @@ package io.vertx.openapi.test.base;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.*;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -53,7 +49,7 @@ public class HttpServerTestBase {
   @BeforeEach
   void setup(Vertx vertx) {
     this.vertx = vertx;
-    this.client = vertx.createHttpClient(new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost"));
+    this.client = vertx.createHttpClient();
   }
 
   @AfterEach
@@ -74,6 +70,6 @@ public class HttpServerTestBase {
    * @return a pre-configured HTTP request.
    */
   protected Future<HttpClientRequest> createRequest(HttpMethod method, String path) {
-    return client.request(method, path);
+    return client.request(new RequestOptions().setPort(port).setHost("localhost").setMethod(method).setURI(path));
   }
 }
