@@ -12,12 +12,14 @@
 
 package io.vertx.openapi.contract;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.Draft;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.json.schema.SchemaRepository;
 
@@ -68,13 +70,31 @@ public enum OpenAPIVersion {
     }
   }
 
-  public Future<OutputUnit> validate(Vertx vertx, SchemaRepository repo, JsonObject contract) {
+  public Future<OutputUnit> validateContract(Vertx vertx, SchemaRepository repo, JsonObject contract) {
     return vertx.executeBlocking(p -> p.complete(repo.validator(mainSchemaFile).validate(contract)));
+  }
+
+  public Future<Void> validateAdditionalContractFiles(Vertx vertx, SchemaRepository repo,
+                                                      String identifier, JsonObject file) {
+    Future<Void> validateAgainstOpenAPI = validateContract(vertx, repo, file).compose(this::checkOutputUnit);
+    Future<Void> validateAgainstDraft =
+      vertx.<OutputUnit>executeBlocking(p -> p.complete(repo.validator(draft.getIdentifier()).validate(file))).compose(this::checkOutputUnit);
+
+    return CompositeFuture.any(validateAgainstOpenAPI, validateAgainstDraft).mapEmpty();
+  }
+
+  private Future<Void> checkOutputUnit(OutputUnit ou) {
+    try {
+      ou.checkValidity();
+      return Future.succeededFuture();
+    } catch (JsonSchemaValidationException e) {
+      return Future.failedFuture(e);
+    }
   }
 
   public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
     return vertx.executeBlocking(p -> {
-      JsonSchema schema =JsonSchema.of(contract);
+      JsonSchema schema = JsonSchema.of(contract);
       repo.dereference(schema);
       JsonObject resolved = repo.resolve(contract);
       p.complete(resolved);

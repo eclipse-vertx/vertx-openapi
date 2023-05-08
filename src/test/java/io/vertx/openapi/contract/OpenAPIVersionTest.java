@@ -37,9 +37,9 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -74,7 +74,7 @@ class OpenAPIVersionTest {
   @Timeout(value = 2, timeUnit = SECONDS)
   void testValidate(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
         testContext.verify(() -> assertThat(res.getValid()).isTrue());
         testContext.completeNow();
@@ -85,9 +85,9 @@ class OpenAPIVersionTest {
   @MethodSource(value = "provideVersionAndInvalidSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
   void testValidateError(OpenAPIVersion version, Path contractFile, Consumer<OutputUnit> validator, Vertx vertx,
-    VertxTestContext testContext) {
+                         VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
         testContext.verify(() -> validator.accept(res));
         testContext.completeNow();

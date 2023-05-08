@@ -114,24 +114,22 @@ public interface OpenAPIContract {
       for (String ref : additionalContractFiles.keySet()) {
         // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
         //  method and reused below.
-        Future<?> validationFuture = version.validate(vertx, repository, additionalContractFiles.get(ref)).map(res -> {
-          try {
-            res.checkValidity();
-            return repository.dereference(ref, JsonSchema.of(ref, additionalContractFiles.get(ref)));
-          } catch (JsonSchemaValidationException e) {
+        JsonObject file = additionalContractFiles.get(ref);
+        Future<?> validationFuture = version.validateAdditionalContractFiles(vertx, repository, ref, file)
+          .compose(v -> vertx.executeBlocking(p -> p.complete(repository.dereference(ref, JsonSchema.of(ref, file)))))
+          .recover(e -> {
             String msg = "Found issue in specification for reference: " + ref;
-            throw createInvalidContract(msg, e);
-          }
-        });
+            return failedFuture(createInvalidContract(msg, e));
+          });
         validationFutures.add(validationFuture);
       }
       return CompositeFuture.all(validationFutures).map(repository);
     }).compose(repository ->
-      version.validate(vertx, repository, unresolvedContract).compose(res -> {
+      version.validateContract(vertx, repository, unresolvedContract).compose(res -> {
         try {
           res.checkValidity();
           return version.resolve(vertx, repository, unresolvedContract);
-        } catch (JsonSchemaValidationException e) {
+        } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
           return failedFuture(createInvalidContract(null, e));
         }
       }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))

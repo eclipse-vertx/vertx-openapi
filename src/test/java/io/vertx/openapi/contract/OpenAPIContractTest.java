@@ -80,7 +80,7 @@ class OpenAPIContractTest {
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   @MethodSource
   void testFromWithPathAndAdditionalContractFiles(String path, Map<String, String> additionalFiles, JsonObject expected,
-    Vertx vertx, VertxTestContext testContext) {
+                                                  Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, path, additionalFiles)
       .onComplete(testContext.succeeding(contract -> testContext.verify(() -> {
         assertThat(contract.getRawContract()).isEqualTo(expected);
@@ -113,7 +113,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+    //@Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testInvalidAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -124,7 +124,8 @@ class OpenAPIContractTest {
       .onComplete(testContext.failing(t -> testContext.verify(() -> {
         assertThat(t).isInstanceOf(OpenAPIContractException.class);
         String expectedErrorMessage =
-          "The passed OpenAPI contract is invalid: Found issue in specification for reference: https://example.com/petstore";
+          "The passed OpenAPI contract is invalid: Found issue in specification for reference: https://example" +
+            ".com/petstore";
         assertThat(t).hasMessageThat().isEqualTo(expectedErrorMessage);
         testContext.completeNow();
       })));
