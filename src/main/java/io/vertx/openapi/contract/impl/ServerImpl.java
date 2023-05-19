@@ -46,7 +46,7 @@ public class ServerImpl implements Server {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return serverModel.copy();
+    return serverModel;
   }
 
   @Override
