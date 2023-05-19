@@ -80,7 +80,7 @@ public class ResponseImpl implements Response {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return responseModel.copy();
+    return responseModel;
   }
 
   @Override

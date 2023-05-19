@@ -66,7 +66,7 @@ public class RequestBodyImpl implements RequestBody {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return requestBodyModel.copy();
+    return requestBodyModel;
   }
 
   @Override
