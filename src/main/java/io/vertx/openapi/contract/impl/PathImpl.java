@@ -109,7 +109,7 @@ public class PathImpl implements Path {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return pathModel.copy();
+    return pathModel;
   }
 
   public String getAbsolutePath() {

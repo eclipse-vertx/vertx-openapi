@@ -154,7 +154,7 @@ public class ParameterImpl implements Parameter {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return parameterModel.copy();
+    return parameterModel;
   }
 
   @Override
@@ -162,7 +162,8 @@ public class ParameterImpl implements Parameter {
     return schema;
   }
 
-  @Override public SchemaType getSchemaType() {
+  @Override
+  public SchemaType getSchemaType() {
     return schemaType;
   }
 }
