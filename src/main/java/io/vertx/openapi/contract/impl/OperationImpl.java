@@ -143,7 +143,7 @@ public class OperationImpl implements Operation {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return operationModel.copy();
+    return operationModel;
   }
 
   @Override

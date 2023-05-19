@@ -47,6 +47,6 @@ public class MediaTypeImpl implements MediaType {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return mediaTypeModel.copy();
+    return mediaTypeModel;
   }
 }
