@@ -29,7 +29,7 @@ public class ValidatedResponseImpl implements ValidatedResponse {
   private final ValidatableResponse unvalidated;
 
   public ValidatedResponseImpl(Map<String, ResponseParameter> headers, ResponseParameter body,
-    ValidatableResponse unvalidated) {
+                               ValidatableResponse unvalidated) {
     this.headers = safeUnmodifiableMap(headers);
     this.body = body == null ? new RequestParameterImpl(null) : body;
     this.unvalidated = unvalidated;
@@ -60,7 +60,7 @@ public class ValidatedResponseImpl implements ValidatedResponse {
       }
     }
 
-    if (body.isEmpty()) {
+    if (body.isNull() || (body.isString() && body.getString().isEmpty()) || (body.isBuffer() && body.getBuffer().length() == 0)) {
       return serverResponse.send();
     } else {
       serverResponse.headers().add(CONTENT_TYPE.toString(), unvalidated.getContentType());
