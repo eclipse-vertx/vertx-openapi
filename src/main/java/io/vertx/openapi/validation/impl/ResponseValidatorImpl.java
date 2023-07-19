@@ -62,14 +62,14 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
 
   @Override
   public Future<ValidatedResponse> validate(ValidatableResponse params, String operationId) {
-    return getResponse(params, operationId).compose(response -> vertx.executeBlocking(p -> {
+    return getResponse(params, operationId).compose(response -> vertx.executeBlocking(() -> {
       Map<String, ResponseParameter> headers = new HashMap<>(params.getHeaders().size());
       for (Parameter header : response.getHeaders()) {
         headers.put(header.getName(), validateParameter(header, params.getHeaders().get(header.getName())));
       }
 
       ResponseParameter body = validateBody(response, params);
-      p.complete(new ValidatedResponseImpl(headers, body, params));
+      return new ValidatedResponseImpl(headers, body, params);
     }));
   }
 

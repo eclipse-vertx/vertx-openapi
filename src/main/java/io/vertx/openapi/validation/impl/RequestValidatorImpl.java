@@ -81,7 +81,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
 
   @Override
   public Future<ValidatedRequest> validate(ValidatableRequest request, String operationId) {
-    return getOperation(operationId).compose(operation -> vertx.executeBlocking(p -> {
+    return getOperation(operationId).compose(operation -> vertx.executeBlocking(() -> {
       Map<String, RequestParameter> cookies = new HashMap<>(request.getCookies().size());
       Map<String, RequestParameter> headers = new HashMap<>(request.getHeaders().size());
       Map<String, RequestParameter> path = new HashMap<>(request.getPathParameters().size());
@@ -104,7 +104,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       }
 
       RequestParameter body = validateBody(operation.getRequestBody(), request);
-      p.complete(new ValidatedRequestImpl(cookies, headers, path, query, body));
+      return new ValidatedRequestImpl(cookies, headers, path, query, body);
     }));
   }
 
