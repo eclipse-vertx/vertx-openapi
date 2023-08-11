@@ -32,7 +32,12 @@ class ValidatableResponseImplTest {
     int statusCode = 1337;
 
     ValidatableResponse response = new ValidatableResponseImpl(statusCode, headers, body, contentType);
-    assertThat(response.getHeaders()).containsExactlyEntriesIn(headers);
+    assertThat(response.getHeaders()).hasSize(1);
+    assertThat(response.getHeaders()).containsKey("param1");
+    assertThat(response.getHeaders()).containsKey("Param1");
+    assertThat(response.getHeaders().get("param1")).isEqualTo(new RequestParameterImpl("Param1"));
+    assertThat(response.getHeaders().get("Param1")).isEqualTo(new RequestParameterImpl("Param1"));
+
     assertThat(response.getBody()).isEqualTo(body);
     assertThat(response.getContentType()).isEqualTo(contentType);
     assertThat(response.getStatusCode()).isEqualTo(statusCode);
