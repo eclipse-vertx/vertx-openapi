@@ -19,7 +19,6 @@ import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ValidatableResponseImpl;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import static java.util.Collections.emptyMap;
@@ -76,7 +75,7 @@ public interface ValidatableResponse {
   static ValidatableResponse create(int statusCode, Map<String, String> headers, Buffer body, String contentType) {
     Map<String, ResponseParameter> transformedHeaders =
       Optional.ofNullable(headers).orElse(emptyMap()).entrySet().stream().collect(toMap(
-        Entry::getKey, entry -> new RequestParameterImpl(entry.getValue())));
+        entry -> entry.getKey().toLowerCase(), entry -> new RequestParameterImpl(entry.getValue())));
 
     if (body != null && contentType == null) {
       throw new IllegalArgumentException("When a body is passed, the content type MUST be specified");
