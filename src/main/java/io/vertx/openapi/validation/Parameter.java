@@ -14,12 +14,10 @@ package io.vertx.openapi.validation;
 
 import io.vertx.codegen.annotations.CacheReturn;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@VertxGen
 interface Parameter {
   /**
    * @return null if value is not a {@link String}, otherwise it returns value
@@ -143,7 +141,8 @@ interface Parameter {
   }
 
   /**
-   * @return true if it's an empty {@link String}, an empty {@link JsonObject} / {@link JsonArray}, an empty {@link Buffer} or it's null
+   * @return true if it's an empty {@link String}, an empty {@link JsonObject} / {@link JsonArray}, an empty
+   * {@link Buffer} or it's null
    */
   default boolean isEmpty() {
     return isNull() ||
