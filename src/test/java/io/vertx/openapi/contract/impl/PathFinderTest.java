@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -54,14 +55,17 @@ class PathFinderTest {
     return mockedPath;
   }
 
-  @Test
+  // to ensure that issue 47 occur
+  @RepeatedTest(10)
   void testFindPath() {
     PathImpl v0 = mockPath("", "/v0/api/user");
     PathImpl variableVersion = mockPath("", "/{version}/api/user");
     PathImpl withUsername = mockPath("", "/{version}/api/user/{username}");
+    PathImpl withConcreteUser = mockPath("", "/{version}/api/user/hodor");
     PathImpl root = mockPath("", "/");
     PathImpl rootWithVersion = mockPath("", "/{version}");
-    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, root, rootWithVersion);
+
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, withConcreteUser, root, rootWithVersion);
     PathFinder pathFinder = new PathFinder(paths);
 
     assertThat(pathFinder.findPath("/v0/api/user")).isEqualTo(v0);
@@ -70,6 +74,7 @@ class PathFinderTest {
 
     assertThat(pathFinder.findPath("/v0/api/user/foo")).isEqualTo(withUsername);
     assertThat(pathFinder.findPath("/v1/api/user/foo")).isEqualTo(withUsername);
+    assertThat(pathFinder.findPath("/v1/api/user/hodor")).isEqualTo(withConcreteUser);
 
     assertThat(pathFinder.findPath("/v0/api/user/foo/age")).isNull();
     assertThat(pathFinder.findPath("/v1/api/user/foo/age")).isNull();
