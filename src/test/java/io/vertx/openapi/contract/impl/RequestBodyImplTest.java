@@ -119,6 +119,7 @@ class RequestBodyImplTest {
     RequestBody bodyAppJson = buildWithContent(appJson);
     RequestBody bodyAppJsonUTF8 = buildWithContent(appJsonUTF8);
 
+    assertThat(bodyBoth.determineContentType(null)).isNull();
     assertThat(bodyBoth.determineContentType(appJson).getIdentifier()).isEqualTo(appJson);
     assertThat(bodyBoth.determineContentType(appJsonUTF8).getIdentifier()).isEqualTo(appJsonUTF8);
 
