@@ -15,6 +15,11 @@ package io.vertx.openapi.contract;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.impl.JsonObjectProxy;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
+
 public interface OpenAPIObject {
 
   /**
@@ -32,4 +37,17 @@ public interface OpenAPIObject {
    * @return a {@link JsonObject} that represents this part of the related OpenAPI specification.
    */
   JsonObject getOpenAPIModel();
+
+  /**
+   * Returns the
+   * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#specification-Extensions">Specification Extensions</a> of this OpenAPIObject.
+   * <p></p>
+   * According to the specification, the extension can be of <b>any type</b>.
+   *
+   * @return the extensions or an empty map if there are none.
+   */
+  default Map<String, Object> getExtensions() {
+    return getOpenAPIModel().fieldNames().stream().filter(fieldName -> fieldName.startsWith("x-"))
+      .collect(Collectors.toMap(identity(), getOpenAPIModel()::getValue));
+  }
 }
