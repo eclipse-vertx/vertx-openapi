@@ -406,10 +406,60 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  public void testFormatOfParamters() {
+  public void testFormatOfInt32Parameter() {
     Parameter param = buildParam("p1", intSchema().toJson().put("format", "int32"), true);
-    ValidatorException exceptionEmpty = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("99999999999999999999999999999999999999999999999")));
-    assertThat(exceptionEmpty.type()).isEqualTo(INVALID_VALUE);
+    RequestParameter validated = validator.validateParameter(param, new RequestParameterImpl("9959874"));
+    assertThat(validated.getInteger()).isEqualTo(9959874);
+  }
+
+  @Test
+  public void testFormatOfInt64Parameter() {
+    Parameter param = buildParam("p1", intSchema().toJson().put("format", "int64"), true);
+    RequestParameter validated = validator.validateParameter(param, new RequestParameterImpl(Long.MAX_VALUE - 1));
+    assertThat(validated.getLong()).isEqualTo(Long.MAX_VALUE - 1);
+  }
+
+  @Test
+  public void testFormatOfDoubleParameter() {
+    Parameter param = buildParam("p1", numberSchema().toJson().put("format", "double"), true);
+    RequestParameter validated = validator.validateParameter(param, new RequestParameterImpl(1.0));
+    assertThat(validated.getDouble()).isEqualTo(1.0);
+  }
+
+  @Test
+  public void testBadFormatOfInt32Parameter() {
+    Parameter param = buildParam("p1", intSchema().toJson().put("format", "int32"), true);
+    ValidatorException exception = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("99999999999999999999999999999999999999999999999")));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE_FORMAT);
+    String expectedMsg = "The value of path parameter p1 is invalid. Reason: The format int32 doesn't match the input format: BigInteger";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  public void testBadFormatOfInt64Parameter() {
+    Parameter param = buildParam("p1", intSchema().toJson().put("format", "int64"), true);
+    ValidatorException exception = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("99999999999999999999999999999999999999999999999")));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE_FORMAT);
+    String expectedMsg = "The value of path parameter p1 is invalid. Reason: The format int64 doesn't match the input format: BigInteger";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  public void testBadFormatOfFloatParameter() {
+    Parameter param = buildParam("p1", numberSchema().toJson().put("format", "float"), true);
+    ValidatorException exception = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl(Double.MAX_VALUE)));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE_FORMAT);
+    String expectedMsg = "The value of path parameter p1 is invalid. Reason: The format float doesn't match the input format: Double";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  public void testBadFormatOfDoubleParameter() {
+    Parameter param = buildParam("p1", numberSchema().toJson().put("format", "double"), true);
+    ValidatorException exception = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("71" + Double.MAX_VALUE)));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE_FORMAT);
+    String expectedMsg = "The value of path parameter p1 is invalid. Reason: The format double doesn't match the input format: infinite";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
 }
