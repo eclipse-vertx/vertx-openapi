@@ -67,9 +67,7 @@ import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.SIMPLE;
-import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+import static io.vertx.openapi.validation.ValidatorErrorType.*;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -406,4 +404,12 @@ class RequestValidatorImplTest {
       "The value of the request / response body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
+
+  @Test
+  public void testFormatOfParamters() {
+    Parameter param = buildParam("p1", intSchema().toJson().put("format", "int32"), true);
+    ValidatorException exceptionEmpty = assertThrows(ValidatorException.class, () -> validator.validateParameter(param, new RequestParameterImpl("99999999999999999999999999999999999999999999999")));
+    assertThat(exceptionEmpty.type()).isEqualTo(INVALID_VALUE);
+  }
+
 }
