@@ -62,10 +62,13 @@ class PathFinderTest {
     PathImpl variableVersion = mockPath("", "/{version}/api/user");
     PathImpl withUsername = mockPath("", "/{version}/api/user/{username}");
     PathImpl withConcreteUser = mockPath("", "/{version}/api/user/hodor");
+    PathImpl withConcreteUserAndVersion = mockPath("", "/v3/api/user/hodor");
+    PathImpl withConcreteUserAndMockedApi = mockPath("", "/v3/{api}/test/user/foobar");
+    PathImpl withConcreteUserAndNotMockedApi = mockPath("", "/v3/api/{test}/user/foobar");
     PathImpl root = mockPath("", "/");
     PathImpl rootWithVersion = mockPath("", "/{version}");
 
-    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, withConcreteUser, root, rootWithVersion);
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, withConcreteUser, withConcreteUserAndVersion, withConcreteUserAndMockedApi, withConcreteUserAndNotMockedApi, root, rootWithVersion);
     PathFinder pathFinder = new PathFinder(paths);
 
     assertThat(pathFinder.findPath("/v0/api/user")).isEqualTo(v0);
@@ -75,6 +78,8 @@ class PathFinderTest {
     assertThat(pathFinder.findPath("/v0/api/user/foo")).isEqualTo(withUsername);
     assertThat(pathFinder.findPath("/v1/api/user/foo")).isEqualTo(withUsername);
     assertThat(pathFinder.findPath("/v1/api/user/hodor")).isEqualTo(withConcreteUser);
+    assertThat(pathFinder.findPath("/v3/api/user/hodor")).isEqualTo(withConcreteUserAndVersion);
+    assertThat(pathFinder.findPath("/v3/api/test/user/foobar")).isEqualTo(withConcreteUserAndNotMockedApi);
 
     assertThat(pathFinder.findPath("/v0/api/user/foo/age")).isNull();
     assertThat(pathFinder.findPath("/v1/api/user/foo/age")).isNull();
