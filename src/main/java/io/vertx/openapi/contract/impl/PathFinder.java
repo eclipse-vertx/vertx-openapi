@@ -71,26 +71,19 @@ class PathFinder {
       }
     }
 
-    List<Path> potentialPaths = new ArrayList<>();
-    List<String[]> potentialPathSegments = new ArrayList<>();
+    Path bestMatchedPath = null;
+    int currentMatchedSegments = -1;
     for (Entry<Path, String[]> entry : segmentsWithTemplating.getOrDefault(segments.length, emptyMap()).entrySet()) {
       if (testSegments(segments, entry.getValue())) {
-        potentialPaths.add(entry.getKey());
-        potentialPathSegments.add(entry.getValue());
+        int matchedSegments = getNumSegmentsMatching(segments, entry.getValue());
+        if(matchedSegments > currentMatchedSegments) {
+          bestMatchedPath = entry.getKey();
+          currentMatchedSegments = matchedSegments;
+        }
       }
     }
 
-    if(!potentialPaths.isEmpty()) {
-      //Only 1 path matched, there are no possible conflicts here.
-      if(potentialPaths.size() == 1) {
-        return potentialPaths.get(0);
-      } else {
-        //There are more than 1 matches, so we need to resolve the path predictably.
-        return potentialPaths.get(resolveMultiPaths(segments, potentialPathSegments));
-      }
-    }
-
-    return null;
+    return bestMatchedPath;
   }
 
   // VisibleForTesting
@@ -104,21 +97,6 @@ class PathFinder {
       }
     }
     return true;
-  }
-
-  private int resolveMultiPaths(String[] segments, List<String[]> potentialPathSegments) {
-    int bestTotalNumbOfMatchingSegments = getNumSegmentsMatching(potentialPathSegments.get(0), segments);
-    int bestMatchIndex = 0;
-
-    for(int i = 1; i < potentialPathSegments.size(); i++) {
-      int numSegmentsMatching = getNumSegmentsMatching(potentialPathSegments.get(i), segments);
-      if(numSegmentsMatching > bestTotalNumbOfMatchingSegments) {
-        bestTotalNumbOfMatchingSegments = numSegmentsMatching;
-        bestMatchIndex = i;
-      }
-    }
-
-    return bestMatchIndex;
   }
 
   private int getNumSegmentsMatching(String[] pathSegments, String[] pathTemplateSegments) {
