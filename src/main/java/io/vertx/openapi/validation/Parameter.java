@@ -47,7 +47,9 @@ interface Parameter {
    * @return null if value is not a {@link Number}, otherwise it returns value as {@link Integer}
    */
   @Nullable
-  default Integer getInteger() { return getIntegerOrDefault(() -> null); }
+  default Integer getInteger() {
+    return getIntegerOrDefault(() -> null);
+  }
 
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
@@ -64,7 +66,9 @@ interface Parameter {
    * @return null if value is not a {@link Number}, otherwise it returns value as {@link Long}
    */
   @Nullable
-  default Long getLong() { return getLongOrDefault(() -> null); }
+  default Long getLong() {
+    return getLongOrDefault(() -> null);
+  }
 
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
@@ -81,7 +85,9 @@ interface Parameter {
    * @return null if value is not a {@link Number}, otherwise it returns value as {@link Float}
    */
   @Nullable
-  default Float getFloat() { return getFloatOrDefault(() -> null); }
+  default Float getFloat() {
+    return getFloatOrDefault(() -> null);
+  }
 
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
@@ -98,7 +104,9 @@ interface Parameter {
    * @return null if value is not a {@link Number}, otherwise it returns value as {@link Double}
    */
   @Nullable
-  default Double getDouble() { return getDoubleOrDefault(() -> null); }
+  default Double getDouble() {
+    return getDoubleOrDefault(() -> null);
+  }
 
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
@@ -122,7 +130,9 @@ interface Parameter {
    * @return null if value is not a {@link Boolean}, otherwise it returns value
    */
   @Nullable
-  default Boolean getBoolean() { return getBooleanOrDefault(() -> null); }
+  default Boolean getBoolean() {
+    return getBooleanOrDefault(() -> null);
+  }
 
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Boolean} or is null, otherwise it returns the value.
@@ -147,7 +157,9 @@ interface Parameter {
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link JsonObject} or is null, otherwise it returns the value.
    */
-  default JsonObject getJsonObjectOrDefault(Supplier<JsonObject> defaultValue) { return isJsonObject() ? (JsonObject) get() : defaultValue.get(); }
+  default JsonObject getJsonObjectOrDefault(Supplier<JsonObject> defaultValue) {
+    return isJsonObject() ? (JsonObject) get() : defaultValue.get();
+  }
 
   /**
    * @return true if value of this instance is a {@link JsonObject} instance
@@ -167,7 +179,9 @@ interface Parameter {
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link JsonObject} or is null, otherwise it returns the value.
    */
-  default JsonArray getJsonArrayOrDefault(Supplier<JsonArray> defaultValue) { return isJsonArray() ? (JsonArray) get() : defaultValue.get(); }
+  default JsonArray getJsonArrayOrDefault(Supplier<JsonArray> defaultValue) {
+    return isJsonArray() ? (JsonArray) get() : defaultValue.get();
+  }
 
   /**
    * @return true if value of this instance is a {@link JsonArray} instance
@@ -187,7 +201,9 @@ interface Parameter {
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link JsonObject} or is null, otherwise it returns the value.
    */
-  default Buffer getBufferOrDefault(Supplier<Buffer> defaultValue) { return isBuffer() ? (Buffer) get() : defaultValue.get(); }
+  default Buffer getBufferOrDefault(Supplier<Buffer> defaultValue) {
+    return isBuffer() ? (Buffer) get() : defaultValue.get();
+  }
 
   /**
    * @return true if value of this instance is a {@link Buffer} instance
