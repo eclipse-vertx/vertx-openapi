@@ -55,11 +55,7 @@ interface Parameter {
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
    */
   default Integer getIntegerOrDefault(Supplier<Integer> defaultValue) {
-    if(isNumber()) {
-      return ((Number) get()).intValue();
-    }
-
-    return defaultValue.get();
+    return isNumber() ? Integer.valueOf(((Number) get()).intValue()) : defaultValue.get();
   }
 
   /**
@@ -74,11 +70,7 @@ interface Parameter {
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
    */
   default Long getLongOrDefault(Supplier<Long> defaultValue) {
-    if(isNumber()) {
-      return ((Number) get()).longValue();
-    }
-
-    return defaultValue.get();
+    return isNumber() ? Long.valueOf(((Number) get()).longValue()) : defaultValue.get();
   }
 
   /**
@@ -93,11 +85,7 @@ interface Parameter {
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
    */
   default Float getFloatOrDefault(Supplier<Float> defaultValue) {
-    if(isNumber()) {
-      return ((Number) get()).floatValue();
-    }
-
-    return defaultValue.get();
+    return isNumber() ? Float.valueOf(((Number) get()).floatValue()) : defaultValue.get();
   }
 
   /**
@@ -112,11 +100,7 @@ interface Parameter {
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is null, otherwise it returns the value.
    */
   default Double getDoubleOrDefault(Supplier<Double> defaultValue) {
-    if(isNumber()) {
-      return ((Number) get()).doubleValue();
-    }
-
-    return defaultValue.get();
+    return isNumber() ? Double.valueOf(((Number) get()).doubleValue()) : defaultValue.get();
   }
 
   /**
