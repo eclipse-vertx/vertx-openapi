@@ -137,7 +137,9 @@ interface Parameter {
   /**
    * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Boolean} or is null, otherwise it returns the value.
    */
-  default Boolean getBooleanOrDefault(Supplier<Boolean> defaultValue) { return isBoolean() ? (Boolean) get() : defaultValue.get(); }
+  default Boolean getBooleanOrDefault(Supplier<Boolean> defaultValue) {
+    return isBoolean() ? (Boolean) get() : defaultValue.get();
+  }
 
   /**
    * @return true if value of this instance is a {@link Boolean} instance
