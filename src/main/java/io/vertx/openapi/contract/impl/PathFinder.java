@@ -85,6 +85,16 @@ class PathFinder {
   }
 
   // VisibleForTesting
+
+  /**
+   * Test the total number of segments the path template that match the given a path segment. If the path doesn't match
+   * in one or more places, then testSegments will return -1 regardless.
+   *
+   * @param pathSegments The related path segment we are testing.
+   * @param pathTemplateSegments The related path template we are testing against.
+   * @return The total number of segments that match with a bias towards segments that come first (left biased).
+   * If the path segment doesn't match in one or more places, then we return -1 (path doesn't match).
+   */
   int testSegments(String[] pathSegments, String[] pathTemplateSegments) {
     int numPerfectMatches = 0;
     for (int i = 0; i < pathTemplateSegments.length; i++) {
@@ -92,7 +102,7 @@ class PathFinder {
       if (templateSegment.contains("{")) {
         // valid segment
       } else if(templateSegment.equals(pathSegments[i])){
-        // We want to have a bias paths that match "more" perfectly from left to right.
+        // We want to have a bias to paths that match "more" perfectly from left to right.
         numPerfectMatches += pathTemplateSegments.length - i;
       } else {
         return -1;
