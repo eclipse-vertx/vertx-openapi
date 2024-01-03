@@ -31,21 +31,21 @@ class PathFinderTest {
 
   private static Stream<Arguments> testTestSegments() {
     return Stream.of(
-      Arguments.of("/v3/api/user", "/v3/api/user", true),
-      Arguments.of("/v3/api/user", "/{version}/api/user", true),
-      Arguments.of("/v3/api/user", "/{version}/api/users", false),
-      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", true)
+      Arguments.of("/v3/api/user", "/v3/api/user", 6),
+      Arguments.of("/v3/api/user", "/{version}/api/user", 3),
+      Arguments.of("/v3/api/user", "/{version}/api/users", -1),
+      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", 5)
     );
   }
 
   @ParameterizedTest(name = "Segments to test: {index} {0} and {1}")
   @MethodSource("testTestSegments")
-  void testTestSegments(String path, String templatePath, boolean equal) {
+  void testTestSegments(String path, String templatePath, int amount) {
     String[] pathSegments = path.substring(1).split("/");
     String[] pathTemplateSegments = templatePath.substring(1).split("/");
 
     PathFinder pathFinder = new PathFinder(emptyList());
-    assertThat(pathFinder.testSegments(pathSegments, pathTemplateSegments)).isEqualTo(equal);
+    assertThat(pathFinder.testSegments(pathSegments, pathTemplateSegments)).isEqualTo(amount);
   }
 
   private PathImpl mockPath(String basePath, String path) {

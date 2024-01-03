@@ -74,12 +74,10 @@ class PathFinder {
     Path bestMatchedPath = null;
     int currentMatchedSegments = -1;
     for (Entry<Path, String[]> entry : segmentsWithTemplating.getOrDefault(segments.length, emptyMap()).entrySet()) {
-      if (testSegments(segments, entry.getValue())) {
-        int matchedSegments = getNumSegmentsMatching(segments, entry.getValue());
-        if(matchedSegments > currentMatchedSegments) {
-          bestMatchedPath = entry.getKey();
-          currentMatchedSegments = matchedSegments;
-        }
+      int matchedSegments = testSegments(segments, entry.getValue());
+      if (matchedSegments > currentMatchedSegments) {
+        bestMatchedPath = entry.getKey();
+        currentMatchedSegments = matchedSegments;
       }
     }
 
@@ -87,25 +85,17 @@ class PathFinder {
   }
 
   // VisibleForTesting
-  boolean testSegments(String[] pathSegments, String[] pathTemplateSegments) {
-    for (int i = 0; i < pathTemplateSegments.length; i++) {
-      String templateSegment = pathTemplateSegments[i];
-      if (templateSegment.contains("{") || templateSegment.equals(pathSegments[i])) {
-        // valid segment
-      } else {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private int getNumSegmentsMatching(String[] pathSegments, String[] pathTemplateSegments) {
+  int testSegments(String[] pathSegments, String[] pathTemplateSegments) {
     int numPerfectMatches = 0;
-
     for (int i = 0; i < pathTemplateSegments.length; i++) {
       String templateSegment = pathTemplateSegments[i];
-      if(templateSegment.equals(pathSegments[i])) {
-        numPerfectMatches += pathTemplateSegments.length - i + 1;
+      if (templateSegment.contains("{")) {
+        // valid segment
+      } else if(templateSegment.equals(pathSegments[i])){
+        // We want to have a bias paths that match "more" perfectly from left to right.
+        numPerfectMatches += pathTemplateSegments.length - i;
+      } else {
+        return -1;
       }
     }
     return numPerfectMatches;
