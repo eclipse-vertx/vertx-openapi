@@ -34,7 +34,8 @@ class PathFinderTest {
       Arguments.of("/v3/api/user", "/v3/api/user", 6),
       Arguments.of("/v3/api/user", "/{version}/api/user", 3),
       Arguments.of("/v3/api/user", "/{version}/api/users", -1),
-      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", 5)
+      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", 5),
+      Arguments.of("/v3/foo", "/{version}/{username}", 0)
     );
   }
 

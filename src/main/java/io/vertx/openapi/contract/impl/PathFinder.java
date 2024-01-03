@@ -87,8 +87,8 @@ class PathFinder {
   // VisibleForTesting
 
   /**
-   * Test the total number of segments the path template that match the given a path segment. If the path doesn't match
-   * in one or more places, then testSegments will return -1 regardless.
+   * Test the total number of segments that the path template matches to the given a path segment.
+   * If the path doesn't match in one or more places, then testSegments will return -1 regardless.
    *
    * @param pathSegments The related path segment we are testing.
    * @param pathTemplateSegments The related path template we are testing against.
