@@ -71,25 +71,44 @@ class PathFinder {
       }
     }
 
+    Path bestMatchedPath = null;
+    int currentMatchedSegments = -1;
     for (Entry<Path, String[]> entry : segmentsWithTemplating.getOrDefault(segments.length, emptyMap()).entrySet()) {
-      if (testSegments(segments, entry.getValue())) {
-        return entry.getKey();
+      int matchedSegments = testSegments(segments, entry.getValue());
+      if (matchedSegments > currentMatchedSegments) {
+        bestMatchedPath = entry.getKey();
+        currentMatchedSegments = matchedSegments;
       }
     }
 
-    return null;
+    return bestMatchedPath;
   }
 
   // VisibleForTesting
-  boolean testSegments(String[] pathSegments, String[] pathTemplateSegments) {
+
+  /**
+   * Test the total number of segments that the path template matches to the given a path segment.
+   * If the path doesn't match in one or more places, then testSegments will return -1 regardless.
+   *
+   * @param pathSegments The related path segment we are testing.
+   * @param pathTemplateSegments The related path template we are testing against.
+   * @return The total number of segments that match with a bias towards segments that come first (left biased).
+   * If the path segment doesn't match in one or more places, then we return -1 (path doesn't match).
+   */
+  int testSegments(String[] pathSegments, String[] pathTemplateSegments) {
+    int numPerfectMatches = 0;
     for (int i = 0; i < pathTemplateSegments.length; i++) {
       String templateSegment = pathTemplateSegments[i];
-      if (templateSegment.contains("{") || templateSegment.equals(pathSegments[i])) {
+      if (templateSegment.contains("{")) {
         // valid segment
+      } else if(templateSegment.equals(pathSegments[i])){
+        // We want to have a bias to paths that match "more" perfectly from left to right.
+        numPerfectMatches += pathTemplateSegments.length - i;
       } else {
-        return false;
+        return -1;
       }
     }
-    return true;
+    return numPerfectMatches;
   }
+
 }

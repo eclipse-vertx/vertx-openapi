@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -30,21 +31,22 @@ class PathFinderTest {
 
   private static Stream<Arguments> testTestSegments() {
     return Stream.of(
-      Arguments.of("/v3/api/user", "/v3/api/user", true),
-      Arguments.of("/v3/api/user", "/{version}/api/user", true),
-      Arguments.of("/v3/api/user", "/{version}/api/users", false),
-      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", true)
+      Arguments.of("/v3/api/user", "/v3/api/user", 6),
+      Arguments.of("/v3/api/user", "/{version}/api/user", 3),
+      Arguments.of("/v3/api/user", "/{version}/api/users", -1),
+      Arguments.of("/v3/api/user/foo", "/{version}/api/user/{username}", 5),
+      Arguments.of("/v3/foo", "/{version}/{username}", 0)
     );
   }
 
   @ParameterizedTest(name = "Segments to test: {index} {0} and {1}")
   @MethodSource("testTestSegments")
-  void testTestSegments(String path, String templatePath, boolean equal) {
+  void testTestSegments(String path, String templatePath, int amount) {
     String[] pathSegments = path.substring(1).split("/");
     String[] pathTemplateSegments = templatePath.substring(1).split("/");
 
     PathFinder pathFinder = new PathFinder(emptyList());
-    assertThat(pathFinder.testSegments(pathSegments, pathTemplateSegments)).isEqualTo(equal);
+    assertThat(pathFinder.testSegments(pathSegments, pathTemplateSegments)).isEqualTo(amount);
   }
 
   private PathImpl mockPath(String basePath, String path) {
@@ -54,14 +56,20 @@ class PathFinderTest {
     return mockedPath;
   }
 
-  @Test
+  // to ensure that issue 47 occur
+  @RepeatedTest(10)
   void testFindPath() {
     PathImpl v0 = mockPath("", "/v0/api/user");
     PathImpl variableVersion = mockPath("", "/{version}/api/user");
     PathImpl withUsername = mockPath("", "/{version}/api/user/{username}");
+    PathImpl withConcreteUser = mockPath("", "/{version}/api/user/hodor");
+    PathImpl withConcreteUserAndVersion = mockPath("", "/v3/api/user/hodor");
+    PathImpl withConcreteUserAndMockedApi = mockPath("", "/v3/{api}/test/user/foobar");
+    PathImpl withConcreteUserAndNotMockedApi = mockPath("", "/v3/api/{test}/user/foobar");
     PathImpl root = mockPath("", "/");
     PathImpl rootWithVersion = mockPath("", "/{version}");
-    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, root, rootWithVersion);
+
+    List<PathImpl> paths = ImmutableList.of(v0, variableVersion, withUsername, withConcreteUser, withConcreteUserAndVersion, withConcreteUserAndMockedApi, withConcreteUserAndNotMockedApi, root, rootWithVersion);
     PathFinder pathFinder = new PathFinder(paths);
 
     assertThat(pathFinder.findPath("/v0/api/user")).isEqualTo(v0);
@@ -70,6 +78,9 @@ class PathFinderTest {
 
     assertThat(pathFinder.findPath("/v0/api/user/foo")).isEqualTo(withUsername);
     assertThat(pathFinder.findPath("/v1/api/user/foo")).isEqualTo(withUsername);
+    assertThat(pathFinder.findPath("/v1/api/user/hodor")).isEqualTo(withConcreteUser);
+    assertThat(pathFinder.findPath("/v3/api/user/hodor")).isEqualTo(withConcreteUserAndVersion);
+    assertThat(pathFinder.findPath("/v3/api/test/user/foobar")).isEqualTo(withConcreteUserAndNotMockedApi);
 
     assertThat(pathFinder.findPath("/v0/api/user/foo/age")).isNull();
     assertThat(pathFinder.findPath("/v1/api/user/foo/age")).isNull();
