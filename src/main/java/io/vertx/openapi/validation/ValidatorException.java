@@ -15,7 +15,6 @@ package io.vertx.openapi.validation;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.impl.ParameterImpl;
 
 import java.util.Optional;
 
@@ -89,18 +88,6 @@ public class ValidatorException extends RuntimeException {
   public static ValidatorException createResponseNotFound(int statusCode, String operation) {
     String msg = String.format("No response defined for status code %s in Operation %s", statusCode, operation);
     return new ValidatorException(msg, MISSING_RESPONSE);
-  }
-
-  public static ValidatorException createParameterFormatInvalid(Parameter parameter, Object input, String format) {
-    String msg = String.format("The value of %s parameter %s is invalid. Reason: The format %s doesn't match the input format: %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), format, input != null ? input.getClass().getSimpleName() : "null");
-    return new ValidatorException(msg, INVALID_VALUE_FORMAT);
-  }
-
-  public static ValidatorException createParameterFormatInvalidDueToInfinite(Parameter parameter, String format) {
-    String msg = String.format("The value of %s parameter %s is invalid. Reason: The format %s doesn't match the input format: %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), format, "infinite");
-    return new ValidatorException(msg, INVALID_VALUE_FORMAT);
   }
 
   static String extractReason(JsonSchemaValidationException e) {

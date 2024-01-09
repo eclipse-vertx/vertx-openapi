@@ -46,7 +46,11 @@ import static io.vertx.openapi.contract.Style.MATRIX;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
-import static io.vertx.openapi.validation.ValidatorException.*;
+import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
+import static io.vertx.openapi.validation.ValidatorException.createInvalidValueBody;
+import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
+import static io.vertx.openapi.validation.ValidatorException.createOperationNotFound;
+import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
 
 public class RequestValidatorImpl extends BaseValidator implements RequestValidator {
   private final Map<Style, ParameterTransformer> parameterTransformers;
@@ -123,55 +127,10 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
 
     try {
       result.checkValidity();
-      checkParameterFormat(parameter, transformedValue);
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
       throw createInvalidValue(parameter, e);
     }
-  }
-
-  private void checkParameterFormat(Parameter parameter, Object transformedValue) {
-    String format = parameter.getSchema().get("format");
-    String type = parameter.getSchema().get("type");
-
-    if("integer".equalsIgnoreCase(type)) {
-      if ("int32".equals(format) && !(transformedValue instanceof Integer)) {
-        throw createParameterFormatInvalid(parameter, transformedValue, "int32");
-      }
-
-      if ("int64".equals(format) && !(transformedValue instanceof Integer || transformedValue instanceof Long)) {
-        throw createParameterFormatInvalid(parameter, transformedValue, "int64");
-      }
-    }
-
-    if("number".equalsIgnoreCase(type)) {
-
-      if("float".equalsIgnoreCase(format)) {
-        if(!(transformedValue instanceof  Float)) {
-          throw createParameterFormatInvalid(parameter, transformedValue, "float");
-        }
-
-        if(((Float) transformedValue).isInfinite()) {
-          throw createParameterFormatInvalidDueToInfinite(parameter, "double");
-        }
-
-      }
-
-      if("double".equalsIgnoreCase(format)) {
-        if(!(transformedValue instanceof Double || transformedValue instanceof Float)) {
-          throw createParameterFormatInvalid(parameter, transformedValue, "double");
-        }
-
-        if(transformedValue instanceof Float && ((Float) transformedValue).isInfinite()) {
-          throw createParameterFormatInvalidDueToInfinite(parameter, "double");
-        }
-
-        if(transformedValue instanceof Double && ((Double) transformedValue).isInfinite()) {
-          throw createParameterFormatInvalidDueToInfinite(parameter, "double");
-        }
-      }
-    }
-
   }
 
   // VisibleForTesting
