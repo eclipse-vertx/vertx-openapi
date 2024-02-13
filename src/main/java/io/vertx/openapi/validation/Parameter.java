@@ -76,13 +76,13 @@ interface Parameter {
    */
   @Nullable
   default Float getFloat() {
-    return getFloatOrDefault(null);
+    return getFloat(null);
   }
 
   /**
    * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
    */
-  default Float getFloatOrDefault(Float defaultValue) {
+  default Float getFloat(Float defaultValue) {
     return isNumber() ? Float.valueOf(((Number) get()).floatValue()) : defaultValue;
   }
 
