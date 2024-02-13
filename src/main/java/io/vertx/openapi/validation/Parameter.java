@@ -18,23 +18,20 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.function.Supplier;
-
 interface Parameter {
   /**
    * @return null if value is not a {@link String}, otherwise it returns value
    */
   @Nullable
   default String getString() {
-    return getString(() -> null);
+    return getString(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link String} or is
-   * null, otherwise it returns the value.
+   * @return the default if value is not a {@link String} or is null, otherwise it returns the value.
    */
-  default String getString(Supplier<String> defaultValue) {
-    return isString() ? (String) get() : defaultValue.get();
+  default String getString(String defaultValue) {
+    return isString() ? (String) get() : defaultValue;
   }
 
   /**
@@ -49,15 +46,14 @@ interface Parameter {
    */
   @Nullable
   default Integer getInteger() {
-    return getInteger(() -> null);
+    return getInteger(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
    */
-  default Integer getInteger(Supplier<Integer> defaultValue) {
-    return isNumber() ? Integer.valueOf(((Number) get()).intValue()) : defaultValue.get();
+  default Integer getInteger(Integer defaultValue) {
+    return isNumber() ? Integer.valueOf(((Number) get()).intValue()) : defaultValue;
   }
 
   /**
@@ -65,15 +61,14 @@ interface Parameter {
    */
   @Nullable
   default Long getLong() {
-    return getLong(() -> null);
+    return getLong(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
    */
-  default Long getLong(Supplier<Long> defaultValue) {
-    return isNumber() ? Long.valueOf(((Number) get()).longValue()) : defaultValue.get();
+  default Long getLong(Long defaultValue) {
+    return isNumber() ? Long.valueOf(((Number) get()).longValue()) : defaultValue;
   }
 
   /**
@@ -81,15 +76,14 @@ interface Parameter {
    */
   @Nullable
   default Float getFloat() {
-    return getFloatOrDefault(() -> null);
+    return getFloatOrDefault(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
    */
-  default Float getFloatOrDefault(Supplier<Float> defaultValue) {
-    return isNumber() ? Float.valueOf(((Number) get()).floatValue()) : defaultValue.get();
+  default Float getFloatOrDefault(Float defaultValue) {
+    return isNumber() ? Float.valueOf(((Number) get()).floatValue()) : defaultValue;
   }
 
   /**
@@ -97,15 +91,14 @@ interface Parameter {
    */
   @Nullable
   default Double getDouble() {
-    return getDouble(() -> null);
+    return getDouble(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Number} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
    */
-  default Double getDouble(Supplier<Double> defaultValue) {
-    return isNumber() ? Double.valueOf(((Number) get()).doubleValue()) : defaultValue.get();
+  default Double getDouble(Double defaultValue) {
+    return isNumber() ? Double.valueOf(((Number) get()).doubleValue()) : defaultValue;
   }
 
   /**
@@ -120,15 +113,14 @@ interface Parameter {
    */
   @Nullable
   default Boolean getBoolean() {
-    return getBoolean(() -> null);
+    return getBoolean(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Boolean} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link Boolean} or is null, otherwise it returns the value.
    */
-  default Boolean getBoolean(Supplier<Boolean> defaultValue) {
-    return isBoolean() ? (Boolean) get() : defaultValue.get();
+  default Boolean getBoolean(Boolean defaultValue) {
+    return isBoolean() ? (Boolean) get() : defaultValue;
   }
 
   /**
@@ -143,15 +135,14 @@ interface Parameter {
    */
   @Nullable
   default JsonObject getJsonObject() {
-    return getJsonObject(() -> null);
+    return getJsonObject(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link JsonObject} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link JsonObject} or is null, otherwise it returns the value.
    */
-  default JsonObject getJsonObject(Supplier<JsonObject> defaultValue) {
-    return isJsonObject() ? (JsonObject) get() : defaultValue.get();
+  default JsonObject getJsonObject(JsonObject defaultValue) {
+    return isJsonObject() ? (JsonObject) get() : defaultValue;
   }
 
   /**
@@ -166,15 +157,14 @@ interface Parameter {
    */
   @Nullable
   default JsonArray getJsonArray() {
-    return getJsonArray(() -> null);
+    return getJsonArray(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link JsonArray} or is
-   * null, otherwise it returns the value.
+   * @return the default supplied if value is not a {@link JsonArray} or is null, otherwise it returns the value.
    */
-  default JsonArray getJsonArray(Supplier<JsonArray> defaultValue) {
-    return isJsonArray() ? (JsonArray) get() : defaultValue.get();
+  default JsonArray getJsonArray(JsonArray defaultValue) {
+    return isJsonArray() ? (JsonArray) get() : defaultValue;
   }
 
   /**
@@ -189,15 +179,14 @@ interface Parameter {
    */
   @Nullable
   default Buffer getBuffer() {
-    return getBuffer(() -> null);
+    return getBuffer(null);
   }
 
   /**
-   * @return the default supplied by a {@link java.util.function.Supplier} if value is not a {@link Buffer} or is
-   * null, otherwise it returns the value.
+   * @return the default suppliedif value is not a {@link Buffer} or is null, otherwise it returns the value.
    */
-  default Buffer getBuffer(Supplier<Buffer> defaultValue) {
-    return isBuffer() ? (Buffer) get() : defaultValue.get();
+  default Buffer getBuffer(Buffer defaultValue) {
+    return isBuffer() ? (Buffer) get() : defaultValue;
   }
 
   /**

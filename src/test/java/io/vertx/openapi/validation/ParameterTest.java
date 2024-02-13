@@ -154,15 +154,15 @@ class ParameterTest {
     DummyParameter parameter = new DummyParameter().setValue(value);
 
     Object[] results = new Object[9];
-    results[0] = parameter.getString(() -> "myDefaultString");
-    results[1] = parameter.getBoolean(() -> false);
-    results[2] = parameter.getJsonObject(() -> DEFAULT_JSON_OBJECT);
-    results[3] = parameter.getJsonArray(() -> DEFAULT_JSON_ARRAY);
-    results[4] = parameter.getBuffer(DEFAULT_JSON_OBJECT::toBuffer);
-    results[5] = parameter.getInteger(() -> 8008);
-    results[6] = parameter.getLong(() -> 8008L);
-    results[7] = parameter.getFloatOrDefault(() -> 8008.0f);
-    results[8] = parameter.getDouble(() -> 8008.0);
+    results[0] = parameter.getString("myDefaultString");
+    results[1] = parameter.getBoolean(false);
+    results[2] = parameter.getJsonObject(DEFAULT_JSON_OBJECT);
+    results[3] = parameter.getJsonArray(DEFAULT_JSON_ARRAY);
+    results[4] = parameter.getBuffer(DEFAULT_JSON_OBJECT.toBuffer());
+    results[5] = parameter.getInteger(8008);
+    results[6] = parameter.getLong(8008L);
+    results[7] = parameter.getFloatOrDefault(8008.0f);
+    results[8] = parameter.getDouble(8008.0d);
 
     for (int i = 0; i < 8; i++) {
       assertThat(results[i]).isEqualTo(expected[i]);
