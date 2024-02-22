@@ -177,7 +177,7 @@ class RequestValidatorImplTest {
       Arguments.of("Double max float",  numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
       Arguments.of("Double normal",  numberSchema().toJson().put("format", "double"), 123.456),
       Arguments.of("Float max float",  numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
-      Arguments.of("Float min float",  numberSchema().toJson().put("format", "float"), Float.MIN_NORMAL),
+      Arguments.of("Float min float",  numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
       Arguments.of("Float normal",  numberSchema().toJson().put("format", "float"), 123.456)
     );
   }
