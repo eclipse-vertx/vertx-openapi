@@ -182,7 +182,7 @@ class RequestValidatorImplTest {
     );
   }
 
-    @BeforeEach
+  @BeforeEach
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
