@@ -15,12 +15,7 @@ package io.vertx.openapi.contract;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.Draft;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.JsonSchemaOptions;
-import io.vertx.json.schema.OutputUnit;
-import io.vertx.json.schema.SchemaRepository;
-import io.vertx.json.schema.impl.JsonFormatValidator;
+import io.vertx.json.schema.*;
 import io.vertx.openapi.impl.OpenAPIFormatValidator;
 
 import java.util.ArrayList;
@@ -87,9 +82,9 @@ public enum OpenAPIVersion {
   }
 
   public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
-    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri).setOutputFormat(Basic).setJsonFormatValidator(formatValidator);
+    JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri).setOutputFormat(Basic);
     return vertx.executeBlocking(() -> {
-      SchemaRepository repo = SchemaRepository.create(opts).preloadMetaSchema(vertx.fileSystem());
+      SchemaRepository repo = SchemaRepository.create(opts, formatValidator).preloadMetaSchema(vertx.fileSystem());
       for (String ref : schemaFiles) {
         JsonObject raw = new JsonObject(vertx.fileSystem().readFileBlocking(ref.substring("https://".length())));
         repo.dereference(ref, JsonSchema.of(raw));
