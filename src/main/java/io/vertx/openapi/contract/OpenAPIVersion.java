@@ -15,11 +15,8 @@ package io.vertx.openapi.contract;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.Draft;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.JsonSchemaOptions;
-import io.vertx.json.schema.OutputUnit;
-import io.vertx.json.schema.SchemaRepository;
+import io.vertx.json.schema.*;
+import io.vertx.openapi.impl.OpenAPIFormatValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,9 +30,11 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidCo
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedVersion;
 
 public enum OpenAPIVersion {
-  V3_0("3.0.", DRAFT4, "https://spec.openapis.org/oas/3.0/schema/2021-09-28"),
+  V3_0("3.0.", DRAFT4, "https://spec.openapis.org/oas/3.0/schema/2021-09-28",
+    new OpenAPIFormatValidator()),
   V3_1("3.1.", DRAFT202012,
     "https://spec.openapis.org/oas/3.1/schema/2022-10-07",
+    new OpenAPIFormatValidator(),
     "https://spec.openapis.org/oas/3.1/dialect/base",
     "https://spec.openapis.org/oas/3.1/meta/base",
     "https://spec.openapis.org/oas/3.1/schema-base/2022-10-07"
@@ -46,12 +45,14 @@ public enum OpenAPIVersion {
   private final String schemaVersion;
   private final Draft draft;
   private final String mainSchemaFile;
+  private final JsonFormatValidator formatValidator;
 
-  OpenAPIVersion(String schemaVersion, Draft draft, String mainSchemaFile, String... additionalSchemaFiles) {
+  OpenAPIVersion(String schemaVersion, Draft draft, String mainSchemaFile, JsonFormatValidator formatValidator, String... additionalSchemaFiles) {
     this.schemaVersion = schemaVersion;
     this.draft = draft;
     this.mainSchemaFile = mainSchemaFile;
     this.schemaFiles = new ArrayList<>(Arrays.asList(additionalSchemaFiles));
+    this.formatValidator = formatValidator;
     schemaFiles.add(mainSchemaFile);
   }
 
@@ -83,7 +84,7 @@ public enum OpenAPIVersion {
   public Future<SchemaRepository> getRepository(Vertx vertx, String baseUri) {
     JsonSchemaOptions opts = new JsonSchemaOptions().setDraft(draft).setBaseUri(baseUri).setOutputFormat(Basic);
     return vertx.executeBlocking(() -> {
-      SchemaRepository repo = SchemaRepository.create(opts).preloadMetaSchema(vertx.fileSystem());
+      SchemaRepository repo = SchemaRepository.create(opts, formatValidator).preloadMetaSchema(vertx.fileSystem());
       for (String ref : schemaFiles) {
         JsonObject raw = new JsonObject(vertx.fileSystem().readFileBlocking(ref.substring("https://".length())));
         repo.dereference(ref, JsonSchema.of(raw));
