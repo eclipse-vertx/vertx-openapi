@@ -81,6 +81,10 @@ public class RequestBodyImpl implements RequestBody {
 
   @Override
   public MediaType determineContentType(String contentType) {
+    if (contentType == null) {
+      return null;
+    }
+    
     String condensedIdentifier = removeWhiteSpaces(contentType);
     if (content.containsKey(condensedIdentifier)) {
       return content.get(condensedIdentifier);

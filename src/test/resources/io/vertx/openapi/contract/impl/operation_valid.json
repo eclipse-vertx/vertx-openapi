@@ -189,5 +189,31 @@
         }
       }
     }
+  },
+  "0005_Test_Merge_Extensions": {
+    "path": "/pets",
+    "method": "GET",
+    "operationModel": {
+      "security": [
+        {
+          "api_key": []
+        }
+      ],
+      "operationId": "getPet",
+      "x-some-string": "someString",
+      "x-some-number": 1337,
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

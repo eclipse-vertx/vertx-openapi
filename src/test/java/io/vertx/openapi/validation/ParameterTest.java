@@ -19,6 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -26,6 +27,9 @@ import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 
 class ParameterTest {
+
+  private static final JsonArray DEFAULT_JSON_ARRAY = new JsonArray(Arrays.asList("a", "b", "c"));
+  public static final JsonObject DEFAULT_JSON_OBJECT = new JsonObject().put("abc", "123");
 
   private static Stream<Arguments> provideValueTypes() {
     Boolean[] isNumber = new Boolean[] {false, true, false, false, false, false, false, false};
@@ -77,6 +81,30 @@ class ParameterTest {
     );
   }
 
+  private static Stream<Arguments> provideAllNullValues() {
+    Object[] stringResult = new Object[] {"myString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
+    Object[] booleanResult = new Object[] {"myDefaultString", true, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
+    Object[] jsonObjectResult = new Object[] {"myDefaultString", false, EMPTY_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
+    Object[] jsonArrayResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, EMPTY_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
+    Object[] bufferResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, Buffer.buffer(), 8008, 8008L, 8008.0f, 8008.0};
+    Object[] intResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 1337, 1337L, 1337.0f, 1337.0,};
+    Object[] longResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 42, 42L, 42.0f, 42.0};
+    Object[] floatResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 13, 13, 13.37f, 13.37};
+    Object[] doubleResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 4, 4L, 4.2f, 4.2};
+
+    return Stream.of(
+      Arguments.of("String", "myString", stringResult),
+      Arguments.of("Boolean", true, booleanResult),
+      Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
+      Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
+      Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
+      Arguments.of("Integer", 1337, intResult),
+      Arguments.of("Long", 42L, longResult),
+      Arguments.of("Float", 13.37f, floatResult),
+      Arguments.of("Double", 4.2, doubleResult)
+    );
+  }
+
   @ParameterizedTest(name = "{index} test if value is of type {0}")
   @MethodSource("provideValueTypes")
   void testIsMethods(String type, Object value, Boolean[] expected) {
@@ -110,6 +138,31 @@ class ParameterTest {
     results[6] = parameter.getLong();
     results[7] = parameter.getFloat();
     results[8] = parameter.getDouble();
+
+    for (int i = 0; i < 8; i++) {
+      assertThat(results[i]).isEqualTo(expected[i]);
+    }
+    if (expected[8] != null) {
+      Double expectedDouble = (Double) expected[8];
+      assertThat((Double) results[8]).isWithin(0.1).of(expectedDouble);
+    }
+  }
+
+  @ParameterizedTest(name = "{index} test default getters with value of type {0}")
+  @MethodSource("provideAllNullValues")
+  void testDefaultGetters(String type, Object value, Object[] expected) {
+    DummyParameter parameter = new DummyParameter().setValue(value);
+
+    Object[] results = new Object[9];
+    results[0] = parameter.getString("myDefaultString");
+    results[1] = parameter.getBoolean(false);
+    results[2] = parameter.getJsonObject(DEFAULT_JSON_OBJECT);
+    results[3] = parameter.getJsonArray(DEFAULT_JSON_ARRAY);
+    results[4] = parameter.getBuffer(DEFAULT_JSON_OBJECT.toBuffer());
+    results[5] = parameter.getInteger(8008);
+    results[6] = parameter.getLong(8008L);
+    results[7] = parameter.getFloat(8008.0f);
+    results[8] = parameter.getDouble(8008.0d);
 
     for (int i = 0; i < 8; i++) {
       assertThat(results[i]).isEqualTo(expected[i]);
