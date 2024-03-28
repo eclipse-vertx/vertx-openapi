@@ -110,3 +110,11 @@ In case that the validation of a response has passed, the returned {@link io.ver
 
 NOTE: The parameters in a {@link io.vertx.openapi.validation.ValidatableResponse} must be stored in a specific format depending on the style, location and if they are exploded or not, otherwise the {@link io.vertx.openapi.validation.ResponseValidator} can't validate the response.
 The required format *MUST* exactly look like as described in the JavaDoc of {@link io.vertx.openapi.validation.ResponseValidator}.
+
+== Handle Validation Exceptions
+
+A {@link io.vertx.openapi.validation.ValidatorException} is thrown, if the validation of a request or response fails.
+The validation can fail for formal reasons, such as the wrong format for a parameter or the absence of a required parameter.
+However, validation can of course also fail because the content does not match the defined schema.
+In this case a {@link io.vertx.openapi.validation.SchemaValidationException} is thrown.
+It is a subclass of _ValidatorException_ and provides access to the related {@link io.vertx.json.schema.OutputUnit} to allow further analysis of the error.

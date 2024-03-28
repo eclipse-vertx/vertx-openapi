@@ -19,12 +19,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchemaValidationException;
+import io.vertx.json.schema.OutputUnit;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.test.base.HttpServerTestBase;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -42,8 +43,8 @@ import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 
 /**
- * Tests indirectly the method {@link ValidatorException#extractReason(JsonSchemaValidationException)}, there is no
- * real unit test yet, because producing a correct mock of OutputUnit is too much effort.
+ * Tests indirectly the method {@link SchemaValidationException#extractReason(OutputUnit)},
+ * there is no real unit test yet, because producing a correct mock of OutputUnit is too much effort.
  */
 class ExtractReasonTest extends HttpServerTestBase {
 
@@ -107,6 +108,20 @@ class ExtractReasonTest extends HttpServerTestBase {
       .compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
   }
 
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testOutputUnit(VertxTestContext testContext) {
+    JsonObject invalidGuest = buildGuest("Hodor", 13.37);
+    JsonObject payload = buildEntry("msg", buildGuest("Hodor", 1337, invalidGuest));
+
+    createValidationHandler(validatorException -> {
+      assertThat(validatorException).isInstanceOf(SchemaValidationException.class);
+      OutputUnit ou = ((SchemaValidationException) validatorException).getOutputUnit();
+      assertThat(ou.getErrors()).hasSize(7);
+      assertThat(ou.getErrors().get(6).getInstanceLocation()).isEqualTo("#/guest/friends/0/age");
+    }, testContext).compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
+  }
+
   private Future<HttpClientResponse> sendJson(Buffer json) {
     return createRequest(POST, "/bookentry").compose(req -> {
       req.putHeader(HttpHeaderNames.CONTENT_TYPE.toString(), APPLICATION_JSON.toString());
@@ -115,8 +130,7 @@ class ExtractReasonTest extends HttpServerTestBase {
   }
 
   private Future<Void> createValidationHandler(Consumer<ValidatorException> validatorException,
-    VertxTestContext testContext) {
-
+                                               VertxTestContext testContext) {
     return createServer(
       request -> validator.validate(request).onSuccess(v -> testContext.failNow("A validation error is expected"))
         .onFailure(t -> testContext.verify(() -> {

@@ -13,19 +13,21 @@
 package io.vertx.openapi.validation;
 
 import io.vertx.core.http.HttpMethod;
-import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.Parameter;
 
-import java.util.Optional;
-
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
-import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMAT;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_RESPONSE;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
+/**
+ * A ValidatorException is thrown, if the validation of a request or response fails. The validation can fail for
+ * formal reasons, such as the wrong format for a parameter or the absence of a required parameter. However,
+ * validation can of course also fail because the content does not match the defined schema. In this case
+ * have a look into {@link SchemaValidationException}.
+ */
 public class ValidatorException extends RuntimeException {
 
   private final ValidatorErrorType type;
@@ -34,7 +36,7 @@ public class ValidatorException extends RuntimeException {
     this(message, type, null);
   }
 
-  public ValidatorException(String message, ValidatorErrorType type, Throwable cause) {
+  protected ValidatorException(String message, ValidatorErrorType type, Throwable cause) {
     super(message, cause);
     this.type = type;
   }
@@ -64,17 +66,6 @@ public class ValidatorException extends RuntimeException {
     return new ValidatorException(msg, ILLEGAL_VALUE);
   }
 
-  public static ValidatorException createInvalidValue(Parameter parameter, JsonSchemaValidationException cause) {
-    String msg = String.format("The value of %s parameter %s is invalid. Reason: %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), extractReason(cause));
-    return new ValidatorException(msg, INVALID_VALUE, cause);
-  }
-
-  public static ValidatorException createInvalidValueBody(JsonSchemaValidationException cause) {
-    String msg = String.format("The value of the request / response body is invalid. Reason: %s", extractReason(cause));
-    return new ValidatorException(msg, INVALID_VALUE, cause);
-  }
-
   public static ValidatorException createOperationIdInvalid(String operationId) {
     String msg = String.format("Invalid OperationId: %s", operationId);
     return new ValidatorException(msg, MISSING_OPERATION);
@@ -88,18 +79,6 @@ public class ValidatorException extends RuntimeException {
   public static ValidatorException createResponseNotFound(int statusCode, String operation) {
     String msg = String.format("No response defined for status code %s in Operation %s", statusCode, operation);
     return new ValidatorException(msg, MISSING_RESPONSE);
-  }
-
-  static String extractReason(JsonSchemaValidationException e) {
-    // Workaround until JsonSchemaValidationException provides instanceLocation
-    String location =
-      Optional.ofNullable(e.getStackTrace()).map(elements -> elements[0]).map(StackTraceElement::getMethodName)
-        .map(s -> s.substring(1, s.length() - 1)).orElse(null);
-    if (location == null) {
-      int hashTag = e.location().indexOf('#');
-      location = hashTag < 0 ? e.location() : e.location().substring(hashTag);
-    }
-    return e.getMessage() + (location.length() > 1 ? " at " + location : "");
   }
 
   public ValidatorErrorType type() {

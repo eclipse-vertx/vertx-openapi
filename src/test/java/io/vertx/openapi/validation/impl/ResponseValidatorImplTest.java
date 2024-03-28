@@ -52,7 +52,6 @@ import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
-import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.MockHelper.mockParameter;
 import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.contract.Location.HEADER;
@@ -183,7 +182,7 @@ class ResponseValidatorImplTest {
 
   @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
   @MethodSource
-  void testValidateParameterThrowInvalidValue(SchemaBuilder<?,?> schema, Object value, String reason) {
+  void testValidateParameterThrowInvalidValue(SchemaBuilder<?, ?> schema, Object value, String reason) {
     Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
       assertThrows(
@@ -265,8 +264,7 @@ class ResponseValidatorImplTest {
       assertThrows(ValidatorException.class, () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
-    String expectedMsg =
-      "The value of the request / response body is invalid. Reason: " + reason;
+    String expectedMsg = "The value of the response body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
