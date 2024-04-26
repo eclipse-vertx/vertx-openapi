@@ -67,9 +67,11 @@ import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.SIMPLE;
-import static io.vertx.openapi.validation.ValidatorErrorType.*;
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -150,35 +152,35 @@ class RequestValidatorImplTest {
   }
 
   private static Stream<Arguments> getBadlyFormattedParameters() {
-      return Stream.of(
-        Arguments.of("Int32", intSchema().toJson().put("format", "int32"), Long.MAX_VALUE,
-          "The value of path parameter Int32 is invalid. Reason: Integer does not match the format \"int32\""),
-        Arguments.of("Int64", intSchema().toJson().put("format", "int64"), "9999999999999999999999999999999",
-          "The value of path parameter Int64 is invalid. Reason: Integer does not match the format \"int64\""),
-        Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
-          "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
-        Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
-          "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\"")
-      );
+    return Stream.of(
+      Arguments.of("Int32", intSchema().toJson().put("format", "int32"), Long.MAX_VALUE,
+        "The value of path parameter Int32 is invalid. Reason: Integer does not match the format \"int32\""),
+      Arguments.of("Int64", intSchema().toJson().put("format", "int64"), "9999999999999999999999999999999",
+        "The value of path parameter Int64 is invalid. Reason: Integer does not match the format \"int64\""),
+      Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
+        "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+      Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
+        "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\"")
+    );
   }
 
   private static Stream<Arguments> getCorrectlyFormattedParameters() {
-    return Stream.of(Arguments.of("Int32 max int32",  intSchema().toJson().put("format", "int32"), Integer.MAX_VALUE),
-      Arguments.of("Int32 min int32",  intSchema().toJson().put("format", "int32"), Integer.MIN_VALUE),
-      Arguments.of("Int32 max short",  intSchema().toJson().put("format", "int32"), Short.MAX_VALUE),
-      Arguments.of("Int32 max byte",  intSchema().toJson().put("format", "int32"), Byte.MAX_VALUE),
-      Arguments.of("Int64 max long",  intSchema().toJson().put("format", "int64"), Long.MAX_VALUE),
-      Arguments.of("Int64 min long",  intSchema().toJson().put("format", "int64"), Long.MIN_VALUE),
-      Arguments.of("Int64 max int32",  intSchema().toJson().put("format", "int64"), Integer.MAX_VALUE),
-      Arguments.of("Int64 max short",  intSchema().toJson().put("format", "int64"), Short.MAX_VALUE),
-      Arguments.of("Int64 max byte",  intSchema().toJson().put("format", "int64"), Byte.MAX_VALUE),
-      Arguments.of("Double max double",  numberSchema().toJson().put("format", "double"), Double.MAX_VALUE),
-      Arguments.of("Double min double",  numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
-      Arguments.of("Double max float",  numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
-      Arguments.of("Double normal",  numberSchema().toJson().put("format", "double"), 123.456),
-      Arguments.of("Float max float",  numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
-      Arguments.of("Float min float",  numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
-      Arguments.of("Float normal",  numberSchema().toJson().put("format", "float"), 123.456)
+    return Stream.of(Arguments.of("Int32 max int32", intSchema().toJson().put("format", "int32"), Integer.MAX_VALUE),
+      Arguments.of("Int32 min int32", intSchema().toJson().put("format", "int32"), Integer.MIN_VALUE),
+      Arguments.of("Int32 max short", intSchema().toJson().put("format", "int32"), Short.MAX_VALUE),
+      Arguments.of("Int32 max byte", intSchema().toJson().put("format", "int32"), Byte.MAX_VALUE),
+      Arguments.of("Int64 max long", intSchema().toJson().put("format", "int64"), Long.MAX_VALUE),
+      Arguments.of("Int64 min long", intSchema().toJson().put("format", "int64"), Long.MIN_VALUE),
+      Arguments.of("Int64 max int32", intSchema().toJson().put("format", "int64"), Integer.MAX_VALUE),
+      Arguments.of("Int64 max short", intSchema().toJson().put("format", "int64"), Short.MAX_VALUE),
+      Arguments.of("Int64 max byte", intSchema().toJson().put("format", "int64"), Byte.MAX_VALUE),
+      Arguments.of("Double max double", numberSchema().toJson().put("format", "double"), Double.MAX_VALUE),
+      Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
+      Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
+      Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
+      Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
+      Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
+      Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456)
     );
   }
 
@@ -433,8 +435,7 @@ class RequestValidatorImplTest {
       assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
-    String expectedMsg =
-      "The value of the request / response body is invalid. Reason: " + reason;
+    String expectedMsg = "The value of the request body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
