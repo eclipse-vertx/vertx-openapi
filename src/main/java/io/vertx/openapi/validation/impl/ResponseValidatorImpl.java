@@ -35,10 +35,10 @@ import java.util.Optional;
 
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueResponseBody;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValueBody;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createResponseNotFound;
 
@@ -90,7 +90,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValue(parameter, e);
+      throw createInvalidValueParameter(parameter, result, e);
     }
   }
 
@@ -118,7 +118,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValueBody(e);
+      throw createInvalidValueResponseBody(result, e);
     }
   }
 }
