@@ -44,10 +44,10 @@ import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.LABEL;
 import static io.vertx.openapi.contract.Style.MATRIX;
 import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueRequestBody;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValueBody;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createOperationNotFound;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
@@ -129,7 +129,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValue(parameter, e);
+      throw createInvalidValueParameter(parameter, result, e);
     }
   }
 
@@ -159,7 +159,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValueBody(e);
+      throw createInvalidValueRequestBody(result, e);
     }
   }
 }
