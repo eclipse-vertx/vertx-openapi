@@ -75,7 +75,8 @@ class RequestBodyImplTest {
           "empty property \"content\""),
       Arguments.of("0002_RequestBody_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
         "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
-          "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8")
+          "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8," +
+          " multipart/form-data")
     );
   }
 

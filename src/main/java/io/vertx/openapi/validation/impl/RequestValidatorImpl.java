@@ -152,7 +152,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
     if (transformer == null) {
       throw new ValidatorException("The format of the request body is not supported", UNSUPPORTED_VALUE_FORMAT);
     }
-    Object transformedValue = transformer.transform(mediaType, request.getBody().getBuffer());
+    Object transformedValue = transformer.transformRequest(mediaType, request);
     OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
 
     try {
