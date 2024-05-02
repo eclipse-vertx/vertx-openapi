@@ -1,0 +1,6 @@
+content-disposition: form-data; name="randomBinary"; filename="random.bin"
+content-length: 10
+content-type: application/octet-stream
+content-transfer-encoding: binary
+
+9*4±Ê-å
