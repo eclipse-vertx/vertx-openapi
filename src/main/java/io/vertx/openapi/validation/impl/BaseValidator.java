@@ -18,11 +18,13 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.validation.transformer.ApplicationJsonTransformer;
 import io.vertx.openapi.validation.transformer.BodyTransformer;
+import io.vertx.openapi.validation.transformer.MultipartFormTransformer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
@@ -38,6 +40,7 @@ class BaseValidator {
 
     bodyTransformers = new HashMap<>();
     bodyTransformers.put(APPLICATION_JSON.toString(), new ApplicationJsonTransformer());
+    bodyTransformers.put(MULTIPART_FORM_DATA.toString(), new MultipartFormTransformer());
   }
 
   // VisibleForTesting

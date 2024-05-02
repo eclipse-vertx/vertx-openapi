@@ -16,15 +16,28 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.validation.ValidatableRequest;
+import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatorException;
 
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 
 public class ApplicationJsonTransformer implements BodyTransformer {
+
   @Override
-  public Object transform(MediaType type, Buffer value) {
+  public Object transformRequest(MediaType type, ValidatableRequest request) {
+    return transform(type, request.getBody().getBuffer());
+  }
+
+  @Override
+  public Object transformResponse(MediaType type, ValidatableResponse response) {
+    return transform(type, response.getBody().getBuffer());
+  }
+
+  // used in MultipartFormTransformer
+  Object transform(MediaType type, Buffer body) {
     try {
-      return Json.decodeValue(value);
+      return Json.decodeValue(body);
     } catch (DecodeException e) {
       throw new ValidatorException("The request body can't be decoded", ILLEGAL_VALUE);
     }

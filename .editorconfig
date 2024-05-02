@@ -12,6 +12,9 @@ max_line_length = 120
 [Makefile]
 indent_style = tab
 
+[**/resources/**.txt]
+insert_final_newline = false
+
 [**/examples/**.java]
 # 84 looks like a odd number, however
 # it accounts for 4 spaces (class and example method indentation)

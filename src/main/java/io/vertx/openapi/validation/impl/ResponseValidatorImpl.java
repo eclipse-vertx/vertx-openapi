@@ -111,7 +111,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
       throw new ValidatorException("The format of the response body is not supported", UNSUPPORTED_VALUE_FORMAT);
     }
 
-    Object transformedValue = transformer.transform(mediaType, params.getBody().getBuffer());
+    Object transformedValue = transformer.transformResponse(mediaType, params);
     OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
 
     try {
