@@ -14,6 +14,7 @@ package io.vertx.openapi.validation.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.validation.transformer.ApplicationJsonTransformer;
@@ -41,6 +42,7 @@ class BaseValidator {
     bodyTransformers = new HashMap<>();
     bodyTransformers.put(APPLICATION_JSON.toString(), new ApplicationJsonTransformer());
     bodyTransformers.put(MULTIPART_FORM_DATA.toString(), new MultipartFormTransformer());
+    bodyTransformers.put(MediaType.APPLICATION_HAL_JSON, new ApplicationJsonTransformer());
   }
 
   // VisibleForTesting

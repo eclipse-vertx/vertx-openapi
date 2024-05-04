@@ -29,10 +29,11 @@ import java.util.List;
 @VertxGen
 public interface MediaType extends OpenAPIObject {
 
+  String APPLICATION_HAL_JSON = "application/hal+json";
   String APPLICATION_JSON = HttpHeaderValues.APPLICATION_JSON.toString();
   String APPLICATION_JSON_UTF8 = APPLICATION_JSON + "; charset=utf-8";
   String MULTIPART_FORM_DATA = HttpHeaderValues.MULTIPART_FORM_DATA.toString();
-  List<String> SUPPORTED_MEDIA_TYPES = Arrays.asList(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA);
+  List<String> SUPPORTED_MEDIA_TYPES = Arrays.asList(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA, APPLICATION_HAL_JSON);
 
   static boolean isMediaTypeSupported(String type) {
     return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase());

@@ -22,6 +22,8 @@ import io.vertx.openapi.validation.ValidatorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -57,4 +59,11 @@ class BaseValidatorTest {
       testContext.completeNow();
     })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
+
+  @ParameterizedTest(name = "{index} Test valid if {0} is a valid base transformer.")
+  @ValueSource(strings = { "application/json", "application/hal+json" })
+  public void testValidBaseTransformer(String transformer) {
+    assertThat(validator.bodyTransformers.containsKey(transformer)).isTrue();
+  }
+
 }
