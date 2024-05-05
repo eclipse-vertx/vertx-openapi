@@ -24,8 +24,6 @@ import io.vertx.openapi.validation.transformer.MultipartFormTransformer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
@@ -40,8 +38,9 @@ class BaseValidator {
     this.contract = contract;
 
     bodyTransformers = new HashMap<>();
-    bodyTransformers.put(APPLICATION_JSON.toString(), new ApplicationJsonTransformer());
-    bodyTransformers.put(MULTIPART_FORM_DATA.toString(), new MultipartFormTransformer());
+    bodyTransformers.put(MediaType.APPLICATION_JSON, new ApplicationJsonTransformer());
+    bodyTransformers.put(MediaType.APPLICATION_JSON_UTF8, new ApplicationJsonTransformer());
+    bodyTransformers.put(MediaType.MULTIPART_FORM_DATA, new MultipartFormTransformer());
     bodyTransformers.put(MediaType.APPLICATION_HAL_JSON, new ApplicationJsonTransformer());
   }
 
