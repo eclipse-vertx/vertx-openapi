@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -78,9 +79,10 @@ class MultipartFormTransformerTest {
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
-  @Test
-  void testTransformRequest() throws IOException {
-    Buffer multipartBody = Buffer.buffer(new String(Files.readAllBytes(TEST_RESOURCE_PATH.resolve("multipart.txt"))));
+  @ParameterizedTest
+  @ValueSource(strings = {"multipart.txt", "multipart_extended_content_type.txt"})
+  void testTransformRequest(String file) throws IOException {
+    Buffer multipartBody = Buffer.buffer(new String(Files.readAllBytes(TEST_RESOURCE_PATH.resolve(file))));
     ValidatableRequest req = mockValidatableRequest(multipartBody, "multipart/form-data; boundary=abcde12345");
 
     JsonObject expected = new JsonObject()
