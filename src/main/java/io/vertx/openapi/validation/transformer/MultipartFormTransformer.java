@@ -60,28 +60,26 @@ public class MultipartFormTransformer implements BodyTransformer {
         continue;
       }
 
-      switch (part.getContentType()) {
-        case "text/plain":
-          try {
-            formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
-          } catch (ValidatorException ve) {
-            if (ve.type() == ILLEGAL_VALUE) {
-              // Value isn't a number, boolean, etc. -> therefore it is treated as a string.
-              Buffer quotedBody = Buffer.buffer("\"").appendBuffer(part.getBody()).appendString("\"");
-              formData.put(part.getName(), JSON_TRANSFORMER.transform(null, quotedBody));
-            }
-          }
-          break;
-        case "application/json":
+      // getContentType() can't be null
+      if (part.getContentType().startsWith("text/plain")) {
+        try {
           formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
-          break;
-        case "application/octet-stream":
-          formData.put(part.getName(), part.getBody());
-          break;
-        default:
-          String msg = String.format("The content type %s of property %s is not yet supported.",
-            part.getContentType(), part.getName());
-          throw new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
+        } catch (ValidatorException ve) {
+          if (ve.type() == ILLEGAL_VALUE) {
+            // Value isn't a number, boolean, etc. -> therefore it is treated as a string.
+            Buffer quotedBody = Buffer.buffer("\"").appendBuffer(part.getBody()).appendString("\"");
+            formData.put(part.getName(), JSON_TRANSFORMER.transform(null, quotedBody));
+          }
+        }
+      } else if (part.getContentType().startsWith("application/json")) {
+        formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
+
+      } else if (part.getContentType().startsWith("application/octet-stream")) {
+        formData.put(part.getName(), part.getBody());
+      } else {
+        String msg = String.format("The content type %s of property %s is not yet supported.",
+          part.getContentType(), part.getName());
+        throw new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
       }
     }
 
