@@ -93,12 +93,10 @@ class MultipartPartTest {
   void testParsePartWithoutContentType() throws IOException {
     String part = Files.readString(TEST_RESOURCE_PATH.resolve("part_without_contenttype.txt"));
 
-    ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> MultipartPart.parsePart(part));
-
-    String expectedMsg = "A part of the multipart message doesn't contain a content type.";
-    assertThat(exception.type()).isEqualTo(ValidatorErrorType.INVALID_VALUE);
-    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+    MultipartPart mpp = MultipartPart.parsePart(part);
+    assertThat(mpp.getName()).isEqualTo("id");
+    assertThat(mpp.getContentType()).isEqualTo("text/plain");
+    assertThat(mpp.getBody()).isEqualTo(Buffer.buffer("123e4567-e89b-12d3-a456-426655440000"));
   }
 
   @Test

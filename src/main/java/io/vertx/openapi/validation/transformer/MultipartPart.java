@@ -77,10 +77,8 @@ public class MultipartPart {
       return new ValidatorException(msg, INVALID_VALUE);
     });
 
-    String contentType = parsePattern(CONTENT_TYPE_PATTERN, headerSection).orElseThrow(() -> {
-      String msg = "A part of the multipart message doesn't contain a content type.";
-      return new ValidatorException(msg, INVALID_VALUE);
-    });
+    // If no header is set, content type defaults to text/plain
+    String contentType = parsePattern(CONTENT_TYPE_PATTERN, headerSection).orElse("text/plain");
 
     return new MultipartPart(name, contentType, body == null ? null : Buffer.buffer(body));
   }
