@@ -69,11 +69,12 @@ public class MultipartFormTransformer implements BodyTransformer {
             // Value isn't a number, boolean, etc. -> therefore it is treated as a string.
             Buffer quotedBody = Buffer.buffer("\"").appendBuffer(part.getBody()).appendString("\"");
             formData.put(part.getName(), JSON_TRANSFORMER.transform(null, quotedBody));
+          } else {
+            throw ve;
           }
         }
       } else if (part.getContentType().startsWith("application/json")) {
         formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
-
       } else if (part.getContentType().startsWith("application/octet-stream")) {
         formData.put(part.getName(), part.getBody());
       } else {
