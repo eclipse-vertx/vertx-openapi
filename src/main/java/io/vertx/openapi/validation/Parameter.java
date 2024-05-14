@@ -18,7 +18,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-interface Parameter {
+public interface Parameter {
   /**
    * @return null if value is not a {@link String}, otherwise it returns value
    */
