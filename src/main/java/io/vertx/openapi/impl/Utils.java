@@ -61,6 +61,22 @@ public final class Utils {
     });
   }
 
+    /**
+   * Reads YAML string and transforms it into a JsonObject.
+   *
+   * @param path  The yamlString proper YAML formatted STring
+   * @return A succeeded Future holding the JsonObject, or a failed Future if the file could not be parsed.
+   */
+  public static Future<JsonObject> yamlStringToJson(String yamlString) {
+    try {
+      final Yaml yaml = new Yaml(new OpenAPIYamlConstructor());
+      Map<Object, Object> doc = yaml.load(yamlString);
+      return succeededFuture(new JsonObject(jsonify(doc)));
+    } catch (RuntimeException e) {
+      return failedFuture(e);
+    }
+  }
+
   /**
    * Yaml allows map keys of type object, however json always requires key as String,
    * this helper method will ensure we adapt keys to the right type
