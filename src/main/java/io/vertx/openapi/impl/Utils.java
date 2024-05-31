@@ -48,13 +48,7 @@ public final class Utils {
       if ("json".equals(suffix)) {
         return succeededFuture(buff.toJsonObject());
       } else if ("yaml".equals(suffix) || "yml".equals(suffix)) {
-        try {
-          final Yaml yaml = new Yaml(new OpenAPIYamlConstructor());
-          Map<Object, Object> doc = yaml.load(buff.toString(StandardCharsets.UTF_8));
-          return succeededFuture(new JsonObject(jsonify(doc)));
-        } catch (RuntimeException e) {
-          return failedFuture(e);
-        }
+        return yamlStringToJson((buff.toString(StandardCharsets.UTF_8));
       } else {
         return failedFuture(new IllegalArgumentException("Only JSON or YAML files are allowed"));
       }
