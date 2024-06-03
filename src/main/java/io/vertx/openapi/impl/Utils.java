@@ -48,7 +48,7 @@ public final class Utils {
       if ("json".equals(suffix)) {
         return succeededFuture(buff.toJsonObject());
       } else if ("yaml".equals(suffix) || "yml".equals(suffix)) {
-        return yamlStringToJson((buff.toString(StandardCharsets.UTF_8));
+        return yamlStringToJson(buff.toString(StandardCharsets.UTF_8));
       } else {
         return failedFuture(new IllegalArgumentException("Only JSON or YAML files are allowed"));
       }
