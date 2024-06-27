@@ -13,7 +13,7 @@
 package io.vertx.openapi.contract;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.impl.JsonObjectProxy;
+import io.vertx.json.schema.internal.JsonObjectProxy;
 
 import java.util.Map;
 import java.util.stream.Collectors;
