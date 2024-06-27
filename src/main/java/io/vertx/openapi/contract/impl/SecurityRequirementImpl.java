@@ -33,7 +33,7 @@ public class SecurityRequirementImpl implements SecurityRequirement {
   private final Map<String, List<String>> scopes;
   private final boolean empty;
 
-  SecurityRequirementImpl(JsonObject securityRequirementModel) {
+  public SecurityRequirementImpl(JsonObject securityRequirementModel) {
     this.securityRequirementModel = securityRequirementModel;
     this.empty = securityRequirementModel.isEmpty();
 

@@ -109,7 +109,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
   }
 
   // VisibleForTesting
-  RequestParameter validateParameter(Parameter parameter, RequestParameter value) throws ValidatorException {
+  public RequestParameter validateParameter(Parameter parameter, RequestParameter value) throws ValidatorException {
     if (value == null || value.isNull()) {
       if (parameter.isRequired()) {
         throw createMissingRequiredParameter(parameter);
@@ -134,7 +134,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
   }
 
   // VisibleForTesting
-  RequestParameter validateBody(RequestBody requestBody, ValidatableRequest request) {
+  public RequestParameter validateBody(RequestBody requestBody, ValidatableRequest request) {
     if (requestBody == null) {
       return new RequestParameterImpl(null);
     }

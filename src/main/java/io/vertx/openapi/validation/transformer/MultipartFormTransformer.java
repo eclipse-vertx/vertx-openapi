@@ -30,7 +30,7 @@ public class MultipartFormTransformer implements BodyTransformer {
   private static final String BOUNDARY = "boundary=";
   private static final ApplicationJsonTransformer JSON_TRANSFORMER = new ApplicationJsonTransformer();
 
-  static String extractBoundary(String contentType) {
+  public static String extractBoundary(String contentType) {
     String[] parts = contentType.split(BOUNDARY, 2);
     if (parts.length == 2 && !parts[1].isBlank()) {
       return parts[1].strip();
@@ -38,7 +38,7 @@ public class MultipartFormTransformer implements BodyTransformer {
     return null;
   }
 
-  static Object transform(MediaType type, Buffer body, String contentType, String responseOrRequest) {
+  public static Object transform(MediaType type, Buffer body, String contentType, String responseOrRequest) {
     if (contentType == null || contentType.isEmpty() || !contentType.startsWith(MULTIPART_FORM_DATA.toString())) {
       String msg = "The expected multipart/form-data " + responseOrRequest + " doesn't contain the required " +
         "content-type header.";

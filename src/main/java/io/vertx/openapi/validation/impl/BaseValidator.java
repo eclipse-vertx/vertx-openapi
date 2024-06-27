@@ -28,7 +28,7 @@ import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.openapi.validation.ValidatorException.createOperationIdInvalid;
 
-class BaseValidator {
+public class BaseValidator {
   protected final Vertx vertx;
   protected final OpenAPIContract contract;
   protected final Map<String, BodyTransformer> bodyTransformers;
@@ -44,8 +44,12 @@ class BaseValidator {
     bodyTransformers.put(MediaType.APPLICATION_HAL_JSON, new ApplicationJsonTransformer());
   }
 
+  public boolean containsTransformer(String transformer) {
+    return bodyTransformers.containsKey(transformer);
+  }
+
   // VisibleForTesting
-  Future<Operation> getOperation(String operationId) {
+  public Future<Operation> getOperation(String operationId) {
     Operation operation = contract.operation(operationId);
     if (operation == null) {
       return failedFuture(createOperationIdInvalid(operationId));
