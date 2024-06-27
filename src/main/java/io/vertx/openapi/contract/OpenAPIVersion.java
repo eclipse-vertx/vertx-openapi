@@ -56,6 +56,10 @@ public enum OpenAPIVersion {
     schemaFiles.add(mainSchemaFile);
   }
 
+  public List<String> schemaFiles() {
+    return schemaFiles;
+  }
+
   public static OpenAPIVersion fromContract(JsonObject contract) {
     String version = Optional.ofNullable(contract).map(spec -> spec.getString("openapi"))
       .orElseThrow(() -> createInvalidContract("Field \"openapi\" is missing"));

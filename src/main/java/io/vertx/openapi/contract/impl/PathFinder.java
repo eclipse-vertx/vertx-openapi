@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
-class PathFinder {
+public class PathFinder {
 
   /**
    * /v1/users
@@ -95,7 +95,7 @@ class PathFinder {
    * @return The total number of segments that match with a bias towards segments that come first (left biased).
    * If the path segment doesn't match in one or more places, then we return -1 (path doesn't match).
    */
-  int testSegments(String[] pathSegments, String[] pathTemplateSegments) {
+  public int testSegments(String[] pathSegments, String[] pathTemplateSegments) {
     int numPerfectMatches = 0;
     for (int i = 0; i < pathTemplateSegments.length; i++) {
       String templateSegment = pathTemplateSegments[i];

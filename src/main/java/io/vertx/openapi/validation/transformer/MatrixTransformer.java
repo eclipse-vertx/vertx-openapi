@@ -29,7 +29,7 @@ import static io.vertx.openapi.validation.ValidatorException.createInvalidValueF
  */
 public class MatrixTransformer extends ParameterTransformer {
 
-  String buildPrefix(Parameter parameter) {
+  public String buildPrefix(Parameter parameter) {
     if (parameter.isExplode() && parameter.getSchemaType() == OBJECT) {
       return ";";
     }

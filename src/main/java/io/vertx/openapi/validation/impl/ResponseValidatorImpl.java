@@ -50,7 +50,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
   }
 
   // VisibleForTesting
-  Future<Response> getResponse(ValidatableResponse params, String operationId) {
+  public Future<Response> getResponse(ValidatableResponse params, String operationId) {
     return getOperation(operationId).compose(op -> {
       Response response = Optional.ofNullable(op.getResponse(params.getStatusCode())).orElse(op.getDefaultResponse());
       if (response == null) {
@@ -74,7 +74,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
   }
 
   // VisibleForTesting
-  ResponseParameter validateParameter(Parameter parameter, ResponseParameter value) throws ValidatorException {
+  public ResponseParameter validateParameter(Parameter parameter, ResponseParameter value) throws ValidatorException {
     if (value == null || value.isNull()) {
       if (parameter.isRequired()) {
         throw createMissingRequiredParameter(parameter);
@@ -95,7 +95,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
   }
 
   // VisibleForTesting
-  ResponseParameter validateBody(Response response, ValidatableResponse params) {
+  public ResponseParameter validateBody(Response response, ValidatableResponse params) {
     if (response.getContent().isEmpty()) {
       return new RequestParameterImpl(null);
     }

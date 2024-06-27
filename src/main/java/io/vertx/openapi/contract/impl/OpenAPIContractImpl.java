@@ -130,7 +130,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
    * @return A List which contains paths without path variables first.
    */
   // VisibleForTesting
-  static List<PathImpl> applyMountOrder(List<PathImpl> unsorted) {
+  public static List<PathImpl> applyMountOrder(List<PathImpl> unsorted) {
     if (unsorted.size() <= 1) {
       return unsorted;
     }
@@ -169,6 +169,10 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     withoutTemplating.addAll(withTemplating);
 
     return withoutTemplating;
+  }
+
+  public String basePath() {
+    return basePath;
   }
 
   @Override

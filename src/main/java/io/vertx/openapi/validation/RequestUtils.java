@@ -163,7 +163,7 @@ public class RequestUtils {
   }
 
   // VisibleForTesting
-  static int findPathSegment(String templatePath, String parameterName) {
+  public static int findPathSegment(String templatePath, String parameterName) {
     int idx = templatePath.indexOf("{" + parameterName + "}");
     return (int) templatePath.subSequence(0, idx).chars().filter(c -> c == '/').count();
   }

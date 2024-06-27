@@ -39,7 +39,7 @@ public class MultipartPart {
   }
 
   // VisibleForTesting
-  static List<String> parseParts(String body, String boundary) {
+  public static List<String> parseParts(String body, String boundary) {
     String delimiter = "--" + boundary + "|\r\n--" + boundary;
     String[] rawParts = body.split(delimiter);
 
@@ -64,7 +64,7 @@ public class MultipartPart {
   }
 
   // VisibleForTesting
-  static MultipartPart parsePart(String rawPart) {
+  public static MultipartPart parsePart(String rawPart) {
     String sectionDelimiterPattern = "\r\n\r\n";
     int sectionDelimiter = rawPart.indexOf(sectionDelimiterPattern);
 
