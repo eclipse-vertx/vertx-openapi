@@ -99,7 +99,8 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       .getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT)
       .stream()
       .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
-      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(), securityRequirements))
+      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
+        securityRequirements))
       .collect(toList());
 
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
@@ -187,7 +188,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   @Override
   public JsonObject getRawContract() {
-    return rawContract.copy();
+    return rawContract;
   }
 
   @Override

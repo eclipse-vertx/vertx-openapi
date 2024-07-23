@@ -12,6 +12,7 @@
 
 package io.vertx.openapi.contract.impl;
 
+import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonArray;
@@ -21,6 +22,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.ResourceHelper;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -41,6 +44,8 @@ import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -79,7 +84,8 @@ class OperationImplTest {
     HttpMethod method = HttpMethod.valueOf(testDataObject.getString("method").toUpperCase());
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
-    return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, Arrays.asList(secReqs));
+    return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, emptyMap(),
+      Arrays.asList(secReqs));
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
@@ -145,5 +151,32 @@ class OperationImplTest {
     OperationImpl operationWithSecReqs = fromTestData("0004_Test_Security_Requirements", validTestData);
     assertThat(operationWithSecReqs.getSecurityRequirements()).hasSize(1);
     assertThat(operationWithSecReqs.getSecurityRequirements().get(0).getNames()).containsExactly("api_key");
+  }
+
+  private static Stream<Arguments> providePathExtensions() {
+    Map<String, Object> operationExtensions = ImmutableMap.of("x-some-string", "someString", "x-some-number", 1337);
+    Arguments pathEmpty = Arguments.of("Path extensions are empty", emptyMap(), operationExtensions);
+
+    Map<String, Object> pathWithSame = ImmutableMap.of("x-some-string", "pathValue");
+    Arguments pathContainsSame = Arguments.of("Path contains an extensions with same name", pathWithSame,
+      operationExtensions);
+
+    Map<String, Object> pathWithNew = ImmutableMap.of("x-some-string", "pathValue", "x-path-extension",
+      new JsonObject());
+    Map<String, Object> expected = ImmutableMap.<String, Object>builder().putAll(operationExtensions).put("x-path" +
+      "-extension", new JsonObject()).build();
+    Arguments pathContainsAlsoNew = Arguments.of("Path contains an extensions with same name", pathWithNew, expected);
+
+    return Stream.of(pathEmpty, pathContainsSame, pathContainsAlsoNew);
+  }
+
+  @ParameterizedTest(name = "{index} should provide the correct extensions: {0}")
+  @MethodSource(value = "providePathExtensions")
+  void testMergeExtensions(String scenario, Map<String, Object> pathExtensions, Map<String, Object> expected) {
+    JsonObject testDataObject = validTestData.getJsonObject("0005_Test_Merge_Extensions");
+    JsonObject operationModel = testDataObject.getJsonObject("operationModel");
+    Operation op = new OperationImpl("/", "path", GET, operationModel, emptyList(), pathExtensions, emptyList());
+
+    assertThat(op.getExtensions()).containsExactlyEntriesIn(expected);
   }
 }

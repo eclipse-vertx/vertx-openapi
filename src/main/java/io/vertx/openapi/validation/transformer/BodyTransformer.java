@@ -12,10 +12,29 @@
 
 package io.vertx.openapi.validation.transformer;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.validation.ValidatableRequest;
+import io.vertx.openapi.validation.ValidatableResponse;
 
 public interface BodyTransformer {
 
-  Object transform(MediaType type, Buffer value);
+  /**
+   * Transforms the body of a request into a format that can be validated by the
+   * {@link io.vertx.openapi.validation.RequestValidator}.
+   *
+   * @param type    the media type of the body.
+   * @param request the request with the body to transform.
+   * @return the transformed body.
+   */
+  Object transformRequest(MediaType type, ValidatableRequest request);
+
+  /**
+   * Transforms the body of a response into a format that can be validated by the
+   * {@link io.vertx.openapi.validation.ResponseValidator}.
+   *
+   * @param type     the media type of the body.
+   * @param response the response with the body to transform.
+   * @return the transformed body.
+   */
+  Object transformResponse(MediaType type, ValidatableResponse response);
 }

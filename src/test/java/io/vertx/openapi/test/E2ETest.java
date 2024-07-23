@@ -18,6 +18,7 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
@@ -28,11 +29,13 @@ import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedRequest;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -84,6 +87,40 @@ class E2ETest extends HttpServerTestBase {
           testContext.completeNow();
         }))), testContext);
     }).onFailure(testContext::failNow);
+  }
+
+  //These types come from: https://spec.openapis.org/oas/latest.html#special-considerations-for-multipart-content
+  // 1 primitive "petId"
+  // 1 complex "json"
+  // 1 primitive with content encoding aka png base64 encoded.
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @DisplayName("Send a multipart/form-data request")
+  public void sendMultipartFormDataRequest(VertxTestContext testContext) {
+    Path path = getRelatedTestResourcePath(E2ETest.class).resolve("multipart.txt");
+    JsonObject expectedPetMetadata = new JsonObject()
+        .put("friends", new JsonArray().add(123).add(456).add(789))
+          .put("contactInformation", new JsonObject()
+            .put("name", "Example")
+            .put("email", "example@example.com")
+            .put("phone", "5555555555"));
+
+    setupContract("", testContext).compose(v -> createValidationHandler(req -> {
+      testContext.verify(() -> {
+        assertThat(req.getBody()).isNotNull();
+        JsonObject jsonReq = req.getBody().getJsonObject();
+        assertThat(jsonReq.getLong("petId")).isEqualTo(1234L);
+        assertThat(jsonReq.getJsonObject("petMetadata")).isEqualTo(expectedPetMetadata);
+        assertThat(jsonReq.getBuffer("petPicture")).isNotNull();
+        testContext.completeNow();
+      });
+      return ValidatableResponse.create(201);
+    },contract.operation("uploadPet").getOperationId(), testContext))
+      .compose(v -> createRequest(HttpMethod.POST, "/pets/upload"))
+      .map(request -> request.putHeader(HttpHeaders.CONTENT_TYPE, "multipart/form-data; boundary=4ad8accc990e99c2"))
+      .map(request -> request.putHeader(HttpHeaders.CONTENT_DISPOSITION, ""))
+      .compose(request -> request.send(vertx.fileSystem().readFileBlocking(path.toString())))
+      .onFailure(testContext::failNow);
   }
 
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)

@@ -75,7 +75,8 @@ class RequestBodyImplTest {
           "empty property \"content\""),
       Arguments.of("0002_RequestBody_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
         "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
-          "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8")
+          "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8," +
+          " multipart/form-data, application/hal+json")
     );
   }
 
@@ -119,6 +120,7 @@ class RequestBodyImplTest {
     RequestBody bodyAppJson = buildWithContent(appJson);
     RequestBody bodyAppJsonUTF8 = buildWithContent(appJsonUTF8);
 
+    assertThat(bodyBoth.determineContentType(null)).isNull();
     assertThat(bodyBoth.determineContentType(appJson).getIdentifier()).isEqualTo(appJson);
     assertThat(bodyBoth.determineContentType(appJsonUTF8).getIdentifier()).isEqualTo(appJsonUTF8);
 

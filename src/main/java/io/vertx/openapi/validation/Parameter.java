@@ -14,19 +14,24 @@ package io.vertx.openapi.validation;
 
 import io.vertx.codegen.annotations.CacheReturn;
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@VertxGen
-interface Parameter {
+public interface Parameter {
   /**
    * @return null if value is not a {@link String}, otherwise it returns value
    */
   @Nullable
   default String getString() {
-    return isString() ? (String) get() : null;
+    return getString(null);
+  }
+
+  /**
+   * @return the default if value is not a {@link String} or is null, otherwise it returns the value.
+   */
+  default String getString(String defaultValue) {
+    return isString() ? (String) get() : defaultValue;
   }
 
   /**
@@ -41,7 +46,14 @@ interface Parameter {
    */
   @Nullable
   default Integer getInteger() {
-    return isNumber() ? ((Number) get()).intValue() : null;
+    return getInteger(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
+   */
+  default Integer getInteger(Integer defaultValue) {
+    return isNumber() ? Integer.valueOf(((Number) get()).intValue()) : defaultValue;
   }
 
   /**
@@ -49,7 +61,14 @@ interface Parameter {
    */
   @Nullable
   default Long getLong() {
-    return isNumber() ? ((Number) get()).longValue() : null;
+    return getLong(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
+   */
+  default Long getLong(Long defaultValue) {
+    return isNumber() ? Long.valueOf(((Number) get()).longValue()) : defaultValue;
   }
 
   /**
@@ -57,7 +76,14 @@ interface Parameter {
    */
   @Nullable
   default Float getFloat() {
-    return isNumber() ? ((Number) get()).floatValue() : null;
+    return getFloat(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
+   */
+  default Float getFloat(Float defaultValue) {
+    return isNumber() ? Float.valueOf(((Number) get()).floatValue()) : defaultValue;
   }
 
   /**
@@ -65,7 +91,14 @@ interface Parameter {
    */
   @Nullable
   default Double getDouble() {
-    return isNumber() ? ((Number) get()).doubleValue() : null;
+    return getDouble(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link Number} or is null, otherwise it returns the value.
+   */
+  default Double getDouble(Double defaultValue) {
+    return isNumber() ? Double.valueOf(((Number) get()).doubleValue()) : defaultValue;
   }
 
   /**
@@ -80,7 +113,14 @@ interface Parameter {
    */
   @Nullable
   default Boolean getBoolean() {
-    return isBoolean() ? (Boolean) get() : null;
+    return getBoolean(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link Boolean} or is null, otherwise it returns the value.
+   */
+  default Boolean getBoolean(Boolean defaultValue) {
+    return isBoolean() ? (Boolean) get() : defaultValue;
   }
 
   /**
@@ -95,7 +135,14 @@ interface Parameter {
    */
   @Nullable
   default JsonObject getJsonObject() {
-    return isJsonObject() ? (JsonObject) get() : null;
+    return getJsonObject(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link JsonObject} or is null, otherwise it returns the value.
+   */
+  default JsonObject getJsonObject(JsonObject defaultValue) {
+    return isJsonObject() ? (JsonObject) get() : defaultValue;
   }
 
   /**
@@ -110,7 +157,14 @@ interface Parameter {
    */
   @Nullable
   default JsonArray getJsonArray() {
-    return isJsonArray() ? (JsonArray) get() : null;
+    return getJsonArray(null);
+  }
+
+  /**
+   * @return the default supplied if value is not a {@link JsonArray} or is null, otherwise it returns the value.
+   */
+  default JsonArray getJsonArray(JsonArray defaultValue) {
+    return isJsonArray() ? (JsonArray) get() : defaultValue;
   }
 
   /**
@@ -125,7 +179,14 @@ interface Parameter {
    */
   @Nullable
   default Buffer getBuffer() {
-    return isBuffer() ? (Buffer) get() : null;
+    return getBuffer(null);
+  }
+
+  /**
+   * @return the default suppliedif value is not a {@link Buffer} or is null, otherwise it returns the value.
+   */
+  default Buffer getBuffer(Buffer defaultValue) {
+    return isBuffer() ? (Buffer) get() : defaultValue;
   }
 
   /**
@@ -143,7 +204,8 @@ interface Parameter {
   }
 
   /**
-   * @return true if it's an empty {@link String}, an empty {@link JsonObject} / {@link JsonArray}, an empty {@link Buffer} or it's null
+   * @return true if it's an empty {@link String}, an empty {@link JsonObject} / {@link JsonArray}, an empty
+   * {@link Buffer} or it's null
    */
   default boolean isEmpty() {
     return isNull() ||

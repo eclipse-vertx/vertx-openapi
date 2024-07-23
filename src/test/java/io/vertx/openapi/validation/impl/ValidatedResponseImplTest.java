@@ -96,6 +96,16 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     }).compose(v -> verifyResponse(201, Buffer.buffer(), headersExpected, testContext));
   }
 
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testResponseWithEmptyJsonArray(VertxTestContext testContext) {
+    Buffer body = new JsonArray().toBuffer();
+    createServer(request -> {
+      responseValidator.validate(ValidatableResponse.create(200, body, APPLICATION_JSON.toString()), "listPets")
+        .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
+    }).compose(v -> verifyResponse(200, body, buildHeaders(body), testContext));
+  }
+
   private Map<String, String> buildHeaders(Buffer body) {
     return Maps.newHashMap(ImmutableMap.of(CONTENT_TYPE.toString(), APPLICATION_JSON.toString(),
       CONTENT_LENGTH.toString(), "" + body.length()));

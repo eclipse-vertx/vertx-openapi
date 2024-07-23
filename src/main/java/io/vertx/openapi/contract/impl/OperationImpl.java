@@ -23,6 +23,7 @@ import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Response;
 import io.vertx.openapi.contract.SecurityRequirement;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,14 +64,20 @@ public class OperationImpl implements Operation {
   private final Map<Integer, Response> responses;
   private final String absolutePath;
   private final List<SecurityRequirement> securityRequirements;
+  private final Map<String, Object> extensions;
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
-                       List<Parameter> pathParameters, List<SecurityRequirement> globalSecReq) {
+                       List<Parameter> pathParameters, Map<String, Object> pathExtensions,
+                       List<SecurityRequirement> globalSecReq) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
     this.path = path;
     this.operationModel = operationModel;
+
+    HashMap<String, Object> allExtensions = new HashMap<>(Operation.super.getExtensions());
+    pathExtensions.forEach(allExtensions::putIfAbsent);
+    this.extensions = unmodifiableMap(allExtensions);
 
     this.tags =
       unmodifiableList(operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(
@@ -143,7 +150,7 @@ public class OperationImpl implements Operation {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return operationModel.copy();
+    return operationModel;
   }
 
   @Override
@@ -189,5 +196,10 @@ public class OperationImpl implements Operation {
   @Override
   public List<SecurityRequirement> getSecurityRequirements() {
     return securityRequirements;
+  }
+
+  @Override
+  public Map<String, Object> getExtensions() {
+    return extensions;
   }
 }

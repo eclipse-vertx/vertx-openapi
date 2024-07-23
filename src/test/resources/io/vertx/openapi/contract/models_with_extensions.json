@@ -1,0 +1,108 @@
+{
+  "0000_Operation_With_One_String": {
+    "description": "Returns pets based on ID",
+    "summary": "Find pets by ID",
+    "operationId": "getPetsById",
+    "x-some-string": "someString",
+    "responses": {
+      "200": {
+        "x-some-response-extension": "foo",
+        "description": "pet response",
+        "content": {
+          "*/*": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        }
+      },
+      "default": {
+        "description": "error payload",
+        "content": {
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorModel"
+            }
+          }
+        }
+      }
+    }
+  },
+  "0001_Operation_With_One_String_One_Array": {
+    "description": "Returns pets based on ID",
+    "summary": "Find pets by ID",
+    "operationId": "getPetsById",
+    "x-some-string": "someString",
+    "x-some-array": [
+      "foo",
+      "bar"
+    ],
+    "responses": {
+      "200": {
+        "x-some-response-extension": "foo",
+        "description": "pet response",
+        "content": {
+          "*/*": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        }
+      },
+      "default": {
+        "description": "error payload",
+        "content": {
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorModel"
+            }
+          }
+        }
+      }
+    }
+  },
+  "0002_Operation_With_One_String_One_Array_One_Number": {
+    "description": "Returns pets based on ID",
+    "summary": "Find pets by ID",
+    "x-some-number": 1337,
+    "operationId": "getPetsById",
+    "x-some-string": "someString",
+    "x-some-array": [
+      "foo",
+      "bar"
+    ],
+    "responses": {
+      "200": {
+        "x-some-response-extension": "foo",
+        "description": "pet response",
+        "content": {
+          "*/*": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Pet"
+              }
+            }
+          }
+        }
+      },
+      "default": {
+        "description": "error payload",
+        "content": {
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorModel"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

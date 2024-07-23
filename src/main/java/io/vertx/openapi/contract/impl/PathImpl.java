@@ -82,7 +82,8 @@ public class PathImpl implements Path {
 
     List<Operation> ops = new ArrayList<>();
     SUPPORTED_METHODS.forEach((methodName, method) -> Optional.ofNullable(pathModel.getJsonObject(methodName))
-      .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters, globalSecReq))
+      .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters,
+        getExtensions(), globalSecReq))
       .ifPresent(ops::add));
     this.operations = unmodifiableList(ops);
   }
@@ -109,7 +110,7 @@ public class PathImpl implements Path {
 
   @Override
   public JsonObject getOpenAPIModel() {
-    return pathModel.copy();
+    return pathModel;
   }
 
   public String getAbsolutePath() {

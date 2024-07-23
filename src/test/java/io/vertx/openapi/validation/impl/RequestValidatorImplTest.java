@@ -151,6 +151,39 @@ class RequestValidatorImplTest {
     );
   }
 
+  private static Stream<Arguments> getBadlyFormattedParameters() {
+    return Stream.of(
+      Arguments.of("Int32", intSchema().toJson().put("format", "int32"), Long.MAX_VALUE,
+        "The value of path parameter Int32 is invalid. Reason: Integer does not match the format \"int32\""),
+      Arguments.of("Int64", intSchema().toJson().put("format", "int64"), "9999999999999999999999999999999",
+        "The value of path parameter Int64 is invalid. Reason: Integer does not match the format \"int64\""),
+      Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
+        "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+      Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
+        "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\"")
+    );
+  }
+
+  private static Stream<Arguments> getCorrectlyFormattedParameters() {
+    return Stream.of(Arguments.of("Int32 max int32", intSchema().toJson().put("format", "int32"), Integer.MAX_VALUE),
+      Arguments.of("Int32 min int32", intSchema().toJson().put("format", "int32"), Integer.MIN_VALUE),
+      Arguments.of("Int32 max short", intSchema().toJson().put("format", "int32"), Short.MAX_VALUE),
+      Arguments.of("Int32 max byte", intSchema().toJson().put("format", "int32"), Byte.MAX_VALUE),
+      Arguments.of("Int64 max long", intSchema().toJson().put("format", "int64"), Long.MAX_VALUE),
+      Arguments.of("Int64 min long", intSchema().toJson().put("format", "int64"), Long.MIN_VALUE),
+      Arguments.of("Int64 max int32", intSchema().toJson().put("format", "int64"), Integer.MAX_VALUE),
+      Arguments.of("Int64 max short", intSchema().toJson().put("format", "int64"), Short.MAX_VALUE),
+      Arguments.of("Int64 max byte", intSchema().toJson().put("format", "int64"), Byte.MAX_VALUE),
+      Arguments.of("Double max double", numberSchema().toJson().put("format", "double"), Double.MAX_VALUE),
+      Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
+      Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
+      Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
+      Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
+      Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
+      Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456)
+    );
+  }
+
   @BeforeEach
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
@@ -402,8 +435,25 @@ class RequestValidatorImplTest {
       assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
-    String expectedMsg =
-      "The value of the request / response body is invalid. Reason: " + reason;
+    String expectedMsg = "The value of the request body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
+
+  @ParameterizedTest(name = "{index} Test Parameter Type {0}")
+  @MethodSource("getBadlyFormattedParameters")
+  public void testInvalidParameterFormats(String type, JsonObject schema, Object value, String expectedErrorMsg) {
+    Parameter param = buildParam(type, schema, true);
+    ValidatorException exception = assertThrows(ValidatorException.class,
+      () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+    assertThat(exception.type()).isEqualTo(INVALID_VALUE);
+    assertThat(exception).hasMessageThat().isEqualTo(expectedErrorMsg);
+  }
+
+  @ParameterizedTest(name = "{index} Test Parameter Type {0}")
+  @MethodSource("getCorrectlyFormattedParameters")
+  public void testParameterFormats(String type, JsonObject schema, Object value) {
+    Parameter param = buildParam(type, schema, true);
+    validator.validateParameter(param, new RequestParameterImpl(value));
+  }
+
 }

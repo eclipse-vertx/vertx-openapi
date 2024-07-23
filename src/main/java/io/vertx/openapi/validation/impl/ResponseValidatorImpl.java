@@ -35,10 +35,10 @@ import java.util.Optional;
 
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueResponseBody;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValue;
-import static io.vertx.openapi.validation.ValidatorException.createInvalidValueBody;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createResponseNotFound;
 
@@ -90,7 +90,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValue(parameter, e);
+      throw createInvalidValueParameter(parameter, result, e);
     }
   }
 
@@ -111,14 +111,14 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
       throw new ValidatorException("The format of the response body is not supported", UNSUPPORTED_VALUE_FORMAT);
     }
 
-    Object transformedValue = transformer.transform(mediaType, params.getBody().getBuffer());
+    Object transformedValue = transformer.transformResponse(mediaType, params);
     OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
 
     try {
       result.checkValidity();
       return new RequestParameterImpl(transformedValue);
     } catch (JsonSchemaValidationException e) {
-      throw createInvalidValueBody(e);
+      throw createInvalidValueResponseBody(result, e);
     }
   }
 }
