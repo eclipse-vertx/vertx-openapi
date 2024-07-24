@@ -89,14 +89,13 @@ public enum OpenAPIVersion {
    * @param file                    The additional json contract to validate.
    */
   public Future<Void> validateAdditionalContractFiles(Vertx vertx, SchemaRepository repo, JsonObject file) {
-    Future<Void> validateAgainstOpenAPI = validateContract(vertx, repo, file)
+    return validateContract(vertx, repo, file)
       .compose(this::checkOutputUnit)
       .recover((t) -> {
         //Schema validation failed using the openapi spec, so instead try to use json schema spec only.
         return checkOutputUnit(repo.validator(draft.getIdentifier()).validate(file));
-      });
-
-    return validateAgainstOpenAPI.mapEmpty();
+      })
+      .mapEmpty();
   }
 
   private Future<Void> checkOutputUnit(OutputUnit ou) {
