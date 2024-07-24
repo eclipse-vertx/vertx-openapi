@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.openapi.ResourceHelper.loadJson;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(VertxExtension.class)
 class OpenAPIContractTest {
@@ -126,18 +127,33 @@ class OpenAPIContractTest {
 
     OpenAPIContract.from(vertx, contract.copy(), additionalValidSpecFiles)
       .compose(validResp -> Future.succeededFuture(validResp.getRawContract()))
-      .onSuccess(validJsonRef -> {
-
-        OpenAPIContract.from(vertx, contract.copy(), additionalInvalidSpecFiles)
-          .onSuccess(splitResp -> {
-            testContext.verify(() -> {
-              assertThat(splitResp.getRawContract()).isEqualTo(validJsonRef);
-              testContext.completeNow();
-            });
-          })
-          .onFailure(testContext::failNow);
-      })
+      .onSuccess(validJsonRef -> OpenAPIContract.from(vertx, contract.copy(), additionalInvalidSpecFiles)
+        .onSuccess(splitResp -> testContext.verify(() -> {
+          assertThat(splitResp.getRawContract()).isEqualTo(validJsonRef);
+          testContext.completeNow();
+        }))
+        .onFailure(testContext::failNow))
       .onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testMalformedJsonSchemaProvidedAsAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
+    Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
+    JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
+    JsonObject malformedComponents = loadJson(vertx, resourcePath.resolve("malformedComponents.json"));
+
+    Map<String, JsonObject> additionalMalformedSpecFiles = ImmutableMap.of("https://example.com/petstore", malformedComponents);
+
+    OpenAPIContract.from(vertx, contract.copy(), additionalMalformedSpecFiles)
+      .onComplete(handler -> testContext.verify(() -> {
+        assertTrue(handler.failed());
+        assertThat(handler.cause()).isInstanceOf(OpenAPIContractException.class);
+        assertThat(handler.cause()).hasMessageThat()
+          .isEqualTo("The passed OpenAPI contract is invalid: Found issue in specification for reference: " +
+            "Instance type string is invalid. Expected array");
+        testContext.completeNow();
+      }));
   }
 
   @Test
