@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract;
 
 import com.google.common.collect.ImmutableMap;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -20,6 +21,7 @@ import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.checkerframework.checker.units.qual.Time;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -113,7 +115,34 @@ class OpenAPIContractTest {
   }
 
   @Test
-    //@Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testValidJsonSchemaProvidedAsAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
+    Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
+    JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
+    JsonObject invalidComponents = loadJson(vertx, resourcePath.resolve("validJsonSchemaComponents.json"));
+    JsonObject validComponents = loadJson(vertx, resourcePath.resolve("components.json"));
+
+    Map<String, JsonObject> additionalValidSpecFiles = ImmutableMap.of("https://example.com/petstore", validComponents);
+    Map<String, JsonObject> additionalInvalidSpecFiles = ImmutableMap.of("https://example.com/petstore", invalidComponents);
+
+    OpenAPIContract.from(vertx, contract.copy(), additionalValidSpecFiles)
+      .compose(validResp -> Future.succeededFuture(validResp.getRawContract()))
+      .onSuccess(validJsonRef -> {
+
+        OpenAPIContract.from(vertx, contract.copy(), additionalInvalidSpecFiles)
+          .onSuccess(splitResp -> {
+            testContext.verify(() -> {
+              assertThat(splitResp.getRawContract()).isEqualTo(validJsonRef);
+              testContext.completeNow();
+            });
+          })
+          .onFailure(testContext::failNow);
+      })
+      .onFailure(testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testInvalidAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -122,13 +151,30 @@ class OpenAPIContractTest {
 
     OpenAPIContract.from(vertx, contract, additionalSpecFiles)
       .onComplete(testContext.failing(t -> testContext.verify(() -> {
+        t.printStackTrace();
         assertThat(t).isInstanceOf(OpenAPIContractException.class);
         String expectedErrorMessage =
-          "The passed OpenAPI contract is invalid: Found issue in specification for reference: https://example" +
-            ".com/petstore";
+          "The passed OpenAPI contract is invalid: Can't resolve " +
+            "'https://example.com/petstore#/components/schemas/Pet', only internal refs are supported.";
         assertThat(t).hasMessageThat().isEqualTo(expectedErrorMessage);
         testContext.completeNow();
       })));
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.HOURS)
+  public void testAdditionalSchemaFiles(Vertx vertx, VertxTestContext testContext) {
+    Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("additional_schema_files");
+    Path contractPath = resourcePath.resolve("openapi.yaml");
+    Path componentsPath = resourcePath.resolve("name.yaml");
+
+    Map<String, String> additionalSpecFiles = ImmutableMap.of("https://schemas/Name.yaml", componentsPath.toString());
+    OpenAPIContract.from(vertx, contractPath.toString(), additionalSpecFiles)
+      .onComplete(testContext.succeeding(c -> {
+        System.out.println(c.getRawContract());
+
+        testContext.completeNow();
+      }));
   }
 
   @Test
