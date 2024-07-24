@@ -151,11 +151,10 @@ class OpenAPIContractTest {
 
     OpenAPIContract.from(vertx, contract, additionalSpecFiles)
       .onComplete(testContext.failing(t -> testContext.verify(() -> {
-        t.printStackTrace();
         assertThat(t).isInstanceOf(OpenAPIContractException.class);
         String expectedErrorMessage =
-          "The passed OpenAPI contract is invalid: Can't resolve " +
-            "'https://example.com/petstore#/components/schemas/Pet', only internal refs are supported.";
+          "The passed OpenAPI contract is invalid: Found issue in specification for reference: " +
+            "Can't resolve 'https://example.com/petstore#/components/schemas/Pet', only internal refs are supported.";
         assertThat(t).hasMessageThat().isEqualTo(expectedErrorMessage);
         testContext.completeNow();
       })));

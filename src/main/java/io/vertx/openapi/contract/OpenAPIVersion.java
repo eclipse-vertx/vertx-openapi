@@ -12,7 +12,6 @@
 
 package io.vertx.openapi.contract;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -78,16 +77,26 @@ public enum OpenAPIVersion {
   }
 
   public Future<OutputUnit> validateContract(Vertx vertx, SchemaRepository repo, JsonObject contract) {
-    return vertx.executeBlocking(p -> p.complete(repo.validator(mainSchemaFile).validate(contract)));
+    return vertx.executeBlocking(() -> repo.validator(mainSchemaFile).validate(contract));
   }
 
-  public Future<Void> validateAdditionalContractFiles(Vertx vertx, SchemaRepository repo,
-                                                      String identifier, JsonObject file) {
-    Future<Void> validateAgainstOpenAPI = validateContract(vertx, repo, file).compose(this::checkOutputUnit);
-    Future<Void> validateAgainstDraft =
-      vertx.<OutputUnit>executeBlocking(p -> p.complete(repo.validator(draft.getIdentifier()).validate(file))).compose(this::checkOutputUnit);
+  /**
+   * Validates additional contract files against the openapi schema. If validations fails, try to validate against the
+   * json schema specifications only.
+   *
+   * @param vertx                   The related Vert.x instance.
+   * @param repo                    The SchemaRepository to do the validations with.
+   * @param file                    The additional json contract to validate.
+   */
+  public Future<Void> validateAdditionalContractFiles(Vertx vertx, SchemaRepository repo, JsonObject file) {
+    Future<Void> validateAgainstOpenAPI = validateContract(vertx, repo, file)
+      .compose(this::checkOutputUnit)
+      .recover((t) -> {
+        //Schema validation failed using the openapi spec, so instead try to use json schema spec only.
+        return checkOutputUnit(repo.validator(draft.getIdentifier()).validate(file));
+      });
 
-    return CompositeFuture.any(validateAgainstOpenAPI, validateAgainstDraft).mapEmpty();
+    return validateAgainstOpenAPI.mapEmpty();
   }
 
   private Future<Void> checkOutputUnit(OutputUnit ou) {
@@ -100,15 +109,10 @@ public enum OpenAPIVersion {
   }
 
   public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
-    return vertx.executeBlocking(p -> {
-      try {
-        JsonSchema schema = JsonSchema.of(contract);
-        repo.dereference(schema);
-        JsonObject resolved = repo.resolve(contract);
-        p.complete(resolved);
-      } catch(Throwable t) {
-        p.fail(createInvalidContract(t.getMessage(), t));
-      }
+    return vertx.executeBlocking(() -> {
+      JsonSchema schema = JsonSchema.of(contract);
+      repo.dereference(schema);
+      return repo.resolve(contract);
     });
   }
 
