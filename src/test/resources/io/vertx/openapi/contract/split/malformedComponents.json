@@ -1,24 +1,6 @@
 {
-  "title": "my json api",
-  "description": "taken from https://stackoverflow.com/questions/16826128/why-is-this-json-schema-invalid-using-any-type",
-  "type": "object",
-  "properties": {
-    "my_api_response": {
-      "type": "object",
-      "properties": {
-        "MailboxInfo": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "ADSyncLinkEnabled": {
-                "type": "any"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "required": ["response"]
+  "title": "This is an invalid json schema",
+  "description": "Max length cannot be negative",
+  "type": "string",
+  "maxLength": -1
 }

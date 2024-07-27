@@ -108,13 +108,14 @@ public interface OpenAPIContract {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     Promise<OpenAPIContract> promise = ctx.promise();
 
-    version.getRepository(vertx, baseUri).compose(repository -> {
+    version.getRepository(vertx, baseUri)
+      .compose(repository -> {
       List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
       for (String ref : additionalContractFiles.keySet()) {
         // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
         //  method and reused below.
         JsonObject file = additionalContractFiles.get(ref);
-        Future<?> validationFuture = version.validateAdditionalContractFiles(vertx, repository, file)
+        Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
           .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
 
         validationFutures.add(validationFuture);
