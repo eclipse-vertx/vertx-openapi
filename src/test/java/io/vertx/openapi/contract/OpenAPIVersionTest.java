@@ -12,7 +12,6 @@
 
 package io.vertx.openapi.contract;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
@@ -32,16 +31,15 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.ResourceHelper.*;
+import static io.vertx.openapi.ResourceHelper.TEST_RESOURCE_PATH;
+import static io.vertx.openapi.ResourceHelper.getRelatedTestResourcePath;
+import static io.vertx.openapi.ResourceHelper.loadJson;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;

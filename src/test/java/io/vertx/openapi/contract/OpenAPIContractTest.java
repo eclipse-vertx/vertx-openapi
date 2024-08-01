@@ -137,7 +137,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.HOURS)
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testMalformedJsonSchemaProvidedAsAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -176,7 +176,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.HOURS)
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   public void testAdditionalSchemaFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("additional_schema_files");
     Path contractPath = resourcePath.resolve("openapi.yaml");
