@@ -51,6 +51,19 @@ public class SchemaValidationException extends ValidatorException {
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
+  public static ValidatorException createErrorFromOutputUnitType(Parameter parameter, OutputUnit outputUnit,
+                                                                        JsonSchemaValidationException cause) {
+    switch(outputUnit.getErrorType()) {
+      case MISSING_VALUE:
+        return createMissingRequiredParameter(parameter);
+      case INVALID_VALUE:
+      case NONE:
+      default:
+        return createInvalidValueParameter(parameter, outputUnit, cause);
+    }
+
+  }
+
   /**
    * Returns the related OutputUnit of the validation error.
    *

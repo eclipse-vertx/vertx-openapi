@@ -15,6 +15,7 @@ package io.vertx.tests.validation;
 import com.google.common.collect.ImmutableList;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
+import io.vertx.json.schema.OutputErrorType;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.SchemaValidationException;
@@ -34,11 +35,11 @@ class SchemaValidationExceptionTest {
     mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
 
   private static final JsonSchemaValidationException DUMMY_CAUSE = new JsonSchemaValidationException("dummy",
-    new Exception(), "dummyLocation");
+    new Exception(), "dummyLocation", OutputErrorType.INVALID_VALUE);
   private static final OutputUnit DUMMY_ERROR_UNIT = new OutputUnit("instanceLocation", "absoluteKeywordLocation",
-    "keywordLocation", "error");
+    "keywordLocation", "error", OutputErrorType.INVALID_VALUE);
   private static final OutputUnit DUMMY_OUTPUT_UNIT = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
-    "keywordLocation2", "error2");
+    "keywordLocation2", "error2", OutputErrorType.MISSING_VALUE);
 
   @BeforeAll
   static void setup() {
