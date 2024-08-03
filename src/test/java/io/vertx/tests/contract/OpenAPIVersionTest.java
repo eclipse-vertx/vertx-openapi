@@ -15,6 +15,7 @@ package io.vertx.tests.contract;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.junit5.Timeout;
@@ -43,6 +44,8 @@ import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static io.vertx.tests.ResourceHelper.loadJson;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -58,7 +61,7 @@ class OpenAPIVersionTest {
   }
 
   private static Stream<Arguments> provideVersionAndInvalidSpec() {
-    Path basePath = ResourceHelper.getRelatedTestResourcePath(OpenAPIVersionTest.class);
+    Path basePath = getRelatedTestResourcePath(OpenAPIVersionTest.class);
 
     Function<String, Consumer<OutputUnit>> buildValidator = expectedString -> ou -> {
       String error = ou.getErrors().stream().map(OutputUnit::getError).collect(Collectors.joining());
@@ -75,9 +78,9 @@ class OpenAPIVersionTest {
   @ParameterizedTest(name = "{index} should validate a contract against OpenAPI version {0}")
   @MethodSource(value = "provideVersionAndSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
-  void testValidate(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
+  void validateContractTest(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
         testContext.verify(() -> assertThat(res.getValid()).isTrue());
         testContext.completeNow();
@@ -87,10 +90,10 @@ class OpenAPIVersionTest {
   @ParameterizedTest(name = "{index} should validate an invalid contract against OpenAPI version {0} and find errors")
   @MethodSource(value = "provideVersionAndInvalidSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
-  void testValidateError(OpenAPIVersion version, Path contractFile, Consumer<OutputUnit> validator, Vertx vertx,
-    VertxTestContext testContext) {
+  void validateContractTestError(OpenAPIVersion version, Path contractFile, Consumer<OutputUnit> validator, Vertx vertx,
+                         VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
-    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validate(vertx, repo, contract))
+    version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
         testContext.verify(() -> validator.accept(res));
         testContext.completeNow();
@@ -145,4 +148,25 @@ class OpenAPIVersionTest {
     assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(unsupportedContract),
       expectedUnsupportedMsg);
   }
+  @ParameterizedTest(name = "{index} should be able to validate additional files against the json schema for {0}")
+  @EnumSource(OpenAPIVersion.class)
+  @Timeout(value = 2, timeUnit = SECONDS)
+  public void testValidationOfAdditionalSchemaFiles(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
+    Path path = getRelatedTestResourcePath(OpenAPIVersionTest.class).resolve("split");
+    JsonObject validJsonSchema = loadJson(vertx, path.resolve("validJsonSchemaComponents.json"));
+    JsonObject malformedJsonSchema = loadJson(vertx, path.resolve("malformedComponents.json"));
+
+
+    version.getRepository(vertx, "https://vertx.io")
+        .onSuccess(repository -> version.validateAdditionalContractFile(vertx, repository, validJsonSchema)
+          .onFailure(testContext::failNow)
+          .onSuccess(ignored -> version.validateAdditionalContractFile(vertx, repository, malformedJsonSchema)
+            .onComplete(handler -> testContext.verify(() -> {
+              assertThat(handler.failed()).isTrue();
+              assertThat(handler.cause()).isInstanceOf(JsonSchemaValidationException.class);
+              assertThat(handler.cause()).hasMessageThat().isEqualTo("-1 is less than 0");
+              testContext.completeNow();
+            }))));
+  }
+
 }

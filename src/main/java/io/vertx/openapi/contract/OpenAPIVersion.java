@@ -15,7 +15,13 @@ package io.vertx.openapi.contract;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.*;
+import io.vertx.json.schema.Draft;
+import io.vertx.json.schema.JsonFormatValidator;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.json.schema.JsonSchemaValidationException;
+import io.vertx.json.schema.OutputUnit;
+import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.impl.OpenAPIFormatValidator;
 
 import java.util.ArrayList;
@@ -73,13 +79,36 @@ public enum OpenAPIVersion {
     }
   }
 
-  public Future<OutputUnit> validate(Vertx vertx, SchemaRepository repo, JsonObject contract) {
+  public Future<OutputUnit> validateContract(Vertx vertx, SchemaRepository repo, JsonObject contract) {
     return vertx.executeBlocking(() -> repo.validator(mainSchemaFile).validate(contract));
+  }
+
+  /**
+   * Validates additional contract files against the openapi schema. If validations fails, try to validate against the
+   * json schema specifications only.
+   *
+   * @param vertx                   The related Vert.x instance.
+   * @param repo                    The SchemaRepository to do the validations with.
+   * @param file                    The additional json contract to validate.
+   */
+  public Future<Void> validateAdditionalContractFile(Vertx vertx, SchemaRepository repo, JsonObject file) {
+    return vertx.executeBlocking(() -> repo.validator(draft.getIdentifier()).validate(file))
+      .compose(this::checkOutputUnit)
+      .mapEmpty();
+  }
+
+  private Future<Void> checkOutputUnit(OutputUnit ou) {
+    try {
+      ou.checkValidity();
+      return Future.succeededFuture();
+    } catch (JsonSchemaValidationException e) {
+      return Future.failedFuture(e);
+    }
   }
 
   public Future<JsonObject> resolve(Vertx vertx, SchemaRepository repo, JsonObject contract) {
     return vertx.executeBlocking(() -> {
-      JsonSchema schema =JsonSchema.of(contract);
+      JsonSchema schema = JsonSchema.of(contract);
       repo.dereference(schema);
       return repo.resolve(contract);
     });
