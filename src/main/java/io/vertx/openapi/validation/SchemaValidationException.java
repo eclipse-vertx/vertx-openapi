@@ -52,7 +52,6 @@ public class SchemaValidationException extends ValidatorException {
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
-
   public static SchemaValidationException createMissingValueRequestBody(OutputUnit outputUnit,
                                                                          JsonSchemaValidationException cause) {
     String msg = String.format("The value of the request body is missing. Reason: %s", extractReason(outputUnit));

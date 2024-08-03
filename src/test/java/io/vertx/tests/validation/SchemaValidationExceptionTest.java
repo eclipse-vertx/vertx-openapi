@@ -41,6 +41,7 @@ class SchemaValidationExceptionTest {
     "keywordLocation", "error", OutputErrorType.INVALID_VALUE);
   private static final OutputUnit DUMMY_OUTPUT_UNIT = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
     "keywordLocation2", "error2", OutputErrorType.MISSING_VALUE);
+
   private static final OutputUnit DUMMY_OUTPUT_UNIT_INVALID = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
     "keywordLocation2", "error2", OutputErrorType.INVALID_VALUE);
 
