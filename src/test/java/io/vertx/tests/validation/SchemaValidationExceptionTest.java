@@ -116,7 +116,6 @@ class SchemaValidationExceptionTest {
     assertThat(exception_invalid.type()).isEqualTo(INVALID_VALUE);
     excpectedMsg = "The value of path parameter dummy is invalid. Reason: error at instanceLocation";
     assertThat(exception_invalid).hasMessageThat().isEqualTo(excpectedMsg);
-
   }
 
 }

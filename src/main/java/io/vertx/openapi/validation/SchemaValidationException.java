@@ -68,7 +68,6 @@ public class SchemaValidationException extends ValidatorException {
       default:
         return createInvalidValueParameter(parameter, outputUnit, cause);
     }
-
   }
 
   /**
