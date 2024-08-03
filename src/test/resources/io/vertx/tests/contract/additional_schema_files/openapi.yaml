@@ -1,0 +1,29 @@
+openapi: 3.1.0
+info:
+  title: My Service
+  version: 1.0.0
+tags: []
+paths:
+  /v1/post:
+    post:
+      summary: Some POST request
+      operationId: postBody
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestBody'
+      responses:
+        200:
+          description: Success
+        default:
+          description: An unexpected error occurred
+components:
+  schemas:
+    RequestBody:
+      type: object
+      properties:
+        name:
+          description: The unique name of the object
+          $ref: 'https://schemas/Name.yaml'

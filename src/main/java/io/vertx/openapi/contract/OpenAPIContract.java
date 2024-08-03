@@ -108,34 +108,37 @@ public interface OpenAPIContract {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     Promise<OpenAPIContract> promise = ctx.promise();
 
-    version.getRepository(vertx, baseUri).compose(repository -> {
-      List<Future<SchemaRepository>> validationFutures = new ArrayList<>(additionalContractFiles.size());
+    version.getRepository(vertx, baseUri)
+      .compose(repository -> {
+      List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
       for (String ref : additionalContractFiles.keySet()) {
         // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
         //  method and reused below.
-        Future<SchemaRepository> validationFuture = version.validate(vertx, repository,
-          additionalContractFiles.get(ref)).map(res -> {
-          try {
-            res.checkValidity();
-            return repository.dereference(ref, JsonSchema.of(ref, additionalContractFiles.get(ref)));
-          } catch (JsonSchemaValidationException e) {
-            String msg = "Found issue in specification for reference: " + ref;
-            throw createInvalidContract(msg, e);
-          }
-        });
+        JsonObject file = additionalContractFiles.get(ref);
+        Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
+          .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
+
         validationFutures.add(validationFuture);
       }
       return Future.all(validationFutures).map(repository);
     }).compose(repository ->
-      version.validate(vertx, repository, unresolvedContract).compose(res -> {
+      version.validateContract(vertx, repository, unresolvedContract).compose(res -> {
         try {
           res.checkValidity();
           return version.resolve(vertx, repository, unresolvedContract);
-        } catch (JsonSchemaValidationException e) {
+        } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
           return failedFuture(createInvalidContract(null, e));
         }
-      }).map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
-    ).onComplete(promise);
+      })
+      .map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
+    ).recover(e -> {
+      //Convert any non-openapi exceptions into an OpenAPIContractException
+      if(e instanceof OpenAPIContractException) {
+        return failedFuture(e);
+      }
+
+      return failedFuture(createInvalidContract("Found issue in specification for reference: " + e.getMessage(), e));
+    }).onComplete(promise);
 
     return promise.future();
   }
