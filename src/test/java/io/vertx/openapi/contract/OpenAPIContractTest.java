@@ -185,9 +185,10 @@ class OpenAPIContractTest {
     Map<String, String> additionalSpecFiles = ImmutableMap.of("https://schemas/Name.yaml", componentsPath.toString());
     OpenAPIContract.from(vertx, contractPath.toString(), additionalSpecFiles)
       .onComplete(testContext.succeeding(c -> {
-        System.out.println(c.getRawContract());
-
-        testContext.completeNow();
+        testContext.verify(() -> {
+          assertThat(c.getRawContract()).isNotNull();
+          testContext.completeNow();
+        });
       }));
   }
 
