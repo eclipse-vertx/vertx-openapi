@@ -1,0 +1,6 @@
+{
+  "title": "This is an invalid json schema",
+  "description": "Max length cannot be negative",
+  "type": "string",
+  "maxLength": -1
+}
