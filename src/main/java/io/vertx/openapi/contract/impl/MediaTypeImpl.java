@@ -30,7 +30,15 @@ public class MediaTypeImpl implements MediaType {
     this.mediaTypeModel = mediaTypeModel;
     JsonObject schemaJson = mediaTypeModel.getJsonObject(KEY_SCHEMA);
     if (schemaJson == null || schemaJson.isEmpty()) {
-      throw createUnsupportedFeature("Media Type without a schema");
+      // Inject default value if schema is left out
+      // by using shortcut "application/octet-stream: {}"
+      if (identifier.equalsIgnoreCase(MediaType.APPLICATION_OCTET_STREAM)) {
+        schemaJson = new JsonObject()
+          .put("type", "string")
+          .put("format", "binary");
+      } else {
+        throw createUnsupportedFeature("Media Type without a schema");
+      }
     }
     schema = JsonSchema.of(schemaJson);
   }
