@@ -32,10 +32,18 @@ public class MediaTypeImpl implements MediaType {
     if (schemaJson == null || schemaJson.isEmpty()) {
       // Inject default value if schema is left out
       // by using shortcut "application/octet-stream: {}"
+      // See https://www.openapis.org/blog/2021/02/16/migrating-from-openapi-3-0-to-3-1-0
       if (identifier.equalsIgnoreCase(MediaType.APPLICATION_OCTET_STREAM)) {
+        // In OpenAPI v3.0, describing file uploads is signalled with a type:
+        // string and the format set to byte, binary, or base64.
+        // In OpenAPI v3.1, JSON Schema helps make this far more clear with
+        // its contentEncoding and contentMediaType keywords,
+        // which are designed for exactly this sort of use.
+        // See https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-validation-00#section-8.6
         schemaJson = new JsonObject()
           .put("type", "string")
-          .put("format", "binary");
+          .put("format", "binary")
+          .put("contentMediaType", "application/octet-stream");
       } else {
         throw createUnsupportedFeature("Media Type without a schema");
       }
