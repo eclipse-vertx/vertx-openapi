@@ -26,6 +26,7 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.lang.String.join;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 public class RequestBodyImpl implements RequestBody {
@@ -55,7 +56,8 @@ public class RequestBodyImpl implements RequestBody {
           String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
           throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
         })
-        .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+        .map(this::removeWhiteSpaces)
+        .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
     if (content.isEmpty()) {
       String msg =
@@ -84,7 +86,7 @@ public class RequestBodyImpl implements RequestBody {
     if (contentType == null) {
       return null;
     }
-    
+
     String condensedIdentifier = removeWhiteSpaces(contentType);
     if (content.containsKey(condensedIdentifier)) {
       return content.get(condensedIdentifier);
