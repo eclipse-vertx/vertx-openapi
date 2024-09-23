@@ -12,7 +12,6 @@
 
 package io.vertx.openapi.contract;
 
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.json.schema.JsonSchema;
 
@@ -29,18 +28,24 @@ import java.util.List;
 @VertxGen
 public interface MediaType extends OpenAPIObject {
 
-  String APPLICATION_HAL_JSON = "application/hal+json";
-  String APPLICATION_JSON = HttpHeaderValues.APPLICATION_JSON.toString();
+  String APPLICATION_JSON = "application/json";
   String APPLICATION_JSON_UTF8 = APPLICATION_JSON + "; charset=utf-8";
-  String MULTIPART_FORM_DATA = HttpHeaderValues.MULTIPART_FORM_DATA.toString();
-  List<String> SUPPORTED_MEDIA_TYPES = Arrays.asList(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA, APPLICATION_HAL_JSON);
+  String MULTIPART_FORM_DATA = "multipart/form-data";
+  String APPLICATION_HAL_JSON = "application/hal+json";
+  String APPLICATION_OCTET_STREAM = "application/octet-stream";
+  List<String> SUPPORTED_MEDIA_TYPES = Arrays.asList(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA,
+    APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM);
 
   static boolean isMediaTypeSupported(String type) {
     return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase());
   }
 
   /**
-   * @return the schema defining the content of the request.
+   * This method returns the schema defined in the media type.
+   * <p></p>
+   * In OpenAPI 3.1 it is allowed to define an empty media type model. In this case the method returns null.
+   *
+   * @return the schema defined in the media type model, or null in case no media type model was defined.
    */
   JsonSchema getSchema();
 

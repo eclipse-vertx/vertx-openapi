@@ -55,10 +55,10 @@ public final class Utils {
     });
   }
 
-    /**
+  /**
    * Reads YAML string and transforms it into a JsonObject.
    *
-   * @param path  The yamlString proper YAML formatted STring
+   * @param yamlString The yamlString proper YAML formatted STring
    * @return A succeeded Future holding the JsonObject, or a failed Future if the file could not be parsed.
    */
   public static Future<JsonObject> yamlStringToJson(String yamlString) {

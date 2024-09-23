@@ -30,11 +30,11 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON_UTF8;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
@@ -77,7 +77,7 @@ class RequestBodyImplTest {
       Arguments.of("0002_RequestBody_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
         "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
           "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8," +
-          " multipart/form-data, application/hal+json")
+          " multipart/form-data, application/hal+json, application/octet-stream")
     );
   }
 

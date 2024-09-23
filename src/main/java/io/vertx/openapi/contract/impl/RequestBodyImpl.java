@@ -84,7 +84,7 @@ public class RequestBodyImpl implements RequestBody {
     if (contentType == null) {
       return null;
     }
-    
+
     String condensedIdentifier = removeWhiteSpaces(contentType);
     if (content.containsKey(condensedIdentifier)) {
       return content.get(condensedIdentifier);

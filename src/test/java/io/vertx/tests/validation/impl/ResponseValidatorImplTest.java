@@ -54,13 +54,13 @@ import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+import static io.vertx.tests.MockHelper.mockParameter;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -86,6 +86,7 @@ class ResponseValidatorImplTest {
   private static Response mockResponse() {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
+    when(mockedMediaType.getIdentifier()).thenReturn(APPLICATION_JSON.toString());
 
     Response mockedResponse = mock(Response.class);
     when(mockedResponse.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
@@ -239,9 +240,12 @@ class ResponseValidatorImplTest {
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
   @ValueSource(strings = {"text/plain", "foo/bar"})
-  void testValidateBodyMediaTypeOrTransformerNull(String contentType) {
+  void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
+    MediaType mockedMediaType = mock(MediaType.class);
+    when(mockedMediaType.getIdentifier()).thenReturn(contentType);
+
     Response mockedResponse = mock(Response.class);
-    when(mockedResponse.getContent()).thenReturn(ImmutableMap.of(TEXT_PLAIN.toString(), mock(MediaType.class)));
+    when(mockedResponse.getContent()).thenReturn(ImmutableMap.of(TEXT_PLAIN.toString(), mockedMediaType));
 
     ValidatableResponse mockedValidatableResponse = mock(ValidatableResponse.class);
     when(mockedValidatableResponse.getContentType()).thenReturn(contentType);

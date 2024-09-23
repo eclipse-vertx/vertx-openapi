@@ -63,8 +63,6 @@ import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Location.PATH;
@@ -74,6 +72,8 @@ import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+import static io.vertx.tests.MockHelper.mockParameter;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -117,9 +117,17 @@ class RequestValidatorImplTest {
     when(mockedMediaType.getIdentifier()).thenReturn(MediaType.APPLICATION_JSON);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
 
+    MediaType mockedMediaTypeBinary = mock(MediaType.class);
+    when(mockedMediaTypeBinary.getIdentifier()).thenReturn("application/octet-stream");
+    when(mockedMediaTypeBinary.getSchema()).thenReturn(null);
+
     RequestBody mockedRequestBody = mock(RequestBody.class);
     when(mockedRequestBody.isRequired()).thenReturn(true);
     when(mockedRequestBody.determineContentType(anyString())).thenReturn(mockedMediaType);
+
+    RequestBody mockedRequestBodyBinary = mock(RequestBody.class);
+    when(mockedRequestBodyBinary.isRequired()).thenReturn(true);
+    when(mockedRequestBodyBinary.determineContentType(anyString())).thenReturn(mockedMediaTypeBinary);
 
     JsonObject body = new JsonObject().put("foo", "bar");
 
@@ -150,8 +158,13 @@ class RequestValidatorImplTest {
         new RequestParameterImpl(body.toBuffer()),
         APPLICATION_JSON.toString());
 
+    ValidatedRequest expectedBinaryBody =
+      new ValidatedRequestImpl(expectedCookies, expectedHeaderParameters, expectedPathParameters, expectedQuery,
+        new RequestParameterImpl(body.toBuffer()));
+
     return Stream.of(
-      Arguments.of(parameters, mockedRequestBody, request, expected)
+      Arguments.of(parameters, mockedRequestBody, request, expected),
+      Arguments.of(parameters, mockedRequestBodyBinary, request, expectedBinaryBody)
     );
   }
 
@@ -414,9 +427,11 @@ class RequestValidatorImplTest {
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
   @ValueSource(strings = {"text/plain", "foo/bar"})
-  void testValidateBodyMediaTypeOrTransformerNull(String contentType) {
-    RequestBody mockedRequestBody = mockRequestBody(false, mock(MediaType.class));
+  void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
+    MediaType mockedMediaType = mock(MediaType.class);
+    when(mockedMediaType.getIdentifier()).thenReturn(contentType);
 
+    RequestBody mockedRequestBody = mockRequestBody(false, mockedMediaType);
     ValidatableRequest mockedValidatableRequest = mock(ValidatableRequest.class);
     when(mockedValidatableRequest.getBody()).thenReturn(new RequestParameterImpl("foobar"));
     when(mockedValidatableRequest.getContentType()).thenReturn(contentType);

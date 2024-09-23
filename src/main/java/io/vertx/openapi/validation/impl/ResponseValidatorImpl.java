@@ -14,6 +14,7 @@ package io.vertx.openapi.validation.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.MediaType;
@@ -25,7 +26,6 @@ import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedResponse;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.transformer.BodyTransformer;
 import io.vertx.openapi.validation.transformer.ParameterTransformer;
 import io.vertx.openapi.validation.transformer.SimpleTransformer;
 
@@ -36,9 +36,8 @@ import java.util.Optional;
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
-import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueResponseBody;
+import static io.vertx.openapi.validation.ValidationContext.RESPONSE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createResponseNotFound;
 
@@ -104,21 +103,9 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
         MISSING_REQUIRED_PARAMETER);
     }
 
-    String mediaTypeIdentifier = params.getContentType();
-    MediaType mediaType = response.getContent().get(mediaTypeIdentifier);
-    BodyTransformer transformer = bodyTransformers.get(mediaTypeIdentifier);
-    if (transformer == null || mediaType == null) {
-      throw new ValidatorException("The format of the response body is not supported", UNSUPPORTED_VALUE_FORMAT);
-    }
+    MediaType mediaType = response.getContent().get(params.getContentType());
+    Buffer content = params.getBody().getBuffer(Buffer.buffer());
 
-    Object transformedValue = transformer.transformResponse(mediaType, params);
-    OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
-
-    try {
-      result.checkValidity();
-      return new RequestParameterImpl(transformedValue);
-    } catch (JsonSchemaValidationException e) {
-      throw createInvalidValueResponseBody(result, e);
-    }
+    return validate(mediaType, params.getContentType(), content, RESPONSE);
   }
 }
