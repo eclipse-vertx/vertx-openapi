@@ -24,11 +24,13 @@ import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.tests.MockHelper.mockParameter;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.LABEL;
+import static io.vertx.openapi.validation.ValidationContext.REQUEST;
+import static io.vertx.openapi.validation.ValidationContext.RESPONSE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.tests.MockHelper.mockParameter;
 
 class SchemaValidationExceptionTest {
 
@@ -42,7 +44,8 @@ class SchemaValidationExceptionTest {
   private static final OutputUnit DUMMY_OUTPUT_UNIT = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
     "keywordLocation2", "error2", OutputErrorType.MISSING_VALUE);
 
-  private static final OutputUnit DUMMY_OUTPUT_UNIT_INVALID = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
+  private static final OutputUnit DUMMY_OUTPUT_UNIT_INVALID = new OutputUnit("instanceLocation2",
+    "absoluteKeywordLocation2",
     "keywordLocation2", "error2", OutputErrorType.INVALID_VALUE);
 
   @BeforeAll
@@ -64,7 +67,7 @@ class SchemaValidationExceptionTest {
 
   @Test
   void testCreateInvalidValueRequestBody() {
-    SchemaValidationException exception = SchemaValidationException.createInvalidValueRequestBody(DUMMY_OUTPUT_UNIT,
+    SchemaValidationException exception = SchemaValidationException.createInvalidValueBody(DUMMY_OUTPUT_UNIT, REQUEST,
       DUMMY_CAUSE);
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
@@ -75,7 +78,7 @@ class SchemaValidationExceptionTest {
 
   @Test
   void testCreateInvalidValueResponseBody() {
-    SchemaValidationException exception = SchemaValidationException.createInvalidValueResponseBody(DUMMY_OUTPUT_UNIT,
+    SchemaValidationException exception = SchemaValidationException.createInvalidValueBody(DUMMY_OUTPUT_UNIT, RESPONSE,
       DUMMY_CAUSE);
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
@@ -108,8 +111,9 @@ class SchemaValidationExceptionTest {
     String excpectedMsg = "The value of the request body is missing. Reason: error at instanceLocation";
     assertThat(exception).hasMessageThat().isEqualTo(excpectedMsg);
 
-    SchemaValidationException exception_invalid = SchemaValidationException.createErrorFromOutputUnitType(DUMMY_PARAMETER,
-      DUMMY_OUTPUT_UNIT_INVALID, DUMMY_CAUSE);
+    SchemaValidationException exception_invalid =
+      SchemaValidationException.createErrorFromOutputUnitType(DUMMY_PARAMETER,
+        DUMMY_OUTPUT_UNIT_INVALID, DUMMY_CAUSE);
 
     assertThat(exception_invalid.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT_INVALID);
     assertThat(exception_invalid.getCause()).isEqualTo(DUMMY_CAUSE);

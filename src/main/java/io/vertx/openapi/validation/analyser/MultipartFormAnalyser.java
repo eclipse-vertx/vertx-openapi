@@ -10,26 +10,38 @@
  *
  */
 
-package io.vertx.openapi.validation.transformer;
+package io.vertx.openapi.validation.analyser;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.MediaType;
-import io.vertx.openapi.validation.ValidatableRequest;
-import io.vertx.openapi.validation.ValidatableResponse;
+import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 
 import java.util.List;
 
 import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
-import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
-public class MultipartFormTransformer implements BodyTransformer {
+public class MultipartFormAnalyser extends ContentAnalyser {
   private static final String BOUNDARY = "boundary=";
-  private static final ApplicationJsonTransformer JSON_TRANSFORMER = new ApplicationJsonTransformer();
 
+  private List<MultipartPart> parts;
+
+  /**
+   * Creates a new content analyser.
+   *
+   * @param contentType the content type.
+   * @param content     the content to be analysed.
+   * @param context     the context in which the content is used.
+   */
+  public MultipartFormAnalyser(String contentType, Buffer content, ValidationContext context) {
+    super(contentType, content, context);
+  }
+
+  // VisibleForTesting
   public static String extractBoundary(String contentType) {
     String[] parts = contentType.split(BOUNDARY, 2);
     if (parts.length == 2 && !parts[1].isBlank()) {
@@ -38,23 +50,27 @@ public class MultipartFormTransformer implements BodyTransformer {
     return null;
   }
 
-  public static Object transform(MediaType type, Buffer body, String contentType, String responseOrRequest) {
+  @Override
+  public void checkSyntacticalCorrectness() {
     if (contentType == null || contentType.isEmpty() || !contentType.startsWith(MULTIPART_FORM_DATA.toString())) {
-      String msg = "The expected multipart/form-data " + responseOrRequest + " doesn't contain the required " +
+      String msg = "The expected multipart/form-data " + requestOrResponse + " doesn't contain the required " +
         "content-type header.";
       throw new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
     }
 
     String boundary = extractBoundary(contentType);
     if (boundary == null) {
-      String msg = "The expected multipart/form-data " + responseOrRequest + " doesn't contain the required boundary " +
+      String msg = "The expected multipart/form-data " + requestOrResponse + " doesn't contain the required boundary " +
         "information.";
       throw new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
     }
 
-    JsonObject formData = new JsonObject();
+    parts = MultipartPart.fromMultipartBody(content.toString(), boundary);
+  }
 
-    List<MultipartPart> parts = MultipartPart.fromMultipartBody(body.toString(), boundary);
+  @Override
+  public Object transform() {
+    JsonObject formData = new JsonObject();
     for (MultipartPart part : parts) {
       if (part.getBody() == null) {
         continue;
@@ -63,18 +79,14 @@ public class MultipartFormTransformer implements BodyTransformer {
       // getContentType() can't be null
       if (part.getContentType().startsWith("text/plain")) {
         try {
-          formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
-        } catch (ValidatorException ve) {
-          if (ve.type() == ILLEGAL_VALUE) {
-            // Value isn't a number, boolean, etc. -> therefore it is treated as a string.
-            Buffer quotedBody = Buffer.buffer("\"").appendBuffer(part.getBody()).appendString("\"");
-            formData.put(part.getName(), JSON_TRANSFORMER.transform(null, quotedBody));
-          } else {
-            throw ve;
-          }
+          formData.put(part.getName(), Json.decodeValue(part.getBody()));
+        } catch (DecodeException de) {
+          // Value isn't a number, boolean, etc. -> therefore it is treated as a string.
+          Buffer quotedBody = Buffer.buffer("\"").appendBuffer(part.getBody()).appendString("\"");
+          formData.put(part.getName(), decodeJsonContent(quotedBody, requestOrResponse));
         }
       } else if (part.getContentType().startsWith("application/json")) {
-        formData.put(part.getName(), JSON_TRANSFORMER.transform(null, part.getBody()));
+        formData.put(part.getName(), decodeJsonContent(part.getBody(), requestOrResponse));
       } else if (part.getContentType().startsWith("application/octet-stream")) {
         formData.put(part.getName(), part.getBody());
       } else {
@@ -85,15 +97,5 @@ public class MultipartFormTransformer implements BodyTransformer {
     }
 
     return formData;
-  }
-
-  @Override
-  public Object transformRequest(MediaType type, ValidatableRequest request) {
-    return transform(type, request.getBody().getBuffer(), request.getContentType(), "request");
-  }
-
-  @Override
-  public Object transformResponse(MediaType type, ValidatableResponse response) {
-    return transform(type, response.getBody().getBuffer(), response.getContentType(), "response");
   }
 }

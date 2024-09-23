@@ -12,32 +12,38 @@
 
 package io.vertx.tests.validation.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.impl.BaseValidator;
+import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
-import static org.mockito.Mockito.spy;
 
 @ExtendWith(VertxExtension.class)
 class BaseValidatorTest {
-  private BaseValidator validator;
+  private BaseValidatorWrapper validator;
 
-  private OpenAPIContract contractSpy;
 
   @BeforeEach
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
@@ -45,8 +51,7 @@ class BaseValidatorTest {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     OpenAPIContract.from(vertx, contract).onSuccess(c -> testContext.verify(() -> {
-      this.contractSpy = spy(c);
-      this.validator = new BaseValidator(vertx, contractSpy);
+      this.validator = new BaseValidatorWrapper(vertx, c);
       testContext.completeNow();
     })).onFailure(testContext::failNow);
   }
@@ -54,6 +59,17 @@ class BaseValidatorTest {
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testGetOperation(VertxTestContext testContext) {
+    String operationId = "listPets";
+    validator.getOperation(operationId).onFailure(testContext::failNow)
+      .onSuccess(operation -> testContext.verify(() -> {
+        assertThat(operation.getOperationId()).isEqualTo(operationId);
+        testContext.completeNow();
+      }));
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testGetOperationThrow(VertxTestContext testContext) {
     validator.getOperation("invalidId").onFailure(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(ValidatorException.class);
       assertThat(t).hasMessageThat().isEqualTo("Invalid OperationId: invalidId");
@@ -61,10 +77,39 @@ class BaseValidatorTest {
     })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
 
-  @ParameterizedTest(name = "{index} Test valid if {0} is a valid base transformer.")
-  @ValueSource(strings = { "application/json", "application/hal+json" })
-  public void testValidBaseTransformer(String transformer) {
-    assertThat(validator.containsTransformer(transformer)).isTrue();
+  static Stream<Arguments> testIsSchemaValidationRequired() {
+    return Stream.of(
+      Arguments.of(null, false),
+      Arguments.of(""),
+      Arguments.of("application/json"));
   }
 
+  @ParameterizedTest
+  @MethodSource
+  void testIsSchemaValidationRequired(MediaType mediaType, boolean isRequired) {
+    assertThat(validator.isSchemaValidationRequired(mediaType)).isEqualTo(isRequired);
+  }
+
+  private class BaseValidatorWrapper extends BaseValidator {
+
+    public BaseValidatorWrapper(Vertx vertx, OpenAPIContract contract) {
+      super(vertx, contract);
+    }
+
+    @Override
+    protected Future<Operation> getOperation(String operationId) {
+      return super.getOperation(operationId);
+    }
+
+    @Override
+    protected boolean isSchemaValidationRequired(MediaType mediaType) {
+      return super.isSchemaValidationRequired(mediaType);
+    }
+
+    @Override
+    protected RequestParameterImpl validate(MediaType mediaType, Buffer rawContent,
+                                            ValidationContext requestOrResponse) {
+      return super.validate(mediaType, rawContent, requestOrResponse);
+    }
+  }
 }

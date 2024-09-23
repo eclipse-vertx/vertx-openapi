@@ -18,6 +18,12 @@ import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.MediaTypeImpl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
@@ -28,13 +34,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MediaTypeImplTest {
   private static final String DUMMY_IDENTIFIER = APPLICATION_JSON.toString();
 
-  @Test
-  void testGetters() {
-    JsonObject model = new JsonObject().put("schema", stringSchema().toJson());
-    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, model);
+  private static Stream<Arguments> testGetters() {
+    return Stream.of(
+      Arguments.of("MediaType model defined", new JsonObject().put("schema", stringSchema().toJson()), List.of("type"
+        , "$id")),
+      Arguments.of("No MediaType model defined", EMPTY_JSON_OBJECT, List.of())
+    );
+  }
 
-    assertThat(mediaType.getOpenAPIModel()).isEqualTo(model);
-    assertThat(mediaType.getSchema().fieldNames()).containsExactly("type", "$id");
+  @ParameterizedTest(name = "{index} test getters for scenario: {0}")
+  @MethodSource
+  void testGetters(String scenario, JsonObject mediaTypeModel, List<String> fieldNames) {
+    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, mediaTypeModel);
+    assertThat(mediaType.getOpenAPIModel()).isEqualTo(mediaTypeModel);
+    if (fieldNames.isEmpty()) {
+      assertThat(mediaType.getSchema()).isNull();
+    } else {
+      assertThat(mediaType.getSchema().fieldNames()).containsExactlyElementsIn(fieldNames);
+    }
     assertThat(mediaType.getIdentifier()).isEqualTo(DUMMY_IDENTIFIER);
   }
 
@@ -42,16 +59,21 @@ class MediaTypeImplTest {
   void testExceptions() {
     String msg = "The passed OpenAPI contract contains a feature that is not supported: Media Type without a schema";
 
-    OpenAPIContractException exceptionNull =
+    OpenAPIContractException exceptionNoModel =
+      assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER, null));
+    assertThat(exceptionNoModel.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
+    assertThat(exceptionNoModel).hasMessageThat().isEqualTo(msg);
+
+    OpenAPIContractException exceptionSchemaNull =
       assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER,
         new JsonObject().putNull("schema")));
-    assertThat(exceptionNull.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
-    assertThat(exceptionNull).hasMessageThat().isEqualTo(msg);
+    assertThat(exceptionSchemaNull.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
+    assertThat(exceptionSchemaNull).hasMessageThat().isEqualTo(msg);
 
-    OpenAPIContractException exceptionEmpty =
+    OpenAPIContractException exceptionSchemaEmpty =
       assertThrows(OpenAPIContractException.class,
         () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT)));
-    assertThat(exceptionEmpty.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
-    assertThat(exceptionEmpty).hasMessageThat().isEqualTo(msg);
+    assertThat(exceptionSchemaEmpty.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
+    assertThat(exceptionSchemaEmpty).hasMessageThat().isEqualTo(msg);
   }
 }
