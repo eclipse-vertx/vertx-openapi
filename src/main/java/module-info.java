@@ -8,7 +8,8 @@ module io.vertx.openapi {
   requires io.vertx.core.logging;
 
   requires static io.vertx.codegen.api;
-  requires static vertx.docgen;
+  requires static vertx.docgen.processor;
+  requires static io.vertx.docgen;
 
   exports io.vertx.openapi.contract;
   exports io.vertx.openapi.validation;
