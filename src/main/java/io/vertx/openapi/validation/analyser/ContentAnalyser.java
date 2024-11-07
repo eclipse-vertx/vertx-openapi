@@ -74,9 +74,9 @@ public abstract class ContentAnalyser {
     }
   }
 
-  protected String contentType;
-  protected Buffer content;
-  protected ValidationContext requestOrResponse;
+  protected final String contentType;
+  protected final Buffer content;
+  protected final ValidationContext requestOrResponse;
 
   /**
    * Creates a new content analyser.

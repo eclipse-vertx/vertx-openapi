@@ -19,7 +19,6 @@ import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.impl.ResponseValidatorImpl;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

@@ -15,7 +15,6 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
@@ -80,6 +79,7 @@ public interface Operation extends OpenAPIObject {
 
   /**
    * Returns the applicable list of security requirements (scopes) or empty list.
+   *
    * @return The related security requirement.
    */
   List<SecurityRequirement> getSecurityRequirements();

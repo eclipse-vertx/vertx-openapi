@@ -110,7 +110,7 @@ class BaseValidatorTest {
     assertThat(validator.isSchemaValidationRequired(mediaType)).isEqualTo(isRequired);
   }
 
-  private class BaseValidatorWrapper extends BaseValidator {
+  private static class BaseValidatorWrapper extends BaseValidator {
 
     public BaseValidatorWrapper(Vertx vertx, OpenAPIContract contract) {
       super(vertx, contract);
