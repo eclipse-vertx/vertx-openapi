@@ -78,7 +78,21 @@ The {@link io.vertx.openapi.contract.OpenAPIContract} interface offers methods t
 {@link examples.ContractExamples#pathParameterOperationExample}
 ----
 
-== Validation of Requests
+== Validation
+
+Vert.x OpenAPI checks both whether the content is syntactically correct and whether it corresponds to the schema.
+If no schema is defined, or the content is binary no schema validation is performed.
+Currently, only the following media types are supported:
+
+* application/json
+* application/json+hal
+* application/octet-stream
+* multipart/form-data
+
+NOTE: It is planned to support more media types in the future.
+It is also planned to support custom implementations of {@link io.vertx.openapi.validation.analyser.ContentAnalyser}, so that any media type can be validated.
+
+=== Validation of Requests
 
 The {@link io.vertx.openapi.validation.RequestValidator} offers multiple _validate_ methods to validate incoming requests.
 
@@ -97,7 +111,7 @@ The {@link io.vertx.openapi.validation.RequestValidator} also offers a signature
 NOTE: The parameters in a {@link io.vertx.openapi.validation.ValidatableRequest} must be stored in a specific format depending on the style, location and if they are exploded or not, otherwise the {@link io.vertx.openapi.validation.RequestValidator} can't validate the request.
 The required format *MUST* exactly look like as described in the JavaDoc of {@link io.vertx.openapi.validation.RequestValidator}.
 
-== Validation of Responses
+=== Validation of Responses
 
 The {@link io.vertx.openapi.validation.ResponseValidator} offers a _validate_ method to validate responses. {@link io.vertx.openapi.validation.ValidatableResponse} offers multiple _create_ methods to build validatable responses easily.
 
@@ -111,7 +125,7 @@ In case that the validation of a response has passed, the returned {@link io.ver
 NOTE: The parameters in a {@link io.vertx.openapi.validation.ValidatableResponse} must be stored in a specific format depending on the style, location and if they are exploded or not, otherwise the {@link io.vertx.openapi.validation.ResponseValidator} can't validate the response.
 The required format *MUST* exactly look like as described in the JavaDoc of {@link io.vertx.openapi.validation.ResponseValidator}.
 
-== Handle Validation Exceptions
+=== Handle Validation Exceptions
 
 A {@link io.vertx.openapi.validation.ValidatorException} is thrown, if the validation of a request or response fails.
 The validation can fail for formal reasons, such as the wrong format for a parameter or the absence of a required parameter.
