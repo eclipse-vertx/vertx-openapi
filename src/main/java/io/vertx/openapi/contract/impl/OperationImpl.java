@@ -38,8 +38,8 @@ import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 public class OperationImpl implements Operation {
   private static final Logger LOG = LoggerFactory.getLogger(OperationImpl.class);
@@ -80,16 +80,14 @@ public class OperationImpl implements Operation {
     this.extensions = unmodifiableMap(allExtensions);
 
     this.tags =
-      unmodifiableList(operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(
-        toList()));
+      operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(toUnmodifiableList());
 
     this.securityRequirements =
       operationModel.containsKey(KEY_SECURITY) ?
-        unmodifiableList(
-          operationModel.getJsonArray(KEY_SECURITY).stream()
-            .map(JsonObject.class::cast)
-            .map(SecurityRequirementImpl::new)
-            .collect(toList())) :
+        operationModel.getJsonArray(KEY_SECURITY).stream()
+          .map(JsonObject.class::cast)
+          .map(SecurityRequirementImpl::new)
+          .collect(toUnmodifiableList()) :
         globalSecReq;
 
     List<Parameter> operationParameters =

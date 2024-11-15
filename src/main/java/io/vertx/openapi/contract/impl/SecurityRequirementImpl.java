@@ -22,31 +22,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableSet;
 
 public class SecurityRequirementImpl implements SecurityRequirement {
-
   private final JsonObject securityRequirementModel;
   private final Set<String> names;
   private final Map<String, List<String>> scopes;
-  private final boolean empty;
 
   public SecurityRequirementImpl(JsonObject securityRequirementModel) {
     this.securityRequirementModel = securityRequirementModel;
-    this.empty = securityRequirementModel.isEmpty();
 
     if (securityRequirementModel.isEmpty()) {
       this.names = emptySet();
       this.scopes = emptyMap();
     } else {
-      this.names = unmodifiableSet(
-        securityRequirementModel
-          .fieldNames()
-          .stream()
-          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-          .collect(Collectors.toSet()));
+      this.names = securityRequirementModel
+        .fieldNames()
+        .stream()
+        .filter(JsonSchema.EXCLUDE_ANNOTATIONS).collect(toUnmodifiableSet());
 
       this.scopes = unmodifiableMap(
         this.names

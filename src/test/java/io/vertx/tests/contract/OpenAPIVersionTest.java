@@ -23,7 +23,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.OpenAPIVersion;
-import io.vertx.tests.ResourceHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,10 +39,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_0;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.tests.ResourceHelper.loadJson;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -91,7 +90,7 @@ class OpenAPIVersionTest {
   @MethodSource(value = "provideVersionAndInvalidSpec")
   @Timeout(value = 2, timeUnit = SECONDS)
   void validateContractTestError(OpenAPIVersion version, Path contractFile, Consumer<OutputUnit> validator, Vertx vertx,
-                         VertxTestContext testContext) {
+                                 VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
       .onComplete(testContext.succeeding(res -> {
@@ -139,7 +138,8 @@ class OpenAPIVersionTest {
   @DisplayName("fromSpec should throw exception if field openapi doesn't exist or the version isn't supported")
   void testFromSpecException() {
     String expectedInvalidMsg = "The passed OpenAPI contract is invalid: Field \"openapi\" is missing";
-    Assertions.assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(null), expectedInvalidMsg);
+    Assertions.assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(null),
+      expectedInvalidMsg);
     assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(EMPTY_JSON_OBJECT),
       expectedInvalidMsg);
 
@@ -148,6 +148,7 @@ class OpenAPIVersionTest {
     assertThrows(OpenAPIContractException.class, () -> OpenAPIVersion.fromContract(unsupportedContract),
       expectedUnsupportedMsg);
   }
+
   @ParameterizedTest(name = "{index} should be able to validate additional files against the json schema for {0}")
   @EnumSource(OpenAPIVersion.class)
   @Timeout(value = 2, timeUnit = SECONDS)
@@ -158,15 +159,15 @@ class OpenAPIVersionTest {
 
 
     version.getRepository(vertx, "https://vertx.io")
-        .onSuccess(repository -> version.validateAdditionalContractFile(vertx, repository, validJsonSchema)
-          .onFailure(testContext::failNow)
-          .onSuccess(ignored -> version.validateAdditionalContractFile(vertx, repository, malformedJsonSchema)
-            .onComplete(handler -> testContext.verify(() -> {
-              assertThat(handler.failed()).isTrue();
-              assertThat(handler.cause()).isInstanceOf(JsonSchemaValidationException.class);
-              assertThat(handler.cause()).hasMessageThat().isEqualTo("-1 is less than 0");
-              testContext.completeNow();
-            }))));
+      .onSuccess(repository -> version.validateAdditionalContractFile(vertx, repository, validJsonSchema)
+        .onFailure(testContext::failNow)
+        .onSuccess(ignored -> version.validateAdditionalContractFile(vertx, repository, malformedJsonSchema)
+          .onComplete(handler -> testContext.verify(() -> {
+            assertThat(handler.failed()).isTrue();
+            assertThat(handler.cause()).isInstanceOf(JsonSchemaValidationException.class);
+            assertThat(handler.cause()).hasMessageThat().isEqualTo("-1 is less than 0");
+            testContext.completeNow();
+          }))));
   }
 
 }

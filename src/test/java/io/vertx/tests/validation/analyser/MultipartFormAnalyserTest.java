@@ -134,7 +134,7 @@ class MultipartFormAnalyserTest {
 
     MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
     analyser.checkSyntacticalCorrectness(); // must always be executed before transform
-    ValidatorException exception = assertThrows(ValidatorException.class, () -> analyser.transform());
+    ValidatorException exception = assertThrows(ValidatorException.class, analyser::transform);
 
     String expectedMsg = "The content type text/html of property id is not yet supported.";
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT);

@@ -41,7 +41,7 @@ class ApplicationJsonAnalyserTest {
     ApplicationJsonAnalyser analyser = new ApplicationJsonAnalyser(APPLICATION_JSON.toString(), Buffer.buffer(
       "\"foobar"), REQUEST);
 
-    ValidatorException exception = assertThrows(ValidatorException.class, () -> analyser.checkSyntacticalCorrectness());
+    ValidatorException exception = assertThrows(ValidatorException.class, analyser::checkSyntacticalCorrectness);
     String expectedMsg = "The request body can't be decoded";
     assertThat(exception.type()).isEqualTo(ILLEGAL_VALUE);
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);

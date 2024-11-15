@@ -165,7 +165,8 @@ class OpenAPIContractTest {
     JsonObject validComponents = loadJson(vertx, resourcePath.resolve("components.json"));
 
     Map<String, JsonObject> additionalValidSpecFiles = ImmutableMap.of("https://example.com/petstore", validComponents);
-    Map<String, JsonObject> additionalInvalidSpecFiles = ImmutableMap.of("https://example.com/petstore", invalidComponents);
+    Map<String, JsonObject> additionalInvalidSpecFiles = ImmutableMap.of("https://example.com/petstore",
+      invalidComponents);
 
     OpenAPIContract.from(vertx, contract.copy(), additionalValidSpecFiles)
       .compose(validResp -> Future.succeededFuture(validResp.getRawContract()))
@@ -185,7 +186,8 @@ class OpenAPIContractTest {
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
     JsonObject malformedComponents = loadJson(vertx, resourcePath.resolve("malformedComponents.json"));
 
-    Map<String, JsonObject> additionalMalformedSpecFiles = ImmutableMap.of("https://example.com/petstore", malformedComponents);
+    Map<String, JsonObject> additionalMalformedSpecFiles = ImmutableMap.of("https://example.com/petstore",
+      malformedComponents);
 
     OpenAPIContract.from(vertx, contract.copy(), additionalMalformedSpecFiles)
       .onComplete(handler -> testContext.verify(() -> {
@@ -208,12 +210,10 @@ class OpenAPIContractTest {
 
     Map<String, String> additionalSpecFiles = ImmutableMap.of("https://schemas/Name.yaml", componentsPath.toString());
     OpenAPIContract.from(vertx, contractPath.toString(), additionalSpecFiles)
-      .onComplete(testContext.succeeding(c -> {
-        testContext.verify(() -> {
-          assertThat(c.getRawContract().toString()).isEqualTo(dereferenced.toString());
-          testContext.completeNow();
-        });
-      }));
+      .onComplete(testContext.succeeding(c -> testContext.verify(() -> {
+        assertThat(c.getRawContract().toString()).isEqualTo(dereferenced.toString());
+        testContext.completeNow();
+      })));
   }
 
 }

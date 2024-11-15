@@ -12,14 +12,11 @@
 
 package io.vertx.tests;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Style;
-import io.vertx.openapi.validation.ValidatableRequest;
-import io.vertx.openapi.validation.impl.RequestParameterImpl;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,13 +25,6 @@ public final class MockHelper {
 
   private MockHelper() {
 
-  }
-
-  public static ValidatableRequest mockValidatableRequest(Buffer body, String contentType) {
-    ValidatableRequest mockedRequest = mock(ValidatableRequest.class);
-    when(mockedRequest.getBody()).thenReturn(new RequestParameterImpl(body));
-    when(mockedRequest.getContentType()).thenReturn(contentType);
-    return mockedRequest;
   }
 
   public static Parameter mockParameter(String name, Location in, Style style, boolean explode, JsonSchema schema) {

@@ -21,7 +21,6 @@ import io.vertx.openapi.contract.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.vertx.openapi.contract.Location.HEADER;
@@ -30,10 +29,10 @@ import static io.vertx.openapi.contract.MediaType.isMediaTypeSupported;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.lang.String.join;
-import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 public class ResponseImpl implements Response {
   private static final String KEY_HEADERS = "headers";
@@ -51,18 +50,16 @@ public class ResponseImpl implements Response {
     this.responseModel = responseModel;
 
     JsonObject headersObject = responseModel.getJsonObject(KEY_HEADERS, EMPTY_JSON_OBJECT);
-    this.headers = unmodifiableList(
-      headersObject
-        .fieldNames()
-        .stream()
-        .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-        .filter(FILTER_CONTENT_TYPE)
-        .map(name -> {
-          JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in",
-            HEADER.toString());
-          return new ParameterImpl("", headerModel);
-        })
-        .collect(Collectors.toList()));
+    this.headers = headersObject
+      .fieldNames()
+      .stream()
+      .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+      .filter(FILTER_CONTENT_TYPE)
+      .map(name -> {
+        JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in",
+          HEADER.toString());
+        return new ParameterImpl("", headerModel);
+      }).collect(toUnmodifiableList());
 
     JsonObject contentObject = responseModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
     this.content = unmodifiableMap(

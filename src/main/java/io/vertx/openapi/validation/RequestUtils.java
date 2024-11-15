@@ -65,7 +65,7 @@ public class RequestUtils {
    * @return A {@link Future} holding the ValidatableRequest.
    */
   public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation,
-    Supplier<Future<Buffer>> bodySupplier) {
+                                                   Supplier<Future<Buffer>> bodySupplier) {
     Map<String, RequestParameter> cookies = new HashMap<>();
     Map<String, RequestParameter> headers = new HashMap<>();
     Map<String, RequestParameter> pathParams = new HashMap<>();
@@ -137,7 +137,7 @@ public class RequestUtils {
   }
 
   private static RequestParameter joinFormValues(Collection<String> formValues, Parameter parameter,
-    Supplier<RequestParameter> explodedObjectSupplier) {
+                                                 Supplier<RequestParameter> explodedObjectSupplier) {
     if (formValues.isEmpty()) {
       return EMPTY;
     }
@@ -170,7 +170,7 @@ public class RequestUtils {
 
   static String decodeUrl(String encoded) {
     try {
-      return encoded == null ? null : URLDecoder.decode(encoded, StandardCharsets.UTF_8.name());
+      return encoded == null ? null : URLDecoder.decode(encoded, StandardCharsets.UTF_8);
     } catch (Exception e) {
       throw new ValidatorException("Can't decode URL value: " + encoded, ILLEGAL_VALUE, e);
     }

@@ -39,6 +39,7 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SERVERS = "servers";
@@ -74,21 +75,17 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.version = version;
     this.schemaRepository = schemaRepository;
 
-    servers = unmodifiableList(
-      resolvedSpec
-        .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
-        .stream()
-        .map(JsonObject.class::cast)
-        .map(ServerImpl::new)
-        .collect(toList()));
+    servers = resolvedSpec
+      .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
+      .stream()
+      .map(JsonObject.class::cast)
+      .map(ServerImpl::new).collect(toUnmodifiableList());
 
-    this.securityRequirements = unmodifiableList(
-      resolvedSpec
-        .getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY)
-        .stream()
-        .map(JsonObject.class::cast)
-        .map(SecurityRequirementImpl::new)
-        .collect(toList()));
+    this.securityRequirements = resolvedSpec
+      .getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY)
+      .stream()
+      .map(JsonObject.class::cast)
+      .map(SecurityRequirementImpl::new).collect(toUnmodifiableList());
 
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
@@ -182,7 +179,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   @Override
   public List<Operation> operations() {
-    return unmodifiableList(new ArrayList<>(operations.values()));
+    return List.copyOf(operations.values());
   }
 
   @Override

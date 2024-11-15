@@ -46,7 +46,7 @@ public class ValidatedResponseImpl implements ValidatedResponse {
         entry -> entry.getKey().toLowerCase(), Entry::getValue));
 
     return Collections.unmodifiableMap(map == null ? Collections.emptyMap() :
-      new HashMap<String, ResponseParameter>(lowerCaseHeader) {
+      new HashMap<>(lowerCaseHeader) {
         @Override
         public ResponseParameter get(Object key) {
           return super.get(key.toString().toLowerCase());
