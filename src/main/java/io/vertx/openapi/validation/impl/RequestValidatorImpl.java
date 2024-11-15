@@ -14,6 +14,7 @@ package io.vertx.openapi.validation.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
@@ -28,7 +29,6 @@ import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
 import io.vertx.openapi.validation.ValidatedRequest;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.transformer.BodyTransformer;
 import io.vertx.openapi.validation.transformer.FormTransformer;
 import io.vertx.openapi.validation.transformer.LabelTransformer;
 import io.vertx.openapi.validation.transformer.MatrixTransformer;
@@ -45,9 +45,8 @@ import static io.vertx.openapi.contract.Style.LABEL;
 import static io.vertx.openapi.contract.Style.MATRIX;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.SchemaValidationException.createErrorFromOutputUnitType;
-import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueRequestBody;
+import static io.vertx.openapi.validation.ValidationContext.REQUEST;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
 import static io.vertx.openapi.validation.ValidatorException.createOperationNotFound;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedValueFormat;
@@ -123,6 +122,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       throw createUnsupportedValueFormat(parameter);
     }
     Object transformedValue = transformer.transform(parameter, String.valueOf(value.get()));
+
     OutputUnit result = contract
       .getSchemaRepository()
       .validator(parameter.getSchema())
@@ -151,18 +151,8 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
     }
 
     MediaType mediaType = requestBody.determineContentType(request.getContentType());
-    BodyTransformer transformer = mediaType == null ? null : bodyTransformers.get(mediaType.getIdentifier());
-    if (transformer == null) {
-      throw new ValidatorException("The format of the request body is not supported", UNSUPPORTED_VALUE_FORMAT);
-    }
-    Object transformedValue = transformer.transformRequest(mediaType, request);
-    OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
+    Buffer content = request.getBody().getBuffer(Buffer.buffer());
 
-    try {
-      result.checkValidity();
-      return new RequestParameterImpl(transformedValue);
-    } catch (JsonSchemaValidationException e) {
-      throw createInvalidValueRequestBody(result, e);
-    }
+    return validate(mediaType, request.getContentType(), content, REQUEST);
   }
 }

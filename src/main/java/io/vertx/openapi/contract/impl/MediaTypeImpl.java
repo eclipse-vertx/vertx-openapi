@@ -28,11 +28,22 @@ public class MediaTypeImpl implements MediaType {
   public MediaTypeImpl(String identifier, JsonObject mediaTypeModel) {
     this.identifier = identifier;
     this.mediaTypeModel = mediaTypeModel;
-    JsonObject schemaJson = mediaTypeModel.getJsonObject(KEY_SCHEMA);
-    if (schemaJson == null || schemaJson.isEmpty()) {
+
+    if (mediaTypeModel == null) {
       throw createUnsupportedFeature("Media Type without a schema");
     }
-    schema = JsonSchema.of(schemaJson);
+
+    if (mediaTypeModel.isEmpty()) {
+      // OpenAPI 3.1 allows defining MediaTypes without a schema.
+      schema = null;
+    } else {
+      JsonObject schemaJson = mediaTypeModel.getJsonObject(KEY_SCHEMA);
+      if (schemaJson == null || schemaJson.isEmpty()) {
+        throw createUnsupportedFeature("Media Type without a schema");
+      }
+      schema = JsonSchema.of(schemaJson);
+
+    }
   }
 
   @Override

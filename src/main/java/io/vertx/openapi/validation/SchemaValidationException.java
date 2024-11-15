@@ -40,27 +40,23 @@ public class SchemaValidationException extends ValidatorException {
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
-  public static SchemaValidationException createInvalidValueRequestBody(OutputUnit outputUnit,
-                                                                        JsonSchemaValidationException cause) {
-    String msg = String.format("The value of the request body is invalid. Reason: %s", extractReason(outputUnit));
-    return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
-  }
-
-  public static SchemaValidationException createInvalidValueResponseBody(OutputUnit outputUnit,
-                                                                         JsonSchemaValidationException cause) {
-    String msg = String.format("The value of the response body is invalid. Reason: %s", extractReason(outputUnit));
+  public static SchemaValidationException createInvalidValueBody(OutputUnit outputUnit,
+                                                                 ValidationContext requestOrResponse,
+                                                                 JsonSchemaValidationException cause) {
+    String msg = String.format("The value of the " + requestOrResponse + " body is invalid. Reason: %s",
+      extractReason(outputUnit));
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
   public static SchemaValidationException createMissingValueRequestBody(OutputUnit outputUnit,
-                                                                         JsonSchemaValidationException cause) {
+                                                                        JsonSchemaValidationException cause) {
     String msg = String.format("The value of the request body is missing. Reason: %s", extractReason(outputUnit));
     return new SchemaValidationException(msg, MISSING_REQUIRED_PARAMETER, outputUnit, cause);
   }
 
   public static SchemaValidationException createErrorFromOutputUnitType(Parameter parameter, OutputUnit outputUnit,
                                                                         JsonSchemaValidationException cause) {
-    switch(outputUnit.getErrorType()) {
+    switch (outputUnit.getErrorType()) {
       case MISSING_VALUE:
         return createMissingValueRequestBody(outputUnit, cause);
       case INVALID_VALUE:

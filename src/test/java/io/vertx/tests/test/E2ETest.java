@@ -23,11 +23,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.tests.test.base.HttpServerTestBase;
 import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedRequest;
+import io.vertx.tests.test.base.HttpServerTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -99,23 +99,23 @@ class E2ETest extends HttpServerTestBase {
   public void sendMultipartFormDataRequest(VertxTestContext testContext) {
     Path path = getRelatedTestResourcePath(E2ETest.class).resolve("multipart.txt");
     JsonObject expectedPetMetadata = new JsonObject()
-        .put("friends", new JsonArray().add(123).add(456).add(789))
-          .put("contactInformation", new JsonObject()
-            .put("name", "Example")
-            .put("email", "example@example.com")
-            .put("phone", "5555555555"));
+      .put("friends", new JsonArray().add(123).add(456).add(789))
+      .put("contactInformation", new JsonObject()
+        .put("name", "Example")
+        .put("email", "example@example.com")
+        .put("phone", "5555555555"));
 
     setupContract("", testContext).compose(v -> createValidationHandler(req -> {
-      testContext.verify(() -> {
-        assertThat(req.getBody()).isNotNull();
-        JsonObject jsonReq = req.getBody().getJsonObject();
-        assertThat(jsonReq.getLong("petId")).isEqualTo(1234L);
-        assertThat(jsonReq.getJsonObject("petMetadata")).isEqualTo(expectedPetMetadata);
-        assertThat(jsonReq.getBuffer("petPicture")).isNotNull();
-        testContext.completeNow();
-      });
-      return ValidatableResponse.create(201);
-    },contract.operation("uploadPet").getOperationId(), testContext))
+        testContext.verify(() -> {
+          assertThat(req.getBody()).isNotNull();
+          JsonObject jsonReq = req.getBody().getJsonObject();
+          assertThat(jsonReq.getLong("petId")).isEqualTo(1234L);
+          assertThat(jsonReq.getJsonObject("petMetadata")).isEqualTo(expectedPetMetadata);
+          assertThat(jsonReq.getBuffer("petPicture")).isNotNull();
+          testContext.completeNow();
+        });
+        return ValidatableResponse.create(201);
+      }, contract.operation("uploadPet").getOperationId(), testContext))
       .compose(v -> createRequest(HttpMethod.POST, "/pets/upload"))
       .map(request -> request.putHeader(HttpHeaders.CONTENT_TYPE, "multipart/form-data; boundary=4ad8accc990e99c2"))
       .map(request -> request.putHeader(HttpHeaders.CONTENT_DISPOSITION, ""))

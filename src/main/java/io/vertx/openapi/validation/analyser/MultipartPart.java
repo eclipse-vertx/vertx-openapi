@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.openapi.validation.transformer;
+package io.vertx.openapi.validation.analyser;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.validation.ValidatorException;
@@ -26,7 +26,8 @@ import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 public class MultipartPart {
-  private static final Pattern NAME_PATTERN = Pattern.compile("Content-Disposition: form-data; name=\"(.*?)\"", CASE_INSENSITIVE);
+  private static final Pattern NAME_PATTERN = Pattern.compile("Content-Disposition: form-data; name=\"(.*?)\"",
+    CASE_INSENSITIVE);
   private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("Content-Type: (.*)", CASE_INSENSITIVE);
 
   private final String name;
@@ -70,7 +71,8 @@ public class MultipartPart {
 
     // if no empty line exists, there are only headers
     String headerSection = sectionDelimiter == -1 ? rawPart : rawPart.substring(0, sectionDelimiter);
-    String body = sectionDelimiter == -1 ? null : rawPart.substring(sectionDelimiter + sectionDelimiterPattern.length());
+    String body = sectionDelimiter == -1 ? null :
+      rawPart.substring(sectionDelimiter + sectionDelimiterPattern.length());
 
     String name = parsePattern(NAME_PATTERN, headerSection).orElseThrow(() -> {
       String msg = "A part of the multipart message doesn't contain a name.";
@@ -112,7 +114,8 @@ public class MultipartPart {
     }
 
     MultipartPart that = (MultipartPart) o;
-    return Objects.equals(name, that.name) && Objects.equals(contentType, that.contentType) && Objects.equals(body, that.body);
+    return Objects.equals(name, that.name) && Objects.equals(contentType, that.contentType) && Objects.equals(body,
+      that.body);
   }
 
   @Override

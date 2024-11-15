@@ -12,32 +12,41 @@
 
 package io.vertx.tests.validation.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.impl.BaseValidator;
+import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
-import static org.mockito.Mockito.spy;
 
 @ExtendWith(VertxExtension.class)
 class BaseValidatorTest {
-  private BaseValidator validator;
+  private BaseValidatorWrapper validator;
 
-  private OpenAPIContract contractSpy;
 
   @BeforeEach
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
@@ -45,8 +54,7 @@ class BaseValidatorTest {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     OpenAPIContract.from(vertx, contract).onSuccess(c -> testContext.verify(() -> {
-      this.contractSpy = spy(c);
-      this.validator = new BaseValidator(vertx, contractSpy);
+      this.validator = new BaseValidatorWrapper(vertx, c);
       testContext.completeNow();
     })).onFailure(testContext::failNow);
   }
@@ -54,6 +62,17 @@ class BaseValidatorTest {
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testGetOperation(VertxTestContext testContext) {
+    String operationId = "listPets";
+    validator.getOperation(operationId).onFailure(testContext::failNow)
+      .onSuccess(operation -> testContext.verify(() -> {
+        assertThat(operation.getOperationId()).isEqualTo(operationId);
+        testContext.completeNow();
+      }));
+  }
+
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testGetOperationThrow(VertxTestContext testContext) {
     validator.getOperation("invalidId").onFailure(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(ValidatorException.class);
       assertThat(t).hasMessageThat().isEqualTo("Invalid OperationId: invalidId");
@@ -61,10 +80,56 @@ class BaseValidatorTest {
     })).onSuccess(v -> testContext.failNow("Test expects a failure"));
   }
 
-  @ParameterizedTest(name = "{index} Test valid if {0} is a valid base transformer.")
-  @ValueSource(strings = { "application/json", "application/hal+json" })
-  public void testValidBaseTransformer(String transformer) {
-    assertThat(validator.containsTransformer(transformer)).isTrue();
+  static Stream<Arguments> testIsSchemaValidationRequired() {
+    JsonObject stringSchema = new JsonObject().put("type", "string");
+    JsonObject binaryStringSchema = stringSchema.copy().put("format", "binary");
+    Function<JsonObject, JsonObject> buildMediaModel = schema -> new JsonObject().put("schema", schema);
+
+    MediaType noMediaModel = new MediaTypeImpl("", EMPTY_JSON_OBJECT);
+    MediaType typeNumber = new MediaTypeImpl("", buildMediaModel.apply(new JsonObject().put("type", "number")));
+    MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema));
+    MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema));
+    MediaType typeStringFormatTime = new MediaTypeImpl("", buildMediaModel.apply(stringSchema.copy().put("format",
+      "time")));
+    MediaType typeStringFormatBinaryMinLength = new MediaTypeImpl("",
+      buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)));
+
+    return Stream.of(
+      Arguments.of("No media model is defined", noMediaModel, false),
+      Arguments.of("Type number", typeNumber, true),
+      Arguments.of("Type String without format", typeStringNoFormat, true),
+      Arguments.of("Type String and format binary", typeStringFormatBinary, false),
+      Arguments.of("Type String and format time", typeStringFormatTime, true),
+      Arguments.of("Type String and format binary but minLength", typeStringFormatBinaryMinLength, true)
+    );
   }
 
+  @ParameterizedTest(name = "{index} {0}")
+  @MethodSource
+  void testIsSchemaValidationRequired(String scenario, MediaType mediaType, boolean isRequired) {
+    assertThat(validator.isSchemaValidationRequired(mediaType)).isEqualTo(isRequired);
+  }
+
+  private class BaseValidatorWrapper extends BaseValidator {
+
+    public BaseValidatorWrapper(Vertx vertx, OpenAPIContract contract) {
+      super(vertx, contract);
+    }
+
+    @Override
+    protected Future<Operation> getOperation(String operationId) {
+      return super.getOperation(operationId);
+    }
+
+    @Override
+    protected boolean isSchemaValidationRequired(MediaType mediaType) {
+      return super.isSchemaValidationRequired(mediaType);
+    }
+
+    @Override
+    protected RequestParameterImpl validate(MediaType mediaType, String contentType, Buffer rawContent,
+                                            ValidationContext requestOrResponse) {
+      return super.validate(mediaType, contentType, rawContent, requestOrResponse);
+    }
+  }
 }

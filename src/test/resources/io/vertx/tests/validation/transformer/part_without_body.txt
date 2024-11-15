@@ -1,2 +1,0 @@
-Content-Disposition: form-data; name="id"
-Content-Type: text/plain

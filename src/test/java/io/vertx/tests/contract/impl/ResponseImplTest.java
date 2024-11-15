@@ -32,8 +32,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.json.schema.common.dsl.SchemaType.INTEGER;
 import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(VertxExtension.class)
@@ -69,7 +69,7 @@ class ResponseImplTest {
       Arguments.of("0000_Response_With_Content_Type_Text_Plain", UNSUPPORTED_FEATURE,
         "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
           "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8, " +
-          "multipart/form-data, application/hal+json")
+          "multipart/form-data, application/hal+json, application/octet-stream")
     );
   }
 
