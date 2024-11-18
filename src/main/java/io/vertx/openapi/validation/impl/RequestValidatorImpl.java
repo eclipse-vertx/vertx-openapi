@@ -15,6 +15,7 @@ package io.vertx.openapi.validation.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.MediaType;
@@ -153,6 +154,28 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
       throw new ValidatorException("The format of the request body is not supported", UNSUPPORTED_VALUE_FORMAT);
     }
     Object transformedValue = transformer.transformRequest(mediaType, request);
+    // Corner case for "application/octet-stream" media type:
+    // Skip full schema validation if the following simplified validation succeeds,
+    // otherwise validate with JSON Validator and fail the validation
+    // of the transformed value eventually.
+    if (mediaType.getIdentifier().equals(MediaType.APPLICATION_OCTET_STREAM)) {
+      JsonSchema schema = mediaType.getSchema();
+      String schemaTypeValue = schema.get("type", null);
+      if (schemaTypeValue != null && schemaTypeValue.equals("string")) {
+        String schemaFormatValue = schema.get("format", null);
+        // Case for OpenAPI 3.0 and OpenAPI 3.1 (backwards compatibility)
+        if (schemaFormatValue != null && schemaFormatValue.equals("binary")) {
+          return new RequestParameterImpl(transformedValue);
+        } else {
+          // Case only for OpenAPI 3.1
+          String schemaContentMediaType = schema.get("contentMediaType", null);
+          if (schemaContentMediaType != null
+            && schemaContentMediaType.equals(MediaType.APPLICATION_OCTET_STREAM)) {
+            return new RequestParameterImpl(transformedValue);
+          }
+        }
+      }
+    }
     OutputUnit result = contract.getSchemaRepository().validator(mediaType.getSchema()).validate(transformedValue);
 
     try {
