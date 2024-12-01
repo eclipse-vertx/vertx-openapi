@@ -33,7 +33,7 @@ public class MediaTypeImpl implements MediaType {
       throw createUnsupportedFeature("Media Type without a schema");
     }
 
-    if (mediaTypeModel.isEmpty()) {
+    if (mediaTypeModel.fieldNames().stream().allMatch(name -> name.startsWith("__"))) {
       // OpenAPI 3.1 allows defining MediaTypes without a schema.
       schema = null;
     } else {
