@@ -33,12 +33,35 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MediaTypeImplTest {
   private static final String DUMMY_IDENTIFIER = APPLICATION_JSON.toString();
+  private static final String DUMMY_REF = "__dummy_unknown_ref__";
+  private static final String ABS_URI = "__absolute_uri__";
+  private static final String ABS_RECURSIVE_REF = "__absolute_recursive_ref__";
+  private static final String ABS_REF = "__absolute_ref__";
+  private static final String DUMMY_REF_VALUE = "dummy-ref-value";
 
   private static Stream<Arguments> testGetters() {
     return Stream.of(
-      Arguments.of("MediaType model defined", new JsonObject().put("schema", stringSchema().toJson()), List.of("type"
-        , "$id")),
-      Arguments.of("No MediaType model defined", EMPTY_JSON_OBJECT, List.of())
+      Arguments.of("MediaType model defined, with no internal annotations", new JsonObject()
+        .put("schema", stringSchema().toJson()), List.of("type", "$id")),
+      Arguments.of("MediaType model defined, with an unknown internal annotation", new JsonObject()
+        .put(DUMMY_REF, DUMMY_REF_VALUE).put("schema", stringSchema().toJson()), List.of("type", "$id")),
+      Arguments.of("MediaType model defined, with multiple internal annotations", new JsonObject()
+        .put(ABS_URI, DUMMY_REF_VALUE)
+        .put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE)
+        .put("schema", stringSchema().toJson()), List.of("type", "$id")),
+      Arguments.of("No MediaType model defined, with an unknown internal annotation", new JsonObject()
+        .put(DUMMY_REF, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("No MediaType model defined, with absolute_uri internal annotation",
+        new JsonObject().put(ABS_URI, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("No MediaType model defined, with absolute_recursive_ref internal annotation",
+        new JsonObject().put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("No MediaType model defined, with absolute_ref internal annotation",
+        new JsonObject().put(ABS_REF, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("No MediaType model defined, with multiple internal annotations", new JsonObject()
+        .put(ABS_URI, DUMMY_REF_VALUE)
+        .put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("No MediaType model defined, with no internal annotations",
+        EMPTY_JSON_OBJECT, List.of())
     );
   }
 
