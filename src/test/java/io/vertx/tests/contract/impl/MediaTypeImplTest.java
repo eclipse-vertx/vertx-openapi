@@ -17,6 +17,7 @@ import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -40,26 +41,31 @@ class MediaTypeImplTest {
   private static final String DUMMY_REF_VALUE = "dummy-ref-value";
 
   private static Stream<Arguments> testGetters() {
+    var partialSchemaJson = JsonObject.of("schema", stringSchema().toJson());
+
+    var partialUnknownAnnotation = JsonObject.of(DUMMY_REF, DUMMY_REF_VALUE);
+    var partialAbsoluteUri = JsonObject.of(ABS_URI, DUMMY_REF_VALUE);
+    var partialAbsoluteRecursiveRef = JsonObject.of(ABS_RECURSIVE_REF, DUMMY_REF_VALUE);
+    var partialAbsoluteRef = JsonObject.of(ABS_REF, DUMMY_REF_VALUE);
+    var partialMultipleAnnotations = partialAbsoluteUri.copy().mergeIn(partialUnknownAnnotation);
+
     return Stream.of(
-      Arguments.of("MediaType model defined, with no internal annotations", new JsonObject()
-        .put("schema", stringSchema().toJson()), List.of("type", "$id")),
-      Arguments.of("MediaType model defined, with an unknown internal annotation", new JsonObject()
-        .put(DUMMY_REF, DUMMY_REF_VALUE).put("schema", stringSchema().toJson()), List.of("type", "$id")),
-      Arguments.of("MediaType model defined, with multiple internal annotations", new JsonObject()
-        .put(ABS_URI, DUMMY_REF_VALUE)
-        .put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE)
-        .put("schema", stringSchema().toJson()), List.of("type", "$id")),
-      Arguments.of("No MediaType model defined, with an unknown internal annotation", new JsonObject()
-        .put(DUMMY_REF, DUMMY_REF_VALUE), List.of()),
+      Arguments.of("MediaType model defined, with no internal annotations", partialSchemaJson,
+        List.of("type", "$id")),
+      Arguments.of("MediaType model defined, with an unknown internal annotation", partialSchemaJson
+        .copy().mergeIn(partialUnknownAnnotation), List.of("type", "$id")),
+      Arguments.of("MediaType model defined, with multiple internal annotations", partialSchemaJson
+        .copy().mergeIn(partialMultipleAnnotations), List.of("type", "$id")),
+      Arguments.of("No MediaType model defined, with an unknown internal annotation",
+        partialUnknownAnnotation, List.of()),
       Arguments.of("No MediaType model defined, with absolute_uri internal annotation",
-        new JsonObject().put(ABS_URI, DUMMY_REF_VALUE), List.of()),
+        partialAbsoluteUri, List.of()),
       Arguments.of("No MediaType model defined, with absolute_recursive_ref internal annotation",
-        new JsonObject().put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE), List.of()),
+        partialAbsoluteRecursiveRef, List.of()),
       Arguments.of("No MediaType model defined, with absolute_ref internal annotation",
-        new JsonObject().put(ABS_REF, DUMMY_REF_VALUE), List.of()),
-      Arguments.of("No MediaType model defined, with multiple internal annotations", new JsonObject()
-        .put(ABS_URI, DUMMY_REF_VALUE)
-        .put(ABS_RECURSIVE_REF, DUMMY_REF_VALUE), List.of()),
+        partialAbsoluteRef, List.of()),
+      Arguments.of("No MediaType model defined, with multiple internal annotations",
+        partialMultipleAnnotations, List.of()),
       Arguments.of("No MediaType model defined, with no internal annotations",
         EMPTY_JSON_OBJECT, List.of())
     );
