@@ -17,6 +17,7 @@ import io.vertx.json.schema.JsonSchema;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * This interface represents the most important attributes of an OpenAPI Operation.
@@ -33,11 +34,19 @@ public interface MediaType extends OpenAPIObject {
   String MULTIPART_FORM_DATA = "multipart/form-data";
   String APPLICATION_HAL_JSON = "application/hal+json";
   String APPLICATION_OCTET_STREAM = "application/octet-stream";
+  String TEXT_PLAN = "text/plain";
+  String TEXT_PLAIN_UTF8 = TEXT_PLAN + "; charset=utf-8";
   List<String> SUPPORTED_MEDIA_TYPES = Arrays.asList(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA,
-    APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM);
+    APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM, TEXT_PLAN, TEXT_PLAIN_UTF8);
+
+  Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
 
   static boolean isMediaTypeSupported(String type) {
-    return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase());
+    return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase()) || isVendorSpecificJson(type);
+  }
+
+  static private boolean isVendorSpecificJson(String type) {
+    return VENDOR_SPECIFIC_JSON.matcher(type).matches();
   }
 
   /**
