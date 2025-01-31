@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kafka API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/messages": {
+      "get": {
+        "summary": "Get a Kafka JSON message",
+        "operationId": "getKafkaMessage",
+        "responses": {
+          "200": {
+            "description": "A JSON message in Kafka format",
+            "content": {
+              "application/vnd.kafka.json.v2+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "12345"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Hello, Kafka!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Post a Kafka JSON message",
+        "operationId": "postKafkaMessage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/vnd.kafka.json.v2+json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "12345"
+                  },
+                  "message": {
+                    "type": "string",
+                    "example": "Hello, Kafka!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message created successfully"
+          }
+        }
+      }
+    }
+  }
+}
