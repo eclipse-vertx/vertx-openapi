@@ -45,7 +45,7 @@ public interface MediaType extends OpenAPIObject {
     return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase()) || isVendorSpecificJson(type);
   }
 
-  static private boolean isVendorSpecificJson(String type) {
+  static boolean isVendorSpecificJson(String type) {
     return VENDOR_SPECIFIC_JSON.matcher(type).matches();
   }
 

@@ -50,6 +50,22 @@ public abstract class ContentAnalyser {
     }
   }
 
+  private static class TextPlainAnalyser extends ContentAnalyser {
+    public TextPlainAnalyser(String contentType, Buffer content, ValidationContext context) {
+      super(contentType, content, context);
+    }
+
+    @Override
+    public void checkSyntacticalCorrectness() {
+      // no syntax check for text plain
+    }
+
+    @Override
+    public Object transform() {
+      return content;
+    }
+  }
+
   /**
    * Returns the content analyser for the given content type.
    *
@@ -69,7 +85,13 @@ public abstract class ContentAnalyser {
         return new MultipartFormAnalyser(contentType, content, context);
       case MediaType.APPLICATION_OCTET_STREAM:
         return new OctetStreamAnalyser(contentType, content, context);
+      case MediaType.TEXT_PLAN:
+      case MediaType.TEXT_PLAIN_UTF8:
+        return new TextPlainAnalyser(contentType, content, context);
       default:
+        if (MediaType.isVendorSpecificJson(contentType)) {
+          return new ApplicationJsonAnalyser(contentType, content, context);
+        }
         return null;
     }
   }
