@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.tests.contract;
+package io.vertx.tests.contract.impl;
 
 import io.vertx.openapi.contract.impl.VendorSpecificJson;
 import org.junit.jupiter.api.Test;
