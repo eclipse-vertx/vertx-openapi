@@ -49,7 +49,6 @@ import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
@@ -239,13 +238,13 @@ class ResponseValidatorImplTest {
   }
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
-  @ValueSource(strings = {"text/plain", "foo/bar"})
+  @ValueSource(strings = {"application/png", "foo/bar"})
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
 
     Response mockedResponse = mock(Response.class);
-    when(mockedResponse.getContent()).thenReturn(ImmutableMap.of(TEXT_PLAIN.toString(), mockedMediaType));
+    when(mockedResponse.getContent()).thenReturn(ImmutableMap.of("application/png", mockedMediaType));
 
     ValidatableResponse mockedValidatableResponse = mock(ValidatableResponse.class);
     when(mockedValidatableResponse.getContentType()).thenReturn(contentType);

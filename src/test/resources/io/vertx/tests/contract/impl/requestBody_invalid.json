@@ -5,11 +5,12 @@
     "content": {
     }
   },
-  "0002_RequestBody_With_Content_Type_Text_Plain": {
+  "0002_RequestBody_With_Content_Type_Application_Png": {
     "content": {
-      "text/plain": {
+      "application/png": {
         "schema": {
-          "type": "string"
+          "type": "string",
+          "format": "binary"
         }
       }
     }

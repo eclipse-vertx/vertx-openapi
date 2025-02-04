@@ -216,4 +216,17 @@ class OpenAPIContractTest {
       })));
   }
 
+  @Test
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  public void testVendorSpecificJson(Vertx vertx, VertxTestContext testContext) {
+    Path path = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("vendor_specific_json.json");
+    JsonObject contractJson = loadJson(vertx, path);
+    path = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("vendor_specific_json_dereferenced.json");
+    JsonObject expectedJson = loadJson(vertx, path);
+
+    OpenAPIContract.from(vertx, contractJson).onComplete(testContext.succeeding(c -> testContext.verify(() -> {
+      assertThat(c.getRawContract().toString()).isEqualTo(expectedJson.toString());
+      testContext.completeNow();
+    })));
+  }
 }

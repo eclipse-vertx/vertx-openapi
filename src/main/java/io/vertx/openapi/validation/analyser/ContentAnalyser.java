@@ -34,14 +34,14 @@ import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
  * before.
  */
 public abstract class ContentAnalyser {
-  private static class OctetStreamAnalyser extends ContentAnalyser {
-    public OctetStreamAnalyser(String contentType, Buffer content, ValidationContext context) {
+  private static class NoOpAnalyser extends ContentAnalyser {
+    public NoOpAnalyser(String contentType, Buffer content, ValidationContext context) {
       super(contentType, content, context);
     }
 
     @Override
     public void checkSyntacticalCorrectness() {
-      // no syntax check for octet-stream
+      // no syntax check
     }
 
     @Override
@@ -68,8 +68,13 @@ public abstract class ContentAnalyser {
       case MediaType.MULTIPART_FORM_DATA:
         return new MultipartFormAnalyser(contentType, content, context);
       case MediaType.APPLICATION_OCTET_STREAM:
-        return new OctetStreamAnalyser(contentType, content, context);
+      case MediaType.TEXT_PLAIN:
+      case MediaType.TEXT_PLAIN_UTF8:
+        return new NoOpAnalyser(contentType, content, context);
       default:
+        if (MediaType.isVendorSpecificJson(contentType)) {
+          return new ApplicationJsonAnalyser(contentType, content, context);
+        }
         return null;
     }
   }
