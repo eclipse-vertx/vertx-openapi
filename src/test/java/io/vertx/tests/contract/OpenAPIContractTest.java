@@ -229,4 +229,6 @@ class OpenAPIContractTest {
       testContext.completeNow();
     })));
   }
+
+  // TODO: add test for "text/plain"
 }

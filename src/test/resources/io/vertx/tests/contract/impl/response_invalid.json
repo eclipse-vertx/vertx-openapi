@@ -1,9 +1,10 @@
 {
-  "0000_Response_With_Content_Type_Text_Plain": {
+  "0000_Response_With_Content_Type_Application_Png": {
     "content": {
-      "text/plain": {
+      "application/png": {
         "schema": {
-          "type": "object"
+          "type": "string",
+          "format": "binary"
         }
       }
     }
