@@ -68,7 +68,7 @@ public abstract class ContentAnalyser {
       case MediaType.MULTIPART_FORM_DATA:
         return new MultipartFormAnalyser(contentType, content, context);
       case MediaType.APPLICATION_OCTET_STREAM:
-      case MediaType.TEXT_PLAN:
+      case MediaType.TEXT_PLAIN:
       case MediaType.TEXT_PLAIN_UTF8:
         return new NoOpAnalyser(contentType, content, context);
       default:

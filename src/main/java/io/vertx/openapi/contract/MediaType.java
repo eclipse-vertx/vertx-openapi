@@ -14,6 +14,7 @@ package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.impl.VendorSpecificJson;
 
 import java.util.List;
 
@@ -32,10 +33,10 @@ public interface MediaType extends OpenAPIObject {
   String MULTIPART_FORM_DATA = "multipart/form-data";
   String APPLICATION_HAL_JSON = "application/hal+json";
   String APPLICATION_OCTET_STREAM = "application/octet-stream";
-  String TEXT_PLAN = "text/plain";
-  String TEXT_PLAIN_UTF8 = TEXT_PLAN + "; charset=utf-8";
+  String TEXT_PLAIN = "text/plain";
+  String TEXT_PLAIN_UTF8 = TEXT_PLAIN + "; charset=utf-8";
   List<String> SUPPORTED_MEDIA_TYPES = List.of(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA,
-    APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM, TEXT_PLAN, TEXT_PLAIN_UTF8);
+    APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM, TEXT_PLAIN, TEXT_PLAIN_UTF8);
 
   static boolean isMediaTypeSupported(String type) {
     return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase()) || isVendorSpecificJson(type);

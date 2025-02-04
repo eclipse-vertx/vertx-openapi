@@ -12,7 +12,7 @@
 
 package io.vertx.tests.contract;
 
-import io.vertx.openapi.contract.VendorSpecificJson;
+import io.vertx.openapi.contract.impl.VendorSpecificJson;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;

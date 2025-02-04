@@ -10,21 +10,18 @@
  *
  */
 
-package io.vertx.openapi.contract;
-
-import io.vertx.codegen.annotations.GenIgnore;
+package io.vertx.openapi.contract.impl;
 
 import java.util.regex.Pattern;
 
 /**
- * Interface to expose specific check about a media type being a vendor specific JSON
+ * Class to expose specific check about a media type being a vendor specific JSON
  */
-@GenIgnore
-public interface VendorSpecificJson {
+public class VendorSpecificJson {
 
-  Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
+  private static final Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
 
-  static boolean matches(String type) {
+  public static boolean matches(String type) {
     return type != null && VENDOR_SPECIFIC_JSON.matcher(type).matches();
   }
 }
