@@ -25,6 +25,6 @@ public interface VendorSpecificJson {
   Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
 
   static boolean matches(String type) {
-    return VENDOR_SPECIFIC_JSON.matcher(type).matches();
+    return type != null && VENDOR_SPECIFIC_JSON.matcher(type).matches();
   }
 }

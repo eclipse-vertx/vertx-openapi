@@ -426,7 +426,7 @@ class RequestValidatorImplTest {
   }
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
-  @ValueSource(strings = {"text/plain", "foo/bar"})
+  @ValueSource(strings = {"application/png", "foo/bar"})
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
