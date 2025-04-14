@@ -194,8 +194,10 @@ class OpenAPIContractTest {
         assertTrue(handler.failed());
         assertThat(handler.cause()).isInstanceOf(OpenAPIContractException.class);
         assertThat(handler.cause()).hasMessageThat()
-          .isEqualTo("The passed OpenAPI contract is invalid: Found issue in specification for reference:" +
-            " -1 is less than 0");
+          .isEqualTo("The passed OpenAPI contract is invalid: Failed to validate additional contract file: " +
+            "https://example.com/petstore");
+        assertThat(handler.cause().getCause()).hasMessageThat()
+          .isEqualTo("-1 is less than 0");
         testContext.completeNow();
       }));
   }
