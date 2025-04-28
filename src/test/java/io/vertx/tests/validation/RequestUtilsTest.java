@@ -63,11 +63,17 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class RequestUtilsTest extends HttpServerTestBase {
   private static Parameter mockParameter(String name, Location in, SchemaType schemaType, boolean exploded) {
+    return mockParameter(name, in, schemaType, exploded, false);
+  }
+
+  private static Parameter mockParameter(String name, Location in, SchemaType schemaType, boolean exploded,
+      boolean decodeRequired) {
     Parameter parameter = mock(Parameter.class);
     when(parameter.getName()).thenReturn(name);
     when(parameter.getIn()).thenReturn(in);
     when(parameter.isExplode()).thenReturn(exploded);
     when(parameter.getSchemaType()).thenReturn(schemaType);
+    when(parameter.getExtensions()).thenReturn(Map.of(Parameter.EXTENSION_URLDECODE, decodeRequired));
     return parameter;
   }
 
@@ -85,9 +91,11 @@ class RequestUtilsTest extends HttpServerTestBase {
     return Stream.of(
         Arguments.of(mockParameter("foo", COOKIE, NUMBER, false), "", null),
         Arguments.of(mockParameter("foo", COOKIE, NUMBER, false), "foo=5.7", "5.7"),
-        Arguments.of(mockParameter("foo", COOKIE, ARRAY, false), "foo=3%2C4%2C5", "3,4,5"),
+        Arguments.of(mockParameter("foo", COOKIE, NUMBER, false), "foo=+123", "+123"),
+        Arguments.of(mockParameter("foo", COOKIE, ARRAY, false, true), "foo=3%2C4%2C5", "3,4,5"),
         // (Unsupported) Arguments.of(mockParameter("foo", COOKIE, ARRAY, true), "foo=3;foo=4;bar=2", "foo=3&foo=4"),
-        Arguments.of(mockParameter("foo", COOKIE, OBJECT, false), "foo=name%2Calex%2Cage%2C42;", "name,alex,age,42"),
+        Arguments.of(mockParameter("foo", COOKIE, OBJECT, false, true), "foo=name%2Calex%2Cage%2C42;",
+            "name,alex,age,42"),
         Arguments.of(mockParameter("foo", COOKIE, OBJECT, true), "bar=2;foo=3", "bar=2&foo=3"));
   }
 
@@ -253,7 +261,7 @@ class RequestUtilsTest extends HttpServerTestBase {
         thirdRead.flag();
       });
       request.response().send().onFailure(testContext::failNow);
-    })).compose(v -> createRequest(HttpMethod.POST, ""))
+    }), testContext::failNow).compose(v -> createRequest(HttpMethod.POST, ""))
         .map(req -> req.putHeader(HttpHeaderNames.CONTENT_TYPE.toString(), APPLICATION_JSON.toString())
             .send(firstBody.toBuffer()))
         .onFailure(testContext::failNow);
@@ -266,7 +274,7 @@ class RequestUtilsTest extends HttpServerTestBase {
         .onComplete(testContext.succeeding(validatableRequest -> testContext.verify(() -> {
           verifier.accept(validatableRequest);
           request.response().send().onFailure(testContext::failNow);
-        }))));
+        }))), testContext::failNow);
   }
 
   private Operation mockOperation(Parameter parameter) {

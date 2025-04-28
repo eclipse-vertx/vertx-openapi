@@ -142,6 +142,7 @@ class ExtractReasonTest extends HttpServerTestBase {
               assertThat(exception.type()).isEqualTo(INVALID_VALUE);
               validatorException.accept(exception);
               testContext.completeNow();
-            })));
+            })),
+        testContext::failNow);
   }
 }

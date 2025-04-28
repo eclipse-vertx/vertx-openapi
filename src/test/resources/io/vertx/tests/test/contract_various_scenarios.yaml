@@ -1,0 +1,77 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: Various Scenarios
+  license:
+    identifier: MIT
+    name: MIT License
+servers:
+  - url: https://various.example.com/v1
+paths:
+  /forceEncoding:
+    get:
+      summary: https://github.com/eclipse-vertx/vertx-openapi/issues/98
+      operationId: forceEncoding
+      parameters:
+        - in: header
+          name: headerNotEncoded
+          x-vertx-openapi-urldecode: true
+          schema:
+            type: string
+        - in: header
+          name: headerEncoded
+          schema:
+            type: string
+        - in: cookie
+          name: cookieNotEncoded
+          x-vertx-openapi-urldecode: true
+          schema:
+            type: string
+        - in: cookie
+          name: cookieEncoded
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Doesn't matter
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /phoneNumber:
+    get:
+      summary: https://github.com/eclipse-vertx/vertx-openapi/issues/98
+      operationId: phoneNumberInQuery
+      parameters:
+        - in: query
+          name: phoneNumber
+          required: true
+          schema:
+            type: string
+            nullable: false
+            example: "+39 334 192 1829"
+            pattern: ^[ ]*\+([0-9\-/(). ]+)$
+      responses:
+        "200":
+          description: Doesn't matter
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

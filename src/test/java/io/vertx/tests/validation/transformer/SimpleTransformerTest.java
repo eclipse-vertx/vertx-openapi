@@ -105,7 +105,7 @@ class SimpleTransformerTest implements SchemaSupport {
 
   @Test
   void testInvalidValues() {
-    assertThrows(DecodeException.class, () -> TRANSFORMER.transformPrimitive(STRING_PARAM, "\""));
+    assertThrows(DecodeException.class, () -> TRANSFORMER.transformPrimitive(INTEGER_PARAM, "\"no_integer"));
 
     String invalidObject = "string,foo,number";
     ValidatorException exception =

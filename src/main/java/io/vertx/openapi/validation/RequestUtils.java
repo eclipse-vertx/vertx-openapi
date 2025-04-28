@@ -80,7 +80,7 @@ public class RequestUtils {
           break;
         case PATH:
           int segment = findPathSegment(operation.getAbsoluteOpenAPIPath(), param.getName());
-          pathParams.put(param.getName(), extractPathParameters(request, segment));
+          pathParams.put(param.getName(), extractPathParameters(param, request, segment));
           break;
         case QUERY:
           query.put(param.getName(), extractQuery(request, param));
@@ -104,20 +104,22 @@ public class RequestUtils {
 
   private static RequestParameter extractCookie(HttpServerRequest request, Parameter parameter) {
     Collection<String> cookies =
-        request.cookies(parameter.getName()).stream().map(Cookie::getValue).collect(Collectors.toList());
+        request.cookies(parameter.getName()).stream().map(Cookie::getValue).map(c -> urlDecodeIfRequired(parameter, c))
+            .collect(Collectors.toList());
     return joinFormValues(cookies, parameter, () -> {
       String explodedObject =
-          request.cookies().stream().map(c -> c.getName() + "=" + decodeUrl(c.getValue())).collect(joining("&"));
+          request.cookies().stream().map(c -> c.getName() + "=" + urlDecodeIfRequired(parameter, c.getValue()))
+              .collect(joining("&"));
       return new RequestParameterImpl(explodedObject);
     });
   }
 
   private static RequestParameter extractHeaders(HttpServerRequest request, Parameter parameter) {
     String headerValue = request.getHeader(parameter.getName());
-    return new RequestParameterImpl(decodeUrl(headerValue));
+    return new RequestParameterImpl(urlDecodeIfRequired(parameter, headerValue));
   }
 
-  private static RequestParameter extractPathParameters(HttpServerRequest request, int segment) {
+  private static RequestParameter extractPathParameters(Parameter param, HttpServerRequest request, int segment) {
     String[] pathSegments = request.path().substring(1).split("/");
     if (pathSegments.length < segment) {
       return EMPTY;
@@ -125,11 +127,14 @@ public class RequestUtils {
     return new RequestParameterImpl(decodeUrl(pathSegments[segment - 1]));
   }
 
+  /**
+   * It seems that query parameters are always decoded, so we MUST NOT decode them again.
+   */
   private static RequestParameter extractQuery(HttpServerRequest request, Parameter parameter) {
     Collection<String> queryParams = request.params().getAll(parameter.getName());
     return joinFormValues(queryParams, parameter, () -> {
       String decodedQuery =
-          request.params().entries().stream().map(entry -> entry.getKey() + "=" + decodeUrl(entry.getValue()))
+          request.params().entries().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
               .collect(joining("&"));
       return new RequestParameterImpl(decodedQuery);
     });
@@ -146,18 +151,18 @@ public class RequestUtils {
         if (parameter.isExplode()) {
           return explodedObjectSupplier.get();
         } else {
-          return new RequestParameterImpl(decodeUrl(GET_FIRST_VALUE.apply(formValues)));
+          return new RequestParameterImpl(GET_FIRST_VALUE.apply(formValues));
         }
       case ARRAY:
         if (parameter.isExplode()) {
           String explodedString =
-              formValues.stream().map(fv -> parameter.getName() + "=" + decodeUrl(fv)).collect(joining("&"));
+              formValues.stream().map(fv -> parameter.getName() + "=" + fv).collect(joining("&"));
           return new RequestParameterImpl(explodedString);
         } else {
-          return new RequestParameterImpl(decodeUrl(GET_FIRST_VALUE.apply(formValues)));
+          return new RequestParameterImpl(GET_FIRST_VALUE.apply(formValues));
         }
       default:
-        return new RequestParameterImpl(decodeUrl(GET_FIRST_VALUE.apply(formValues)));
+        return new RequestParameterImpl(GET_FIRST_VALUE.apply(formValues));
     }
   }
 
@@ -167,7 +172,16 @@ public class RequestUtils {
     return (int) templatePath.subSequence(0, idx).chars().filter(c -> c == '/').count();
   }
 
-  static String decodeUrl(String encoded) {
+  static String urlDecodeIfRequired(Parameter param, String value) {
+    boolean requiresDecoding =
+        Boolean.TRUE.equals(param.getExtensions().getOrDefault(Parameter.EXTENSION_URLDECODE, false));
+    if (requiresDecoding) {
+      return decodeUrl(value);
+    }
+    return value;
+  }
+
+  private static String decodeUrl(String encoded) {
     try {
       return encoded == null ? null : URLDecoder.decode(encoded, StandardCharsets.UTF_8);
     } catch (Exception e) {

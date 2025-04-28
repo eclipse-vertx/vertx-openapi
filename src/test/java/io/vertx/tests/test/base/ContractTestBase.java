@@ -15,8 +15,10 @@ package io.vertx.tests.test.base;
 import static io.vertx.openapi.impl.Utils.readYamlOrJson;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
@@ -79,10 +81,14 @@ public class ContractTestBase extends HttpServerTestBase {
    */
   protected Future<Void> createServerWithRequestProcessor(Function<ValidatedRequest, ValidatableResponse> processor,
       String operationId, VertxTestContext testContext) {
-    return createServer(request -> requestValidator.validate(request, operationId)
-        .map(processor).compose(validatableResponse -> responseValidator.validate(validatableResponse, operationId))
-        .compose(validatedResponse -> validatedResponse.send(request.response()))
-        .onFailure(testContext::failNow)).onFailure(testContext::failNow);
+
+    Handler<HttpServerRequest> requestHandler = request -> {
+      requestValidator.validate(request, operationId)
+          .map(processor).compose(validatableResponse -> responseValidator.validate(validatableResponse, operationId))
+          .compose(validatedResponse -> validatedResponse.send(request.response()))
+          .onFailure(testContext::failNow);
+    };
+    return createServer(requestHandler, testContext::failNow);
   }
 
   /**
