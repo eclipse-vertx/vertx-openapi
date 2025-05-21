@@ -12,6 +12,7 @@
 
 package io.vertx.openapi.contract;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
@@ -19,6 +20,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.SchemaRepository;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.List;
 import java.util.Map;
 
@@ -175,4 +177,12 @@ public interface OpenAPIContract {
    */
   @Nullable
   SecurityScheme securityScheme(String name);
+
+  /**
+   * Gets the mediatype registry.
+   *
+   * @return The registry.
+   */
+  @GenIgnore
+  MediaTypeRegistry getMediaTypeRegistry();
 }

@@ -14,8 +14,6 @@ package io.vertx.openapi.contract.impl;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.vertx.openapi.contract.Location.HEADER;
-import static io.vertx.openapi.contract.MediaType.SUPPORTED_MEDIA_TYPES;
-import static io.vertx.openapi.contract.MediaType.isMediaTypeSupported;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.lang.String.join;
@@ -29,6 +27,7 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -45,7 +44,7 @@ public class ResponseImpl implements Response {
 
   private final JsonObject responseModel;
 
-  public ResponseImpl(JsonObject responseModel, String operationId) {
+  public ResponseImpl(JsonObject responseModel, String operationId, MediaTypeRegistry registry) {
     this.responseModel = responseModel;
 
     JsonObject headersObject = responseModel.getJsonObject(KEY_HEADERS, EMPTY_JSON_OBJECT);
@@ -68,9 +67,9 @@ public class ResponseImpl implements Response {
             .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
             .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
-    if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type))) {
+    if (content.keySet().stream().anyMatch(type -> !registry.isSupported(type))) {
       String msgTemplate = "Operation %s defines a response with an unsupported media type. Supported: %s";
-      throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
+      throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", registry.supportedTypes())));
     }
   }
 

@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;

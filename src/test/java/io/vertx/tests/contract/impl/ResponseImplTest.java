@@ -27,6 +27,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.ResponseImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,14 +68,14 @@ class ResponseImplTest {
         Arguments.of("0000_Response_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
             "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a "
                 + "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8, "
-                + "multipart/form-data, application/hal+json, application/octet-stream, text/plain, text/plain; charset=utf-8"));
+                + "application/hal+json, multipart/form-data, application/octet-stream, text/plain, text/plain; charset=utf-8, ^[^/]+/vnd\\.[\\w.-]+\\+json$"));
   }
 
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")
   @MethodSource
   void testGetters(String testId, int contentSize, String contentKey, int headerSize, SchemaType type) {
     JsonObject responseModel = validTestData.getJsonObject(testId);
-    ResponseImpl response = new ResponseImpl(responseModel, DUMMY_OPERATION_ID);
+    ResponseImpl response = new ResponseImpl(responseModel, DUMMY_OPERATION_ID, MediaTypeRegistry.createDefault());
 
     assertThat(response.getHeaders()).hasSize(headerSize);
     if (headerSize > 0) {
@@ -94,7 +95,8 @@ class ResponseImplTest {
   void testExceptions(String testId, ContractErrorType type, String msg) {
     JsonObject response = invalidTestData.getJsonObject(testId);
     OpenAPIContractException exception =
-        assertThrows(OpenAPIContractException.class, () -> new ResponseImpl(response, DUMMY_OPERATION_ID));
+        assertThrows(OpenAPIContractException.class,
+            () -> new ResponseImpl(response, DUMMY_OPERATION_ID, MediaTypeRegistry.createDefault()));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }

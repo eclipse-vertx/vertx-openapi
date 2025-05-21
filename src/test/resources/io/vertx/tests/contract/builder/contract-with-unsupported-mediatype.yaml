@@ -1,0 +1,28 @@
+openapi: 3.1.1
+info:
+  title: Example with non-default supported mediatype
+  version: 2.0.0
+  description: ""
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: ""
+          content:
+            text/tab-separated-values:
+              schema:
+                type: string
+      operationId: customResponse
+    post:
+      requestBody:
+        required: true
+        content:
+          application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: ""
+      operationId: customRequest

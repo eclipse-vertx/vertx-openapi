@@ -10,19 +10,19 @@
  *
  */
 
-package io.vertx.tests.validation.analyser;
+package io.vertx.tests.mediatype.impl;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.mediatype.impl.MultipartFormAnalyser.extractBoundary;
 import static io.vertx.openapi.validation.ValidationContext.REQUEST;
-import static io.vertx.openapi.validation.analyser.MultipartFormAnalyser.extractBoundary;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.mediatype.impl.MultipartFormAnalyser;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.MultipartFormAnalyser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

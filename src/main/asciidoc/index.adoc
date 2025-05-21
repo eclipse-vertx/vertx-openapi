@@ -151,3 +151,12 @@ The validation can fail for formal reasons, such as the wrong format for a param
 However, validation can of course also fail because the content does not match the defined schema.
 In this case a {@link io.vertx.openapi.validation.SchemaValidationException} is thrown.
 It is a subclass of _ValidatorException_ and provides access to the related {@link io.vertx.json.schema.OutputUnit} to allow further analysis of the error.
+
+=== Add custom media types
+
+By default a commonly used set of media types is supported. In case you need support for additional media types you have to register via the OpenAPIContractBuilder and a MediaTypeRegistry.
+
+[source,$lang]
+----
+{@link examples.ContractExamples#createContractWithCustomMediaTypes}
+----

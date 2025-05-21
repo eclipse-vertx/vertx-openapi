@@ -18,7 +18,10 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Path;
-
+import io.vertx.openapi.mediatype.ContentAnalyserFactory;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
+import io.vertx.openapi.mediatype.MediaTypePredicate;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,5 +63,24 @@ public class ContractExamples {
 
   private OpenAPIContract getContract() {
     return null;
+  }
+
+  public void createContractWithCustomMediaTypes(Vertx vertx) {
+    String pathToContract = ".../.../myContract.json"; // json or yaml
+    String pathToComponents = ".../.../myComponents.json"; // json or yaml
+
+    Future<OpenAPIContract> contract =
+      OpenAPIContract.builder(vertx)
+        .setContractPath(pathToContract)
+        .setAdditionalContractPartPaths(Map.of(
+          "https://example.com/pet-components", pathToComponents))
+        .mediaTypeRegistry(
+          MediaTypeRegistry.createDefault()
+            .register(
+              MediaTypeRegistration.create(
+                MediaTypePredicate.ofExactTypes("text/my-custom-type+json"),
+                ContentAnalyserFactory.json()))
+        )
+        .build();
   }
 }

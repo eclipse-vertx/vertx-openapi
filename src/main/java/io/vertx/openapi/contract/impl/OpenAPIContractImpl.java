@@ -35,6 +35,7 @@ import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.openapi.contract.SecurityScheme;
 import io.vertx.openapi.contract.Server;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +66,17 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final Map<String, SecurityScheme> securitySchemes;
 
+  private final MediaTypeRegistry mediaTypes;
+
   // VisibleForTesting
   final String basePath;
 
-  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository,
+      MediaTypeRegistry mediaTypes) {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
+    this.mediaTypes = mediaTypes;
 
     servers = resolvedSpec
         .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
@@ -95,7 +100,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
         .stream()
         .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
         .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
-            securityRequirements))
+            securityRequirements, mediaTypes))
         .collect(toList());
 
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
@@ -231,5 +236,10 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   @Override
   public SecurityScheme securityScheme(String name) {
     return securitySchemes.get(name);
+  }
+
+  @Override
+  public MediaTypeRegistry getMediaTypeRegistry() {
+    return mediaTypes;
   }
 }

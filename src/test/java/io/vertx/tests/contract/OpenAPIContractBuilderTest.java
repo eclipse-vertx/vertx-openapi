@@ -22,6 +22,10 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIContractBuilder;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.impl.Utils;
+import io.vertx.openapi.mediatype.ContentAnalyserFactory;
+import io.vertx.openapi.mediatype.MediaTypePredicate;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -233,6 +237,26 @@ public class OpenAPIContractBuilderTest {
           .await();
       assertThat(c.getSchemaRepository().find(REF1_ID)).isNull();
     }
+  }
+
+  @Test
+  void registering_custom_mediatypes_should_succeed(Vertx vertx, VertxTestContext ctx) {
+    var path = getRelatedTestResourcePath(TestSetupOfAdditionalContractParts.class).resolve("builder")
+        .resolve("contract-with-unsupported-mediatype.yaml").toString();
+    OpenAPIContract.builder(vertx)
+        .setContractPath(path)
+        .mediaTypeRegistry(MediaTypeRegistry.createDefault()
+            .register(
+                MediaTypeRegistration.create(
+                    MediaTypePredicate.ofExactTypes("text/tab-separated-values"),
+                    ContentAnalyserFactory.json()))
+            .register(
+                MediaTypeRegistration.create(
+                    MediaTypePredicate
+                        .ofExactTypes("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+                    ContentAnalyserFactory.json())))
+        .build()
+        .onComplete(ctx.succeedingThenComplete());
   }
 
 }
