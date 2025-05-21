@@ -25,6 +25,7 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 import io.vertx.openapi.impl.Utils;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +58,7 @@ public class OpenAPIContractBuilder {
   private JsonObject contract;
   private final Map<String, String> additionalContractPartPaths = new HashMap<>();
   private final Map<String, JsonObject> additionalContractParts = new HashMap<>();
+  private MediaTypeRegistry registry;
 
   public OpenAPIContractBuilder(Vertx vertx) {
     this.vertx = vertx;
@@ -153,12 +155,19 @@ public class OpenAPIContractBuilder {
     return this;
   }
 
+  public OpenAPIContractBuilder mediaTypeRegistry(MediaTypeRegistry registry) {
+    this.registry = registry;
+    return this;
+  }
+
   /**
    * Builds the contract.
    *
    * @return The contract.
    */
   public Future<OpenAPIContract> build() {
+    if (this.registry == null)
+      this.registry = MediaTypeRegistry.createDefault();
 
     if (contractPath == null && contract == null) {
       return Future.failedFuture(new OpenAPIContractBuilderException(
@@ -192,7 +201,7 @@ public class OpenAPIContractBuilder {
             return failedFuture(createInvalidContract(null, e));
           }
         })
-            .map(resolvedSpec -> new OpenAPIContractImpl(resolvedSpec, version, repository)))
+            .map(resolvedSpec -> new OpenAPIContractImpl(resolvedSpec, version, repository, registry)))
         .recover(e -> {
           // Convert any non-openapi exceptions into an OpenAPIContractException
           if (e instanceof OpenAPIContractException) {

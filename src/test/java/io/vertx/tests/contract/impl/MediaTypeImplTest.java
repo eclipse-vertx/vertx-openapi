@@ -20,9 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.ContractErrorType;
-import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -37,6 +37,7 @@ class MediaTypeImplTest {
   private static final String ABS_RECURSIVE_REF = "__absolute_recursive_ref__";
   private static final String ABS_REF = "__absolute_ref__";
   private static final String DUMMY_REF_VALUE = "dummy-ref-value";
+  private static final MediaTypeRegistration MEDIA_TYPE_REGISTRATION = MediaTypeRegistration.APPLICATION_JSON;
 
   private static Stream<Arguments> testGetters() {
     var partialSchemaJson = JsonObject.of("schema", stringSchema().toJson());
@@ -71,7 +72,7 @@ class MediaTypeImplTest {
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")
   @MethodSource
   void testGetters(String scenario, JsonObject mediaTypeModel, List<String> fieldNames) {
-    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, mediaTypeModel);
+    MediaTypeImpl mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, mediaTypeModel, MEDIA_TYPE_REGISTRATION);
     assertThat(mediaType.getOpenAPIModel()).isEqualTo(mediaTypeModel);
     if (fieldNames.isEmpty()) {
       assertThat(mediaType.getSchema()).isNull();
@@ -79,6 +80,7 @@ class MediaTypeImplTest {
       assertThat(mediaType.getSchema().fieldNames()).containsExactlyElementsIn(fieldNames);
     }
     assertThat(mediaType.getIdentifier()).isEqualTo(DUMMY_IDENTIFIER);
+    assertThat(mediaType.getRegistration()).isNotNull();
   }
 
   @Test
@@ -86,19 +88,21 @@ class MediaTypeImplTest {
     String msg = "The passed OpenAPI contract contains a feature that is not supported: Media Type without a schema";
 
     OpenAPIContractException exceptionNoModel =
-        assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER, null));
+        assertThrows(OpenAPIContractException.class,
+            () -> new MediaTypeImpl(DUMMY_IDENTIFIER, null, MEDIA_TYPE_REGISTRATION));
     assertThat(exceptionNoModel.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionNoModel).hasMessageThat().isEqualTo(msg);
 
     OpenAPIContractException exceptionSchemaNull =
         assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER,
-            new JsonObject().putNull("schema")));
+            new JsonObject().putNull("schema"), MEDIA_TYPE_REGISTRATION));
     assertThat(exceptionSchemaNull.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionSchemaNull).hasMessageThat().isEqualTo(msg);
 
     OpenAPIContractException exceptionSchemaEmpty =
         assertThrows(OpenAPIContractException.class,
-            () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT)));
+            () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT),
+                MEDIA_TYPE_REGISTRATION));
     assertThat(exceptionSchemaEmpty.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionSchemaEmpty).hasMessageThat().isEqualTo(msg);
   }

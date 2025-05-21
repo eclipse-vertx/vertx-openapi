@@ -37,6 +37,7 @@ import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.impl.OperationImpl;
 import io.vertx.openapi.contract.impl.SecurityRequirementImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -85,7 +86,7 @@ class OperationImplTest {
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
     return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, emptyMap(),
-        Arrays.asList(secReqs));
+        Arrays.asList(secReqs), MediaTypeRegistry.createDefault());
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
@@ -175,7 +176,8 @@ class OperationImplTest {
   void testMergeExtensions(String scenario, Map<String, Object> pathExtensions, Map<String, Object> expected) {
     JsonObject testDataObject = validTestData.getJsonObject("0005_Test_Merge_Extensions");
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
-    Operation op = new OperationImpl("/", "path", GET, operationModel, emptyList(), pathExtensions, emptyList());
+    Operation op = new OperationImpl("/", "path", GET, operationModel, emptyList(), pathExtensions, emptyList(),
+        MediaTypeRegistry.createDefault());
 
     assertThat(op.getExtensions()).containsExactlyEntriesIn(expected);
   }

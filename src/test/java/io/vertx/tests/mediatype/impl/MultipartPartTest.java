@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.tests.validation.analyser;
+package io.vertx.tests.mediatype.impl;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.truth.Truth;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.mediatype.impl.MultipartPart;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.MultipartPart;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

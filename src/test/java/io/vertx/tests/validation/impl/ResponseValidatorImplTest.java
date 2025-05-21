@@ -42,11 +42,12 @@ import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.validation.ResponseParameter;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatorException;
@@ -81,9 +82,10 @@ class ResponseValidatorImplTest {
   }
 
   private static Response mockResponse() {
-    MediaType mockedMediaType = mock(MediaType.class);
+    MediaTypeImpl mockedMediaType = mock(MediaTypeImpl.class);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
     when(mockedMediaType.getIdentifier()).thenReturn(APPLICATION_JSON.toString());
+    when(mockedMediaType.getRegistration()).thenReturn(MediaTypeRegistration.APPLICATION_JSON);
 
     Response mockedResponse = mock(Response.class);
     when(mockedResponse.getContent()).thenReturn(ImmutableMap.of(APPLICATION_JSON.toString(), mockedMediaType));
@@ -237,8 +239,9 @@ class ResponseValidatorImplTest {
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
   @ValueSource(strings = { "application/png", "foo/bar" })
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
-    MediaType mockedMediaType = mock(MediaType.class);
+    MediaTypeImpl mockedMediaType = mock(MediaTypeImpl.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
+    when(mockedMediaType.getRegistration()).thenReturn(null);
 
     Response mockedResponse = mock(Response.class);
     when(mockedResponse.getContent()).thenReturn(ImmutableMap.of("application/png", mockedMediaType));

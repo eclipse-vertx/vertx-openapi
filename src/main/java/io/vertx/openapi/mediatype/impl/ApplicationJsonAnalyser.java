@@ -10,12 +10,12 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.validation.ValidationContext;
 
-public class ApplicationJsonAnalyser extends ContentAnalyser {
+public class ApplicationJsonAnalyser extends AbstractContentAnalyser {
   private Object decodedValue;
 
   public ApplicationJsonAnalyser(String contentType, Buffer content, ValidationContext context) {

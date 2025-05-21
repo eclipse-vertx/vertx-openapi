@@ -83,14 +83,14 @@ class BaseValidatorTest {
     JsonObject binaryStringSchema = stringSchema.copy().put("format", "binary");
     Function<JsonObject, JsonObject> buildMediaModel = schema -> new JsonObject().put("schema", schema);
 
-    MediaType noMediaModel = new MediaTypeImpl("", EMPTY_JSON_OBJECT);
-    MediaType typeNumber = new MediaTypeImpl("", buildMediaModel.apply(new JsonObject().put("type", "number")));
-    MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema));
-    MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema));
+    MediaType noMediaModel = new MediaTypeImpl("", EMPTY_JSON_OBJECT, null);
+    MediaType typeNumber = new MediaTypeImpl("", buildMediaModel.apply(new JsonObject().put("type", "number")), null);
+    MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema), null);
+    MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema), null);
     MediaType typeStringFormatTime = new MediaTypeImpl("", buildMediaModel.apply(stringSchema.copy().put("format",
-        "time")));
+        "time")), null);
     MediaType typeStringFormatBinaryMinLength = new MediaTypeImpl("",
-        buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)));
+        buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)), null);
 
     return Stream.of(
         Arguments.of("No media model is defined", noMediaModel, false),

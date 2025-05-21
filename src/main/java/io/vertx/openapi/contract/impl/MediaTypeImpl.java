@@ -17,17 +17,20 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
 
 public class MediaTypeImpl implements MediaType {
   private static final String KEY_SCHEMA = "schema";
   private final JsonObject mediaTypeModel;
   private final String identifier;
+  private final MediaTypeRegistration registration;
 
   private final JsonSchema schema;
 
-  public MediaTypeImpl(String identifier, JsonObject mediaTypeModel) {
+  public MediaTypeImpl(String identifier, JsonObject mediaTypeModel, MediaTypeRegistration registration) {
     this.identifier = identifier;
     this.mediaTypeModel = mediaTypeModel;
+    this.registration = registration;
 
     if (mediaTypeModel == null) {
       throw createUnsupportedFeature("Media Type without a schema");
@@ -64,5 +67,13 @@ public class MediaTypeImpl implements MediaType {
   @Override
   public JsonObject getOpenAPIModel() {
     return mediaTypeModel;
+  }
+
+  /**
+   * The MediaTypeRegistration which is associated to this MediaType.
+   * @return the associated MediaTypeRegistration
+   */
+  public MediaTypeRegistration getRegistration() {
+    return registration;
   }
 }

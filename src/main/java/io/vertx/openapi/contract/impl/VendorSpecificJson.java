@@ -17,9 +17,10 @@ import java.util.regex.Pattern;
 /**
  * Class to expose specific check about a media type being a vendor specific JSON
  */
+@Deprecated
 public class VendorSpecificJson {
 
-  private static final Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
+  public static final Pattern VENDOR_SPECIFIC_JSON = Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$");
 
   public static boolean matches(String type) {
     return type != null && VENDOR_SPECIFIC_JSON.matcher(type).matches();

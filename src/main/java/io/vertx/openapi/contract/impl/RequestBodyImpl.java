@@ -12,8 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import static io.vertx.openapi.contract.MediaType.SUPPORTED_MEDIA_TYPES;
-import static io.vertx.openapi.contract.MediaType.isMediaTypeSupported;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
@@ -25,6 +23,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.Map;
 
 public class RequestBodyImpl implements RequestBody {
@@ -37,7 +37,7 @@ public class RequestBodyImpl implements RequestBody {
 
   private final Map<String, MediaType> content;
 
-  public RequestBodyImpl(JsonObject requestBodyModel, String operationId) {
+  public RequestBodyImpl(JsonObject requestBodyModel, String operationId, MediaTypeRegistry registry) {
     this.requestBodyModel = requestBodyModel;
     this.required = requestBodyModel.getBoolean(KEY_REQUIRED, false);
     JsonObject contentObject = requestBodyModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
@@ -48,14 +48,18 @@ public class RequestBodyImpl implements RequestBody {
             .stream()
             .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
             .filter(mediaTypeIdentifier -> {
-              if (isMediaTypeSupported(mediaTypeIdentifier)) {
+              if (registry.isSupported(mediaTypeIdentifier)) {
                 return true;
               }
               String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
               throw createUnsupportedFeature(
-                  String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
+                  String.format(msgTemplate, operationId, join(", ", registry.supportedTypes())));
             })
-            .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+            .collect(toMap(this::removeWhiteSpaces, key -> {
+              // Can't be null, otherwise isSupported would have returned false
+              MediaTypeRegistration registration = registry.get(key);
+              return new MediaTypeImpl(key, contentObject.getJsonObject(key), registration);
+            })));
 
     if (content.isEmpty()) {
       String msg =
