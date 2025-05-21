@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.tests.validation.analyser;
+package io.vertx.tests.mediatype.impl;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.mediatype.impl.ApplicationJsonAnalyser;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
 import org.junit.jupiter.api.Test;
 
 class ApplicationJsonAnalyserTest {

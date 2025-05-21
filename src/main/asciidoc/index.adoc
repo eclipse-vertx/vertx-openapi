@@ -101,15 +101,41 @@ paths:
 
 Vert.x OpenAPI checks both whether the content is syntactically correct and whether it corresponds to the schema.
 If no schema is defined, or the content is binary no schema validation is performed.
-Currently, only the following media types are supported:
+By Default, the following media types are supported:
 
 * application/json
 * application/json+hal
 * application/octet-stream
 * multipart/form-data
+* Vendor specific json that matches the following regular expression [^/]+/vnd\.[\w.-]+\+json
 
-NOTE: It is planned to support more media types in the future.
-It is also planned to support custom implementations of {@link io.vertx.openapi.validation.analyser.ContentAnalyser}, so that any media type can be validated.
+Unknown media types are rejected and the contract will load with an exception.
+
+You can add additional media types when you construct the contract via the {@link
+io.vertx.openapi.contract.OpenAPIContractBuilder}. You need to provide a {@link
+io.vertx.openapi.mediatype.MediaTypeRegistry}, either by starting from the default one {@link
+io.vertx.openapi.mediatype.MediaTypeRegistry#createDefault} or an empty one {@link
+io.vertx.openapi.mediatype.MediaTypeRegistry#createEmpty}. On the registry you can register new media types via a
+`MediaTypeRegistration` that consist of a `MediaTypePredicate` that checks whether the registration can handle a
+given media type and a `ContentAnalyserFactory` that creates a new `ContentAnalyser` for each validation.
+
+Vert.x OpenAPI contains ready to use predicates for static media type strings ({@link
+io.vertx.openapi.mediatype.MediaTypePredicate#ofExactTypes}) and regular expressions ({@link
+io.vertx.openapi.mediatype.MediaTypePredicate#ofRegexp}). If those do not match your need, you must provide
+your own predicate implementations.
+
+Vert.x OpenAPI contains ready to use ContentAnalysers that perform schema validation for json bodies ({@link
+io.vertx.openapi.mediatype.ContentAnalyserFactory#json}), multipart bodies ({@link
+io.vertx.openapi.mediatype.ContentAnalyserFactory#multipart}). Additionally a noop ContentAnalyser is available that
+does not perform any validation ({@link io.vertx.openapi.mediatype.ContentAnalyserFactory#noop}). If those do not fit
+your needs, you need to provide your own implementation.
+
+Example:
+
+[source,$lang]
+----
+{@link examples.ContractExamples#createContractWithCustomMediaTypes}
+----
 
 === Validation of Requests
 

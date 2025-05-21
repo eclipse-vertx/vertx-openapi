@@ -24,6 +24,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.impl.PathImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,7 +50,7 @@ class PathImplTest {
     JsonObject testDataObject = testData.getJsonObject(id);
     String name = testDataObject.getString("name");
     JsonObject pathModel = testDataObject.getJsonObject("pathModel");
-    return new PathImpl(BASE_PATH, name, pathModel, emptyList());
+    return new PathImpl(BASE_PATH, name, pathModel, emptyList(), MediaTypeRegistry.createDefault());
   }
 
   @Test
@@ -74,7 +75,7 @@ class PathImplTest {
   void testWildcardInPath() {
     OpenAPIContractException exception =
         assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, "/pets/*", EMPTY_JSON_OBJECT,
-            emptyList()));
+            emptyList(), MediaTypeRegistry.createDefault()));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -85,7 +86,7 @@ class PathImplTest {
   void testWrongCurlyBracesInPath(String path) {
     OpenAPIContractException exception =
         assertThrows(OpenAPIContractException.class,
-            () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList()));
+            () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault()));
     String expectedMsg =
         "The passed OpenAPI contract is invalid: Curly brace MUST be the first/last character in a path segment " +
             "(/{parameterName}/): " + path;
@@ -101,19 +102,25 @@ class PathImplTest {
   @Test
   void testCutTrailingSlash() {
     String expected = "/pets";
-    assertThat(new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT, emptyList()).getName()).isEqualTo(expected);
+    assertThat(
+        new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault())
+            .getName()).isEqualTo(expected);
   }
 
   @Test
   void testRootPath() {
     String expected = "/";
-    assertThat(new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList()).getName()).isEqualTo(expected);
+    assertThat(
+        new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault()).getName())
+            .isEqualTo(expected);
   }
 
   @Test
   void testGetAbsolutePath() {
     String expected = "/base/foo";
-    assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT, emptyList()).getAbsolutePath()).isEqualTo(expected);
-    assertThat(new PathImpl("/base/", "/foo", EMPTY_JSON_OBJECT, emptyList()).getAbsolutePath()).isEqualTo(expected);
+    assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault())
+        .getAbsolutePath()).isEqualTo(expected);
+    assertThat(new PathImpl("/base/", "/foo", EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault())
+        .getAbsolutePath()).isEqualTo(expected);
   }
 }

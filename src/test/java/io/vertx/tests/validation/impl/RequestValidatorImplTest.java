@@ -59,6 +59,8 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Style;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
@@ -111,12 +113,14 @@ class RequestValidatorImplTest {
     parameters.add(buildParam("PathParamVersion", PATH, SIMPLE, numberSchema().toJson(), true));
     parameters.add(buildParam("QueryParamTrace", QUERY, FORM, booleanSchema().toJson(), true));
 
-    MediaType mockedMediaType = mock(MediaType.class);
+    MediaTypeImpl mockedMediaType = mock(MediaTypeImpl.class);
     when(mockedMediaType.getIdentifier()).thenReturn(MediaType.APPLICATION_JSON);
+    when(mockedMediaType.getRegistration()).thenReturn(MediaTypeRegistration.APPLICATION_JSON);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
 
-    MediaType mockedMediaTypeBinary = mock(MediaType.class);
+    MediaTypeImpl mockedMediaTypeBinary = mock(MediaTypeImpl.class);
     when(mockedMediaTypeBinary.getIdentifier()).thenReturn("application/octet-stream");
+    when(mockedMediaTypeBinary.getRegistration()).thenReturn(MediaTypeRegistration.APPLICATION_OCTET_STREAM);
     when(mockedMediaTypeBinary.getSchema()).thenReturn(null);
 
     RequestBody mockedRequestBody = mock(RequestBody.class);
@@ -383,9 +387,10 @@ class RequestValidatorImplTest {
   }
 
   private RequestBody mockRequestBody(boolean isRequired) {
-    MediaType mockedMediaType = mock(MediaType.class);
+    MediaTypeImpl mockedMediaType = mock(MediaTypeImpl.class);
     when(mockedMediaType.getSchema()).thenReturn(JsonSchema.of(objectSchema().toJson()));
     when(mockedMediaType.getIdentifier()).thenReturn(MediaType.APPLICATION_JSON);
+    when(mockedMediaType.getRegistration()).thenReturn(MediaTypeRegistration.APPLICATION_JSON);
     return mockRequestBody(isRequired, mockedMediaType);
   }
 
@@ -423,7 +428,7 @@ class RequestValidatorImplTest {
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
   @ValueSource(strings = { "application/png", "foo/bar" })
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
-    MediaType mockedMediaType = mock(MediaType.class);
+    MediaTypeImpl mockedMediaType = mock(MediaTypeImpl.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
 
     RequestBody mockedRequestBody = mockRequestBody(false, mockedMediaType);
