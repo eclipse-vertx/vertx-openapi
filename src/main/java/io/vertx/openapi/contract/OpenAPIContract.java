@@ -116,7 +116,16 @@ public interface OpenAPIContract {
         //  method and reused below.
         JsonObject file = additionalContractFiles.get(ref);
         Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
-          .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
+          .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))))
+          .transform(ar -> {
+            if (ar.failed()) {
+              return Future.failedFuture(
+                createInvalidContract("Failed to validate additional contract file: " + ref, ar.cause())
+              );
+            } else {
+              return (Future<?>) ar;
+            }
+          });
 
         validationFutures.add(validationFuture);
       }
