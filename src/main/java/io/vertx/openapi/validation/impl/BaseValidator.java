@@ -20,9 +20,9 @@ import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.mediatype.ContentAnalyser;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.ContentAnalyser;
 
 import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
@@ -68,7 +68,7 @@ public class BaseValidator {
   protected RequestParameterImpl validate(MediaType mediaType, String contentType, Buffer rawContent,
                                           ValidationContext requestOrResponse) {
     ContentAnalyser contentAnalyser = mediaType == null ? null :
-      ContentAnalyser.getContentAnalyser(mediaType, contentType, rawContent, requestOrResponse);
+      contract.mediaTypes().createContentAnalyser(contentType, rawContent, requestOrResponse);
 
     if (contentAnalyser == null) {
       throw new ValidatorException("The format of the " + requestOrResponse + " body is not supported",

@@ -17,13 +17,8 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.openapi.contract.OpenAPIVersion;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Path;
-import io.vertx.openapi.contract.SecurityRequirement;
-import io.vertx.openapi.contract.SecurityScheme;
-import io.vertx.openapi.contract.Server;
+import io.vertx.openapi.contract.*;
+import io.vertx.openapi.mediatype.MediaTypeRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +31,7 @@ import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.*;
 
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SERVERS = "servers";
@@ -66,14 +58,17 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final Map<String, SecurityScheme> securitySchemes;
 
+  private final MediaTypeRegistry mediaTypes;
+
 
   // VisibleForTesting
   final String basePath;
 
-  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository, MediaTypeRegistry mediaTypes) {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
+    this.mediaTypes = mediaTypes;
 
     servers = resolvedSpec
       .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
@@ -234,4 +229,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   public SecurityScheme securityScheme(String name) {
     return securitySchemes.get(name);
   }
+
+  @Override
+  public MediaTypeRegistry mediaTypes() { return mediaTypes; }
 }

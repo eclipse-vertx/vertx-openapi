@@ -10,12 +10,15 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.Json;
 import io.vertx.openapi.validation.ValidationContext;
+import io.vertx.openapi.validation.ValidatorException;
 
-public class ApplicationJsonAnalyser extends ContentAnalyser {
+public class ApplicationJsonAnalyser extends AbstractContentAnalyser {
   private Object decodedValue;
 
   public ApplicationJsonAnalyser(String contentType, Buffer content, ValidationContext context) {
@@ -30,5 +33,19 @@ public class ApplicationJsonAnalyser extends ContentAnalyser {
   @Override
   public Object transform() {
     return decodedValue;
+  }
+
+  /**
+   * Decodes the passed content as JSON.
+   *
+   * @return an object representing the passed JSON content.
+   * @throws ValidatorException if the content can't be decoded.
+   */
+  protected static Object decodeJsonContent(Buffer content, ValidationContext requestOrResponse) {
+    try {
+      return Json.decodeValue(content);
+    } catch (DecodeException e) {
+      throw buildSyntaxException("The " + requestOrResponse + " body can't be decoded");
+    }
   }
 }

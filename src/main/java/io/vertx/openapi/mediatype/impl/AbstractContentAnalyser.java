@@ -10,45 +10,22 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.mediatype.ContentAnalyser;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 
 /**
- * The content analyser is responsible for checking if the content is syntactically correct, and transforming the
- * content.
- * <p>
- * These two methods are intentionally bundled in {@link ContentAnalyser} to prevent some operations from having to
- * be performed twice. This is particularly helpful if a library is used that cannot distinguish between these steps.
- * In this case, an intermediate result that was generated in {@link #checkSyntacticalCorrectness()}, for example,
- * can be reused.
- * <p>
- * Therefore, it is very important to ensure that the {@link #checkSyntacticalCorrectness()} method is always called
- * before.
+ * Base class for your own analysers. Provides access to some useful helper methods.
  */
-public abstract class ContentAnalyser {
-  private static class NoOpAnalyser extends ContentAnalyser {
-    public NoOpAnalyser(String contentType, Buffer content, ValidationContext context) {
-      super(contentType, content, context);
-    }
-
-    @Override
-    public void checkSyntacticalCorrectness() {
-      // no syntax check
-    }
-
-    @Override
-    public Object transform() {
-      return content;
-    }
-  }
+public abstract class AbstractContentAnalyser implements ContentAnalyser {
 
   /**
    * Returns the content analyser for the given content type.
@@ -58,8 +35,8 @@ public abstract class ContentAnalyser {
    * @param content     the content to be analysed.
    * @return the content analyser for the given content type.
    */
-  public static ContentAnalyser getContentAnalyser(MediaType mediaType, String contentType, Buffer content,
-                                                   ValidationContext context) {
+  public static AbstractContentAnalyser getContentAnalyser(MediaType mediaType, String contentType, Buffer content,
+                                                           ValidationContext context) {
     switch (mediaType.getIdentifier()) {
       case MediaType.APPLICATION_JSON:
       case MediaType.APPLICATION_JSON_UTF8:
@@ -90,28 +67,11 @@ public abstract class ContentAnalyser {
    * @param content     the content to be analysed.
    * @param context     the context in which the content is used.
    */
-  public ContentAnalyser(String contentType, Buffer content, ValidationContext context) {
+  public AbstractContentAnalyser(String contentType, Buffer content, ValidationContext context) {
     this.contentType = contentType;
     this.content = content;
     this.requestOrResponse = context;
   }
-
-  /**
-   * Checks if the content is syntactically correct.
-   * <p>
-   * Throws a {@link ValidatorException} if the content is syntactically incorrect.
-   */
-  public abstract void checkSyntacticalCorrectness();
-
-  /**
-   * Transforms the content into a format that can be validated by the
-   * {@link io.vertx.openapi.validation.RequestValidator}, or {@link io.vertx.openapi.validation.ResponseValidator}.
-   * <p>
-   * Throws a {@link ValidatorException} if the content can't be transformed.
-   *
-   * @return the transformed content.
-   */
-  public abstract Object transform();
 
   /**
    * Builds a {@link ValidatorException} for the case that the content is syntactically incorrect.

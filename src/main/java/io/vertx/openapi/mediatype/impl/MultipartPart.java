@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.validation.ValidatorException;

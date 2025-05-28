@@ -17,7 +17,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.MultipartPart;
+import io.vertx.openapi.mediatype.impl.MultipartPart;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

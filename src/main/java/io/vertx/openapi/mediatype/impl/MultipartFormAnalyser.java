@@ -10,7 +10,7 @@
  *
  */
 
-package io.vertx.openapi.validation.analyser;
+package io.vertx.openapi.mediatype.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
@@ -25,7 +25,7 @@ import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
-public class MultipartFormAnalyser extends ContentAnalyser {
+public class MultipartFormAnalyser extends AbstractContentAnalyser {
   private static final String BOUNDARY = "boundary=";
 
   private List<MultipartPart> parts;

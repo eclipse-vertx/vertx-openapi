@@ -15,7 +15,7 @@ package io.vertx.tests.validation.analyser;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
+import io.vertx.openapi.mediatype.impl.ApplicationJsonAnalyser;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
