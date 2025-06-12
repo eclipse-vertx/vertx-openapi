@@ -15,25 +15,13 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.SchemaRepository;
-import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
-import static io.vertx.openapi.impl.Utils.readYamlOrJson;
-import static java.util.Collections.emptyMap;
 
 @VertxGen
 public interface OpenAPIContract {
@@ -89,7 +77,7 @@ public interface OpenAPIContract {
 
     return builder(vertx)
       .setContract(unresolvedContractPath)
-      .setAdditionalContentFiles(additionalContractFiles)
+      .setAdditionalContractFiles(additionalContractFiles)
       .build();
   }
 
@@ -110,7 +98,7 @@ public interface OpenAPIContract {
       return Future.failedFuture(OpenAPIContractException.createInvalidContract("Spec must not be null"));
     return builder(vertx)
       .setContract(unresolvedContract)
-      .setAdditionalContent(additionalContractFiles)
+      .setAdditionalContracts(additionalContractFiles)
       .build();
   }
 
