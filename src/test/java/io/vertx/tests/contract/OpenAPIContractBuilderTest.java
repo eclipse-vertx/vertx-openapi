@@ -53,11 +53,18 @@ public class OpenAPIContractBuilderTest {
   void should_create_contract_when_valid_contract_file_and_additional_file_is_provided(Vertx vertx,
       VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
         .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
         .putAdditionalContentFile("https://example.com/petstore",
             "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
         .build()
         .onComplete(ctx.succeedingThenComplete());
+=======
+      .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
+      .putAdditionalContractFile("https://example.com/petstore", "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
+      .build()
+      .onComplete(ctx.succeedingThenComplete());
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
   }
 
   @Test
@@ -65,11 +72,18 @@ public class OpenAPIContractBuilderTest {
     var contract = vertx.fileSystem()
         .readFileBlocking("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json").toJsonObject();
     OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
         .setContract(contract)
         .putAdditionalContentFile("https://example.com/petstore",
             "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
         .build()
         .onComplete(ctx.succeedingThenComplete());
+=======
+      .setContract(contract)
+      .putAdditionalContractFile("https://example.com/petstore", "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
+      .build()
+      .onComplete(ctx.succeedingThenComplete());
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
   }
 
   @Test
@@ -78,10 +92,17 @@ public class OpenAPIContractBuilderTest {
     var components = vertx.fileSystem()
         .readFileBlocking("io/vertx/tests/contract/from_with_path_and_additional_files/components.json").toJsonObject();
     OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
         .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
         .putAdditionalContent("https://example.com/petstore", components)
         .build()
         .onComplete(ctx.succeedingThenComplete());
+=======
+      .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
+      .putAdditionalContract("https://example.com/petstore", components)
+      .build()
+      .onComplete(ctx.succeedingThenComplete());
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
   }
 
   @Test
@@ -139,48 +160,84 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_content_should_override_existing_file(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContentFile(REF1_ID, REF1_1_FILE)
           .putAdditionalContentFile(REF2_ID, REF2_1_FILE)
           .setAdditionalContent(Map.of(REF1_ID, content(REF1_2_FILE)))
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContractFile(REF1_ID, REF1_1_FILE)
+        .putAdditionalContractFile(REF2_ID, REF2_1_FILE)
+        .setAdditionalContracts(Map.of(REF1_ID, content(REF1_2_FILE)))
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       should_have(c, "ref1.2", "ref2.1");
     }
 
     @Test
     void put_additional_content_should_override_existing_file(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContentFile(REF1_ID, REF1_1_FILE)
           .putAdditionalContentFile(REF2_ID, REF2_1_FILE)
           .putAdditionalContent(REF1_ID, content(REF1_2_FILE))
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContractFile(REF1_ID, REF1_1_FILE)
+        .putAdditionalContractFile(REF2_ID, REF2_1_FILE)
+        .putAdditionalContract(REF1_ID, content(REF1_2_FILE))
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       should_have(c, "ref1.2", "ref2.1");
     }
 
     @Test
     void set_additional_content_file_should_override_existing_content(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContent(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContent(REF2_ID, content(REF2_1_FILE))
           .setAdditionalContentFiles(Map.of(REF2_ID, REF2_2_FILE))
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContract(REF1_ID, content(REF1_1_FILE))
+        .putAdditionalContract(REF2_ID, content(REF2_1_FILE))
+        .setAdditionalContractFiles(Map.of(REF2_ID, REF2_2_FILE))
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       should_have(c, "ref1.1", "ref2.2");
     }
 
     @Test
     void put_additional_content_file_should_override_existing_content_file(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContent(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContent(REF2_ID, content(REF2_1_FILE))
           .putAdditionalContentFile(REF2_ID, REF2_2_FILE)
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContract(REF1_ID, content(REF1_1_FILE))
+        .putAdditionalContract(REF2_ID, content(REF2_1_FILE))
+        .putAdditionalContractFile(REF2_ID, REF2_2_FILE)
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       should_have(c, "ref1.1", "ref2.2");
     }
 
@@ -196,24 +253,42 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_content_should_replace_existing_content(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContent(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContent(REF2_ID, content(REF2_1_FILE))
           .setAdditionalContent(Map.of(REF2_ID, content(REF2_2_FILE)))
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContract(REF1_ID, content(REF1_1_FILE))
+        .putAdditionalContract(REF2_ID, content(REF2_1_FILE))
+        .setAdditionalContracts(Map.of(REF2_ID, content(REF2_2_FILE)))
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       assertThat(c.getSchemaRepository().find(REF1_ID)).isNull();
     }
 
     @Test
     void set_additional_content_files_should_replace_existing_content_files(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
+<<<<<<< HEAD
           .setContract("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContentFile(REF1_ID, REF1_1_FILE)
           .putAdditionalContentFile(REF2_ID, REF2_1_FILE)
           .setAdditionalContentFiles(Map.of(REF2_ID, REF2_2_FILE))
           .build()
           .await();
+=======
+        .setContract("io/vertx/tests/builder/contract.yaml")
+        .putAdditionalContractFile(REF1_ID, REF1_1_FILE)
+        .putAdditionalContractFile(REF2_ID, REF2_1_FILE)
+        .setAdditionalContractFiles(Map.of(REF2_ID, REF2_2_FILE))
+        .build()
+        .await();
+>>>>>>> 765af73 (Rename fields and methods according to discussions in PR #101)
       assertThat(c.getSchemaRepository().find(REF1_ID)).isNull();
     }
   }
