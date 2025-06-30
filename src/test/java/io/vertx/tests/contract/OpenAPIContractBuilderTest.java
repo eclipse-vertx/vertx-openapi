@@ -21,6 +21,8 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIContractBuilder;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.impl.Utils;
+import io.vertx.tests.ResourceHelper;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +44,7 @@ public class OpenAPIContractBuilderTest {
 
   @Test
   void should_create_contract_when_valid_contract_is_provided(Vertx vertx, VertxTestContext ctx) {
-    var contract = vertx.fileSystem().readFileBlocking("v3.1/petstore.json").toJsonObject();
+    var contract = ResourceHelper.loadJson(vertx, Paths.get("v3.1/petstore.json"));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
         .build()
@@ -61,10 +63,11 @@ public class OpenAPIContractBuilderTest {
   }
 
   @Test
+
   void should_create_contract_when_valid_contract_and_additional_contract_path_is_provided(Vertx vertx,
       VertxTestContext ctx) {
-    var contract = vertx.fileSystem()
-        .readFileBlocking("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json").toJsonObject();
+    var contract = ResourceHelper.loadJson(vertx,
+        Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json"));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
         .putAdditionalContractPath("https://example.com/petstore",
@@ -74,10 +77,11 @@ public class OpenAPIContractBuilderTest {
   }
 
   @Test
+
   void should_create_contract_when_valid_contract_path_and_additional_contract_part_is_provided(Vertx vertx,
       VertxTestContext ctx) {
-    var components = vertx.fileSystem()
-        .readFileBlocking("io/vertx/tests/contract/from_with_path_and_additional_files/components.json").toJsonObject();
+    var components = ResourceHelper.loadJson(vertx,
+        Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/components.json"));
     OpenAPIContract.builder(vertx)
         .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
         .putAdditionalContractPart("https://example.com/petstore", components)

@@ -91,7 +91,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
-                                      Map<String, JsonObject> additionalContractFiles) {
+      Map<String, JsonObject> additionalContractFiles) {
     return builder(vertx)
         .setContract(unresolvedContract)
         .setAdditionalContractParts(additionalContractFiles)
