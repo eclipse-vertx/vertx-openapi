@@ -157,26 +157,22 @@ public class OpenAPIContractBuilder {
         : Utils.readYamlOrJson(vertx, contractPath);
 
     var resolvedContractParts = readContractPaths()
-      .map(r -> {
-        var all = new HashMap<>(additionalContractParts);
-        all.putAll(r);
-        return all;
-      });
+        .map(r -> {
+          var all = new HashMap<>(additionalContractParts);
+          all.putAll(r);
+          return all;
+        });
 
     return Future.all(readContract, resolvedContractParts)
-      .compose(composite -> {
-        JsonObject contract = composite.resultAt(0);
-        Map<String, JsonObject> contractParts = composite.resultAt(1);
-        return buildOpenAPIContract(contract, contractParts);
-      });
+        .compose(composite -> {
+          JsonObject contract = composite.resultAt(0);
+          Map<String, JsonObject> contractParts = composite.resultAt(1);
+          return buildOpenAPIContract(contract, contractParts);
+        });
   }
 
   private Future<OpenAPIContract> buildOpenAPIContract(JsonObject resolvedContract,
       Map<String, JsonObject> additionalContractParts) {
-    if (resolvedContract == null) {
-      return failedFuture(createInvalidContract("Spec must not be null"));
-    }
-
     OpenAPIVersion version = OpenAPIVersion.fromContract(resolvedContract);
     String baseUri = "app://";
 
