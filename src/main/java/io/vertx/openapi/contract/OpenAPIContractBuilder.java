@@ -24,9 +24,7 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 import io.vertx.openapi.impl.Utils;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -181,16 +179,12 @@ public class OpenAPIContractBuilder {
 
     version.getRepository(vertx, baseUri)
         .compose(repository -> {
-          List<Future<?>> validationFutures = new ArrayList<>(additionalContractParts.size());
-          for (String ref : additionalContractParts.keySet()) {
-            // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
-            // method and reused below.
-            JsonObject file = additionalContractParts.get(ref);
-            Future<?> validationFuture = version.validateAdditionalContractPart(vertx, repository, file)
-                .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
-
-            validationFutures.add(validationFuture);
-          }
+          var validationFutures = additionalContractParts.entrySet()
+              .stream()
+              .map(entry -> version.validateAdditionalContractPart(vertx, repository, entry.getValue())
+                  .compose(v -> vertx.executeBlocking(
+                      () -> repository.dereference(entry.getKey(), JsonSchema.of(entry.getKey(), entry.getValue())))))
+              .collect(Collectors.toList());
           return Future.all(validationFutures).map(repository);
         }).compose(repository -> version.validateContract(vertx, repository, resolvedContract).compose(res -> {
           try {
@@ -206,7 +200,6 @@ public class OpenAPIContractBuilder {
           if (e instanceof OpenAPIContractException) {
             return failedFuture(e);
           }
-
           return failedFuture(
               createInvalidContract("Found issue in specification for reference: " + e.getMessage(), e));
         }).onComplete(promise);
