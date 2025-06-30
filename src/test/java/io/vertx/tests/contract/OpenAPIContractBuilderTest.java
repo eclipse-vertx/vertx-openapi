@@ -37,7 +37,7 @@ public class OpenAPIContractBuilderTest {
   @Test
   void should_create_contract_when_valid_contract_path_is_provided(Vertx vertx, VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
-        .setContract("v3.1/petstore.json")
+        .setContractPath("v3.1/petstore.json")
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
@@ -55,8 +55,8 @@ public class OpenAPIContractBuilderTest {
   void should_create_contract_when_valid_contract_path_and_additional_contract_paths_are_provided(Vertx vertx,
       VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
-        .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
-        .putAdditionalContractPath("https://example.com/petstore",
+        .setContractPath("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
+        .putAdditionalContractPartPath("https://example.com/petstore",
             "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
         .build()
         .onComplete(ctx.succeedingThenComplete());
@@ -70,7 +70,7 @@ public class OpenAPIContractBuilderTest {
         Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json"));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
-        .putAdditionalContractPath("https://example.com/petstore",
+        .putAdditionalContractPartPath("https://example.com/petstore",
             "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
         .build()
         .onComplete(ctx.succeedingThenComplete());
@@ -83,7 +83,7 @@ public class OpenAPIContractBuilderTest {
     var components = ResourceHelper.loadJson(vertx,
         Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/components.json"));
     OpenAPIContract.builder(vertx)
-        .setContract("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
+        .setContractPath("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
         .putAdditionalContractPart("https://example.com/petstore", components)
         .build()
         .onComplete(ctx.succeedingThenComplete());
@@ -144,9 +144,9 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_part_should_override_existing_path(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
-          .putAdditionalContractPath(REF1_ID, REF1_1_FILE)
-          .putAdditionalContractPath(REF2_ID, REF2_1_FILE)
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
+          .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
           .setAdditionalContractParts(Map.of(REF1_ID, content(REF1_2_FILE)))
           .build()
           .await();
@@ -156,9 +156,9 @@ public class OpenAPIContractBuilderTest {
     @Test
     void put_additional_contract_part_should_override_existing_path(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
-          .putAdditionalContractPath(REF1_ID, REF1_1_FILE)
-          .putAdditionalContractPath(REF2_ID, REF2_1_FILE)
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
+          .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
           .putAdditionalContractPart(REF1_ID, content(REF1_2_FILE))
           .build()
           .await();
@@ -168,10 +168,10 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_path_should_override_existing_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
-          .setAdditionalContractPaths(Map.of(REF2_ID, REF2_2_FILE))
+          .setAdditionalContractPartPaths(Map.of(REF2_ID, REF2_2_FILE))
           .build()
           .await();
       should_have(c, "ref1.1", "ref2.2");
@@ -180,10 +180,10 @@ public class OpenAPIContractBuilderTest {
     @Test
     void put_additional_contract_path_should_override_existing_additional_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
-          .putAdditionalContractPath(REF2_ID, REF2_2_FILE)
+          .putAdditionalContractPartPath(REF2_ID, REF2_2_FILE)
           .build()
           .await();
       should_have(c, "ref1.1", "ref2.2");
@@ -201,7 +201,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_parts_should_replace_existing_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
           .setAdditionalContractParts(Map.of(REF2_ID, content(REF2_2_FILE)))
@@ -213,10 +213,10 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_paths_should_replace_existing_contract_paths(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContract("io/vertx/tests/builder/contract.yaml")
-          .putAdditionalContractPath(REF1_ID, REF1_1_FILE)
-          .putAdditionalContractPath(REF2_ID, REF2_1_FILE)
-          .setAdditionalContractPaths(Map.of(REF2_ID, REF2_2_FILE))
+          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
+          .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
+          .setAdditionalContractPartPaths(Map.of(REF2_ID, REF2_2_FILE))
           .build()
           .await();
       assertThat(c.getSchemaRepository().find(REF1_ID)).isNull();

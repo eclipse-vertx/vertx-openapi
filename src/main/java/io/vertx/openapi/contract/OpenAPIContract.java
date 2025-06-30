@@ -38,24 +38,24 @@ public interface OpenAPIContract {
   /**
    * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
    *
-   * @param vertx                  The related Vert.x instance.
-   * @param unresolvedContractPath The path to the unresolved contract.
+   * @param vertx        The related Vert.x instance.
+   * @param contractPath The path to contract.
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
-  static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath) {
-    return builder(vertx).setContract(unresolvedContractPath).build();
+  static Future<OpenAPIContract> from(Vertx vertx, String contractPath) {
+    return builder(vertx).setContractPath(contractPath).build();
   }
 
   /**
    * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
    *
-   * @param vertx              The related Vert.x instance.
-   * @param unresolvedContract The unresolved contract.
+   * @param vertx    The related Vert.x instance.
+   * @param contract The contract.
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
-  static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract) {
+  static Future<OpenAPIContract> from(Vertx vertx, JsonObject contract) {
     return builder(vertx)
-        .setContract(unresolvedContract)
+        .setContract(contract)
         .build();
   }
 
@@ -65,17 +65,17 @@ public interface OpenAPIContract {
    * This method can be used in case that the contract is split into several files. These files can be passed in a
    * Map that has the reference as key and the path to the file as value.
    *
-   * @param vertx                   The related Vert.x instance.
-   * @param unresolvedContractPath  The path to the unresolved contract.
-   * @param additionalContractFiles The additional contract files
+   * @param vertx                       The related Vert.x instance.
+   * @param contract                    The path to the contract.
+   * @param additionalContractPartPaths The additional contract part paths
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
-  static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath,
-      Map<String, String> additionalContractFiles) {
+  static Future<OpenAPIContract> from(Vertx vertx, String contract,
+      Map<String, String> additionalContractPartPaths) {
 
     return builder(vertx)
-        .setContract(unresolvedContractPath)
-        .setAdditionalContractPaths(additionalContractFiles)
+        .setContractPath(contract)
+        .setAdditionalContractPartPaths(additionalContractPartPaths)
         .build();
   }
 
@@ -85,16 +85,16 @@ public interface OpenAPIContract {
    * This method can be used in case that the contract is split into several files. These files can be passed in a
    * Map that has the reference as key and the path to the file as value.
    *
-   * @param vertx                   The related Vert.x instance.
-   * @param unresolvedContract      The unresolved contract.
-   * @param additionalContractFiles The additional contract files
+   * @param vertx                       The related Vert.x instance.
+   * @param contract                    The unresolved contract.
+   * @param additionalContractPartPaths The additional contract part paths
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
-  static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
-      Map<String, JsonObject> additionalContractFiles) {
+  static Future<OpenAPIContract> from(Vertx vertx, JsonObject contract,
+      Map<String, JsonObject> additionalContractPartPaths) {
     return builder(vertx)
-        .setContract(unresolvedContract)
-        .setAdditionalContractParts(additionalContractFiles)
+        .setContract(contract)
+        .setAdditionalContractParts(additionalContractPartPaths)
         .build();
 
   }
