@@ -28,6 +28,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Builder for OpenAPIContracts.<br>
+ *
+ * In the simplest case (you only have one contract) you must either provide a path to your openapi-contract in json
+ * or yaml format or an already parsed openapi-spec as a {@link JsonObject}.
+ * See {@link OpenAPIContractBuilder#setContractPath(String)} and {@link OpenAPIContractBuilder#setContract(JsonObject)}.
+ * <br>
+ * If your contract is split across different files you must load the main contract as described above and additionally
+ * provide the referenced contract parts. See {@link OpenAPIContractBuilder#putAdditionalContractPartPath(String, String)},
+ * {@link OpenAPIContractBuilder#setAdditionalContractPartPaths(Map)},
+ * {@link OpenAPIContractBuilder#putAdditionalContractPart(String, JsonObject)},
+ * {@link OpenAPIContractBuilder#setAdditionalContractParts(Map)}.
+ * <br>
+ */
 @GenIgnore
 public class OpenAPIContractBuilder {
 
