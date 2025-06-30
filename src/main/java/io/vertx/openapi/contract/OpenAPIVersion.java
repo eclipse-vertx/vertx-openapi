@@ -21,13 +21,7 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.Draft;
-import io.vertx.json.schema.JsonFormatValidator;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.JsonSchemaOptions;
-import io.vertx.json.schema.JsonSchemaValidationException;
-import io.vertx.json.schema.OutputUnit;
-import io.vertx.json.schema.SchemaRepository;
+import io.vertx.json.schema.*;
 import io.vertx.openapi.impl.OpenAPIFormatValidator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,13 +79,29 @@ public enum OpenAPIVersion {
   /**
    * Validates additional contract files against the openapi schema. If validations fails, try to validate against the
    * json schema specifications only.
+   * <br>
+   * Use {@link #validateAdditionalContractPart(Vertx, SchemaRepository, JsonObject)} instead.
    *
-   * @param vertx                   The related Vert.x instance.
-   * @param repo                    The SchemaRepository to do the validations with.
-   * @param file                    The additional json contract to validate.
+   * @param vertx The related Vert.x instance.
+   * @param repo  The SchemaRepository to do the validations with.
+   * @param file  The additional json contract to validate.
    */
+  @Deprecated
   public Future<Void> validateAdditionalContractFile(Vertx vertx, SchemaRepository repo, JsonObject file) {
-    return vertx.executeBlocking(() -> repo.validator(draft.getIdentifier()).validate(file))
+    return this.validateAdditionalContractPart(vertx, repo, file);
+
+  }
+
+  /**
+   * Validates an additional contract against the openapi schema. If validations fails, try to validate against the
+   * json schema specifications only.
+   *
+   * @param vertx The related Vert.x instance.
+   * @param repo  The SchemaRepository to do the validations with.
+   * @param part  The additional json contract to validate.
+   */
+  public Future<Void> validateAdditionalContractPart(Vertx vertx, SchemaRepository repo, JsonObject part) {
+    return vertx.executeBlocking(() -> repo.validator(draft.getIdentifier()).validate(part))
         .compose(this::checkOutputUnit)
         .mapEmpty();
   }
