@@ -112,7 +112,7 @@ public class OpenAPIContractBuilder {
    * Puts a contract that is referenced by the main contract. This method can be
    * called multiple times to add multiple referenced contracts.
    *
-   * @param key     The unique key for the contract.
+   * @param key          The unique key for the contract.
    * @param contractPart The contract object.
    * @return The builder, for a fluent interface
    */
@@ -156,21 +156,19 @@ public class OpenAPIContractBuilder {
         ? Future.succeededFuture(contract)
         : Utils.readYamlOrJson(vertx, contractPath);
 
-    var resolvedContracts = Future
-        .succeededFuture(additionalContractParts)
-        .compose(x -> readContractPaths()
-            .map(r -> {
-              var all = new HashMap<>(x);
-              all.putAll(r);
-              return all;
-            }));
+    var resolvedContractParts = readContractPaths()
+      .map(r -> {
+        var all = new HashMap<>(additionalContractParts);
+        all.putAll(r);
+        return all;
+      });
 
-    return Future.all(readContract, resolvedContracts)
-        .compose(x -> {
-          JsonObject contract = x.resultAt(0);
-          Map<String, JsonObject> other = x.resultAt(1);
-          return buildOpenAPIContract(contract, other);
-        });
+    return Future.all(readContract, resolvedContractParts)
+      .compose(composite -> {
+        JsonObject contract = composite.resultAt(0);
+        Map<String, JsonObject> contractParts = composite.resultAt(1);
+        return buildOpenAPIContract(contract, contractParts);
+      });
   }
 
   private Future<OpenAPIContract> buildOpenAPIContract(JsonObject resolvedContract,
