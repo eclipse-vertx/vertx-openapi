@@ -54,8 +54,6 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract) {
-    if (unresolvedContract == null)
-      return Future.failedFuture(OpenAPIContractException.createInvalidContract("Spec must not be null"));
     return builder(vertx)
         .setContract(unresolvedContract)
         .build();
@@ -93,9 +91,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
-      Map<String, JsonObject> additionalContractFiles) {
-    if (unresolvedContract == null)
-      return Future.failedFuture(OpenAPIContractException.createInvalidContract("Spec must not be null"));
+                                      Map<String, JsonObject> additionalContractFiles) {
     return builder(vertx)
         .setContract(unresolvedContract)
         .setAdditionalContractParts(additionalContractFiles)
