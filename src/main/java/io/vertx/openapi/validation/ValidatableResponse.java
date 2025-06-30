@@ -12,17 +12,16 @@
 
 package io.vertx.openapi.validation;
 
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toMap;
+
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ValidatableResponseImpl;
-
 import java.util.Map;
 import java.util.Optional;
-
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
 
 @VertxGen
 public interface ValidatableResponse {
@@ -74,8 +73,8 @@ public interface ValidatableResponse {
    */
   static ValidatableResponse create(int statusCode, Map<String, String> headers, Buffer body, String contentType) {
     Map<String, ResponseParameter> transformedHeaders =
-      Optional.ofNullable(headers).orElse(emptyMap()).entrySet().stream().collect(toMap(
-        entry -> entry.getKey().toLowerCase(), entry -> new RequestParameterImpl(entry.getValue())));
+        Optional.ofNullable(headers).orElse(emptyMap()).entrySet().stream().collect(toMap(
+            entry -> entry.getKey().toLowerCase(), entry -> new RequestParameterImpl(entry.getValue())));
 
     if (body != null && contentType == null) {
       throw new IllegalArgumentException("When a body is passed, the content type MUST be specified");

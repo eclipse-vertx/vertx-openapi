@@ -12,23 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.internal.logging.Logger;
-import io.vertx.core.internal.logging.LoggerFactory;
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.RequestBody;
-import io.vertx.openapi.contract.Response;
-import io.vertx.openapi.contract.SecurityRequirement;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.contract.Location.QUERY;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
@@ -40,6 +23,22 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableList;
+
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.contract.SecurityRequirement;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class OperationImpl implements Operation {
   private static final Logger LOG = LoggerFactory.getLogger(OperationImpl.class);
@@ -67,8 +66,8 @@ public class OperationImpl implements Operation {
   private final Map<String, Object> extensions;
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
-                       List<Parameter> pathParameters, Map<String, Object> pathExtensions,
-                       List<SecurityRequirement> globalSecReq) {
+      List<Parameter> pathParameters, Map<String, Object> pathExtensions,
+      List<SecurityRequirement> globalSecReq) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
@@ -80,23 +79,22 @@ public class OperationImpl implements Operation {
     this.extensions = unmodifiableMap(allExtensions);
 
     this.tags =
-      operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString).collect(toUnmodifiableList());
+        operationModel.getJsonArray(KEY_TAGS, EMPTY_JSON_ARRAY).stream().map(Object::toString)
+            .collect(toUnmodifiableList());
 
     this.securityRequirements =
-      operationModel.containsKey(KEY_SECURITY) ?
-        operationModel.getJsonArray(KEY_SECURITY).stream()
-          .map(JsonObject.class::cast)
-          .map(SecurityRequirementImpl::new)
-          .collect(toUnmodifiableList()) :
-        globalSecReq;
+        operationModel.containsKey(KEY_SECURITY) ? operationModel.getJsonArray(KEY_SECURITY).stream()
+            .map(JsonObject.class::cast)
+            .map(SecurityRequirementImpl::new)
+            .collect(toUnmodifiableList()) : globalSecReq;
 
     List<Parameter> operationParameters =
-      parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
+        parseParameters(path, operationModel.getJsonArray(KEY_PARAMETERS, EMPTY_JSON_ARRAY));
     // pretty sure there is a smarter / more efficient way
     for (Parameter pathParam : pathParameters) {
       Optional<Parameter> parameterDuplicate = operationParameters.stream()
-        .filter(param -> pathParam.getName().equals(param.getName()) && pathParam.getIn().equals(param.getIn()))
-        .findAny();
+          .filter(param -> pathParam.getName().equals(param.getName()) && pathParam.getIn().equals(param.getIn()))
+          .findAny();
 
       if (parameterDuplicate.isPresent()) {
         LOG.debug("Found ambiguous parameter (" + pathParam.getName() + ") in operation: " + operationId);
@@ -106,12 +104,12 @@ public class OperationImpl implements Operation {
     }
 
     long explodedQueryParams =
-      operationParameters.stream()
-        .filter(p -> p.isExplode() && p.getStyle() == FORM && p.getIn() == QUERY && p.getSchemaType() == OBJECT)
-        .count();
+        operationParameters.stream()
+            .filter(p -> p.isExplode() && p.getStyle() == FORM && p.getIn() == QUERY && p.getSchemaType() == OBJECT)
+            .count();
     if (explodedQueryParams > 1) {
       String msg =
-        "Found multiple exploded query parameters of style form with type object in operation: " + operationId;
+          "Found multiple exploded query parameters of style form with type object in operation: " + operationId;
       throw createInvalidContract(msg);
     }
 
@@ -130,15 +128,16 @@ public class OperationImpl implements Operation {
       throw createInvalidContract(msg);
     }
     defaultResponse = responsesJson.stream().filter(entry -> "default".equalsIgnoreCase(entry.getKey())).findFirst()
-      .map(entry -> new ResponseImpl((JsonObject) entry.getValue(), operationId)).orElse(null);
+        .map(entry -> new ResponseImpl((JsonObject) entry.getValue(), operationId)).orElse(null);
     responses =
-      unmodifiableMap(
-        responsesJson
-          .fieldNames()
-          .stream()
-          .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-          .filter(RESPONSE_CODE_PATTERN.asPredicate())
-          .collect(toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
+        unmodifiableMap(
+            responsesJson
+                .fieldNames()
+                .stream()
+                .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+                .filter(RESPONSE_CODE_PATTERN.asPredicate())
+                .collect(
+                    toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
   }
 
   @Override

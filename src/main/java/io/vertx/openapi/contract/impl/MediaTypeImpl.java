@@ -12,11 +12,11 @@
 
 package io.vertx.openapi.contract.impl;
 
+import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
-
-import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
 
 public class MediaTypeImpl implements MediaType {
   private static final String KEY_SCHEMA = "schema";
@@ -34,9 +34,9 @@ public class MediaTypeImpl implements MediaType {
     }
 
     boolean emptySchema = mediaTypeModel
-      .fieldNames().stream()
-      // Ignore all the internal json-schema annotations, they start and end with "__"
-      .allMatch(name -> name.startsWith("__") && name.endsWith("__"));
+        .fieldNames().stream()
+        // Ignore all the internal json-schema annotations, they start and end with "__"
+        .allMatch(name -> name.startsWith("__") && name.endsWith("__"));
 
     if (emptySchema) {
       // OpenAPI 3.1 allows defining MediaTypes without a schema.

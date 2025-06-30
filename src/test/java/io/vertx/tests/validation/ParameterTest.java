@@ -12,20 +12,19 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.Parameter;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 
 class ParameterTest {
 
@@ -33,77 +32,83 @@ class ParameterTest {
   public static final JsonObject DEFAULT_JSON_OBJECT = new JsonObject().put("abc", "123");
 
   private static Stream<Arguments> provideValueTypes() {
-    Boolean[] isNumber = new Boolean[] {false, true, false, false, false, false, false, false};
+    Boolean[] isNumber = new Boolean[] { false, true, false, false, false, false, false, false };
     return Stream.of(
-      Arguments.of("String", "myString", new Boolean[] {true, false, false, false, false, false, false, false}),
-      Arguments.of("String (empty)", "", new Boolean[] {true, false, false, false, false, false, false, true}),
-      Arguments.of("Integer", 1337, isNumber),
-      Arguments.of("Long", 42L, isNumber),
-      Arguments.of("Float", 13.37f, isNumber),
-      Arguments.of("Double", 4.2, isNumber),
-      Arguments.of("Boolean", true, new Boolean[] {false, false, true, false, false, false, false, false}),
-      Arguments.of("JsonObject (empty)", EMPTY_JSON_OBJECT,
-        new Boolean[] {false, false, false, true, false, false, false, true}),
-      Arguments.of("JsonObject", new JsonObject().put("key", "value"),
-        new Boolean[] {false, false, false, true, false, false, false, false}),
-      Arguments.of("JsonArray (empty)", EMPTY_JSON_ARRAY,
-        new Boolean[] {false, false, false, false, true, false, false, true}),
-      Arguments.of("JsonArray", new JsonArray().add(1),
-        new Boolean[] {false, false, false, false, true, false, false, false}),
-      Arguments.of("Buffer (empty)", Buffer.buffer(),
-        new Boolean[] {false, false, false, false, false, true, false, true}),
-      Arguments.of("Buffer", Buffer.buffer("buf"),
-        new Boolean[] {false, false, false, false, false, true, false, false}),
-      Arguments.of("Null", null, new Boolean[] {false, false, false, false, false, false, true, true})
-    );
+        Arguments.of("String", "myString", new Boolean[] { true, false, false, false, false, false, false, false }),
+        Arguments.of("String (empty)", "", new Boolean[] { true, false, false, false, false, false, false, true }),
+        Arguments.of("Integer", 1337, isNumber),
+        Arguments.of("Long", 42L, isNumber),
+        Arguments.of("Float", 13.37f, isNumber),
+        Arguments.of("Double", 4.2, isNumber),
+        Arguments.of("Boolean", true, new Boolean[] { false, false, true, false, false, false, false, false }),
+        Arguments.of("JsonObject (empty)", EMPTY_JSON_OBJECT,
+            new Boolean[] { false, false, false, true, false, false, false, true }),
+        Arguments.of("JsonObject", new JsonObject().put("key", "value"),
+            new Boolean[] { false, false, false, true, false, false, false, false }),
+        Arguments.of("JsonArray (empty)", EMPTY_JSON_ARRAY,
+            new Boolean[] { false, false, false, false, true, false, false, true }),
+        Arguments.of("JsonArray", new JsonArray().add(1),
+            new Boolean[] { false, false, false, false, true, false, false, false }),
+        Arguments.of("Buffer (empty)", Buffer.buffer(),
+            new Boolean[] { false, false, false, false, false, true, false, true }),
+        Arguments.of("Buffer", Buffer.buffer("buf"),
+            new Boolean[] { false, false, false, false, false, true, false, false }),
+        Arguments.of("Null", null, new Boolean[] { false, false, false, false, false, false, true, true }));
   }
 
   private static Stream<Arguments> provideValues() {
-    Object[] stringResult = new Object[] {"myString", null, null, null, null, null, null, null, null};
-    Object[] booleanResult = new Object[] {null, true, null, null, null, null, null, null, null};
-    Object[] jsonObjectResult = new Object[] {null, null, EMPTY_JSON_OBJECT, null, null, null, null, null, null};
-    Object[] jsonArrayResult = new Object[] {null, null, null, EMPTY_JSON_ARRAY, null, null, null, null, null};
-    Object[] bufferResult = new Object[] {null, null, null, null, Buffer.buffer(), null, null, null, null};
-    Object[] intResult = new Object[] {null, null, null, null, null, 1337, 1337L, 1337.0f, 1337.0,};
-    Object[] longResult = new Object[] {null, null, null, null, null, 42, 42L, 42.0f, 42.0};
-    Object[] floatResult = new Object[] {null, null, null, null, null, 13, 13, 13.37f, 13.37};
-    Object[] doubleResult = new Object[] {null, null, null, null, null, 4, 4L, 4.2f, 4.2};
+    Object[] stringResult = new Object[] { "myString", null, null, null, null, null, null, null, null };
+    Object[] booleanResult = new Object[] { null, true, null, null, null, null, null, null, null };
+    Object[] jsonObjectResult = new Object[] { null, null, EMPTY_JSON_OBJECT, null, null, null, null, null, null };
+    Object[] jsonArrayResult = new Object[] { null, null, null, EMPTY_JSON_ARRAY, null, null, null, null, null };
+    Object[] bufferResult = new Object[] { null, null, null, null, Buffer.buffer(), null, null, null, null };
+    Object[] intResult = new Object[] { null, null, null, null, null, 1337, 1337L, 1337.0f, 1337.0, };
+    Object[] longResult = new Object[] { null, null, null, null, null, 42, 42L, 42.0f, 42.0 };
+    Object[] floatResult = new Object[] { null, null, null, null, null, 13, 13, 13.37f, 13.37 };
+    Object[] doubleResult = new Object[] { null, null, null, null, null, 4, 4L, 4.2f, 4.2 };
 
     return Stream.of(
-      Arguments.of("String", "myString", stringResult),
-      Arguments.of("Boolean", true, booleanResult),
-      Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
-      Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
-      Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
-      Arguments.of("Integer", 1337, intResult),
-      Arguments.of("Long", 42L, longResult),
-      Arguments.of("Float", 13.37f, floatResult),
-      Arguments.of("Double", 4.2, doubleResult)
-    );
+        Arguments.of("String", "myString", stringResult),
+        Arguments.of("Boolean", true, booleanResult),
+        Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
+        Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
+        Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
+        Arguments.of("Integer", 1337, intResult),
+        Arguments.of("Long", 42L, longResult),
+        Arguments.of("Float", 13.37f, floatResult),
+        Arguments.of("Double", 4.2, doubleResult));
   }
 
   private static Stream<Arguments> provideAllNullValues() {
-    Object[] stringResult = new Object[] {"myString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
-    Object[] booleanResult = new Object[] {"myDefaultString", true, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
-    Object[] jsonObjectResult = new Object[] {"myDefaultString", false, EMPTY_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
-    Object[] jsonArrayResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, EMPTY_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0};
-    Object[] bufferResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, Buffer.buffer(), 8008, 8008L, 8008.0f, 8008.0};
-    Object[] intResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 1337, 1337L, 1337.0f, 1337.0,};
-    Object[] longResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 42, 42L, 42.0f, 42.0};
-    Object[] floatResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 13, 13, 13.37f, 13.37};
-    Object[] doubleResult = new Object[] {"myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY, DEFAULT_JSON_OBJECT.toBuffer(), 4, 4L, 4.2f, 4.2};
+    Object[] stringResult = new Object[] { "myString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0 };
+    Object[] booleanResult = new Object[] { "myDefaultString", true, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0 };
+    Object[] jsonObjectResult = new Object[] { "myDefaultString", false, EMPTY_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0 };
+    Object[] jsonArrayResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, EMPTY_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 8008, 8008L, 8008.0f, 8008.0 };
+    Object[] bufferResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        Buffer.buffer(), 8008, 8008L, 8008.0f, 8008.0 };
+    Object[] intResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 1337, 1337L, 1337.0f, 1337.0, };
+    Object[] longResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 42, 42L, 42.0f, 42.0 };
+    Object[] floatResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 13, 13, 13.37f, 13.37 };
+    Object[] doubleResult = new Object[] { "myDefaultString", false, DEFAULT_JSON_OBJECT, DEFAULT_JSON_ARRAY,
+        DEFAULT_JSON_OBJECT.toBuffer(), 4, 4L, 4.2f, 4.2 };
 
     return Stream.of(
-      Arguments.of("String", "myString", stringResult),
-      Arguments.of("Boolean", true, booleanResult),
-      Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
-      Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
-      Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
-      Arguments.of("Integer", 1337, intResult),
-      Arguments.of("Long", 42L, longResult),
-      Arguments.of("Float", 13.37f, floatResult),
-      Arguments.of("Double", 4.2, doubleResult)
-    );
+        Arguments.of("String", "myString", stringResult),
+        Arguments.of("Boolean", true, booleanResult),
+        Arguments.of("JsonObject", EMPTY_JSON_OBJECT, jsonObjectResult),
+        Arguments.of("JsonArray", EMPTY_JSON_ARRAY, jsonArrayResult),
+        Arguments.of("Buffer (empty)", Buffer.buffer(), bufferResult),
+        Arguments.of("Integer", 1337, intResult),
+        Arguments.of("Long", 42L, longResult),
+        Arguments.of("Float", 13.37f, floatResult),
+        Arguments.of("Double", 4.2, doubleResult));
   }
 
   @ParameterizedTest(name = "{index} test if value is of type {0}")
@@ -187,5 +192,4 @@ class ParameterTest {
       return value;
     }
   }
-
 }

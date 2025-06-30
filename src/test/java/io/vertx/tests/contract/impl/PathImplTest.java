@@ -12,26 +12,25 @@
 
 package io.vertx.tests.contract.impl;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.openapi.contract.impl.PathImpl;
-import io.vertx.tests.ResourceHelper;
-import io.vertx.openapi.contract.OpenAPIContractException;
-import io.vertx.openapi.contract.Operation;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.nio.file.Path;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.impl.PathImpl.INVALID_CURLY_BRACES;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.impl.PathImpl;
+import io.vertx.tests.ResourceHelper;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @ExtendWith(VertxExtension.class)
 class PathImplTest {
@@ -74,26 +73,27 @@ class PathImplTest {
   @Test
   void testWildcardInPath() {
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, "/pets/*", EMPTY_JSON_OBJECT,
-        emptyList()));
+        assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, "/pets/*", EMPTY_JSON_OBJECT,
+            emptyList()));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @ParameterizedTest(name = "{index} wrong position of curley braces in path: {0}")
-  @ValueSource(strings = {"/foo{param}/", "/foo{param}", "/{param}bar/", "/{param}bar", "/foo{param}bar/",
-    "/foo{param}bar"})
+  @ValueSource(strings = { "/foo{param}/", "/foo{param}", "/{param}bar/", "/{param}bar", "/foo{param}bar/",
+      "/foo{param}bar" })
   void testWrongCurlyBracesInPath(String path) {
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList()));
+        assertThrows(OpenAPIContractException.class,
+            () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList()));
     String expectedMsg =
-      "The passed OpenAPI contract is invalid: Curly brace MUST be the first/last character in a path segment " +
-        "(/{parameterName}/): " + path;
+        "The passed OpenAPI contract is invalid: Curly brace MUST be the first/last character in a path segment " +
+            "(/{parameterName}/): " + path;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @ParameterizedTest(name = "{index} valid position of curley braces in path: {0}")
-  @ValueSource(strings = {"/foo/{param}", "/foo/{param}/", "/foo/{param}/bar", "/foo/{param}/bar/"})
+  @ValueSource(strings = { "/foo/{param}", "/foo/{param}/", "/foo/{param}/bar", "/foo/{param}/bar/" })
   void testValidCurlyBracesInPath(String path) {
     assertThat(INVALID_CURLY_BRACES.matcher(path).find()).isFalse();
   }

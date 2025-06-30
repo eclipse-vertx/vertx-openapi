@@ -12,6 +12,11 @@
 
 package io.vertx.tests.contract;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static io.vertx.tests.ResourceHelper.loadJson;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -23,23 +28,17 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIContractException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
-import static io.vertx.tests.ResourceHelper.loadJson;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(VertxExtension.class)
 class OpenAPIContractTest {
@@ -51,9 +50,8 @@ class OpenAPIContractTest {
     Path dereferenced = BASE_PATH.resolve("from_with_path/petstore_dereferenced.json");
     JsonObject expectedJson = Buffer.buffer(Files.readAllBytes(dereferenced)).toJsonObject();
     return Stream.of(
-      Arguments.of(petstoreYaml.toString(), expectedJson),
-      Arguments.of(petstoreJson.toString(), expectedJson)
-    );
+        Arguments.of(petstoreYaml.toString(), expectedJson),
+        Arguments.of(petstoreJson.toString(), expectedJson));
   }
 
   private static Stream<Arguments> testFromWithPathAndAdditionalContractFiles() throws IOException {
@@ -65,9 +63,8 @@ class OpenAPIContractTest {
     String ref = "https://example.com/petstore";
     JsonObject expectedJson = Buffer.buffer(Files.readAllBytes(dereferenced)).toJsonObject();
     return Stream.of(
-      Arguments.of(petstoreYaml.toString(), ImmutableMap.of(ref, componentsYaml.toString()), expectedJson),
-      Arguments.of(petstoreJson.toString(), ImmutableMap.of(ref, componentsJson.toString()), expectedJson)
-    );
+        Arguments.of(petstoreYaml.toString(), ImmutableMap.of(ref, componentsYaml.toString()), expectedJson),
+        Arguments.of(petstoreJson.toString(), ImmutableMap.of(ref, componentsJson.toString()), expectedJson));
   }
 
   @ParameterizedTest(name = "{index} Create contract from path: {0}")
@@ -84,12 +81,12 @@ class OpenAPIContractTest {
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   @MethodSource
   void testFromWithPathAndAdditionalContractFiles(String path, Map<String, String> additionalFiles, JsonObject expected,
-                                                  Vertx vertx, VertxTestContext testContext) {
+      Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, path, additionalFiles)
-      .onComplete(testContext.succeeding(contract -> testContext.verify(() -> {
-        assertThat(contract.getRawContract()).isEqualTo(expected);
-        testContext.completeNow();
-      })));
+        .onComplete(testContext.succeeding(contract -> testContext.verify(() -> {
+          assertThat(contract.getRawContract()).isEqualTo(expected);
+          testContext.completeNow();
+        })));
   }
 
   @Test
@@ -125,14 +122,14 @@ class OpenAPIContractTest {
     Map<String, JsonObject> additionalSpecFiles = ImmutableMap.of("https://example.com/petstore", components);
 
     OpenAPIContract.from(vertx, contract, additionalSpecFiles)
-      .onComplete(testContext.failing(t -> testContext.verify(() -> {
-        assertThat(t).isInstanceOf(OpenAPIContractException.class);
-        String expectedErrorMessage =
-          "The passed OpenAPI contract is invalid: Found issue in specification for reference: " +
-            "Can't resolve 'https://example.com/petstore#/components/schemas/Pet', only internal refs are supported.";
-        assertThat(t).hasMessageThat().isEqualTo(expectedErrorMessage);
-        testContext.completeNow();
-      })));
+        .onComplete(testContext.failing(t -> testContext.verify(() -> {
+          assertThat(t).isInstanceOf(OpenAPIContractException.class);
+          String expectedErrorMessage =
+              "The passed OpenAPI contract is invalid: Found issue in specification for reference: " +
+                  "Can't resolve 'https://example.com/petstore#/components/schemas/Pet', only internal refs are supported.";
+          assertThat(t).hasMessageThat().isEqualTo(expectedErrorMessage);
+          testContext.completeNow();
+        })));
   }
 
   @Test
@@ -147,13 +144,13 @@ class OpenAPIContractTest {
     JsonObject components = loadJson(vertx, componentsPath);
 
     Map<String, JsonObject> additionalSpecFiles =
-      ImmutableMap.of("https://example.com/petstore", components);
+        ImmutableMap.of("https://example.com/petstore", components);
 
     OpenAPIContract.from(vertx, contract, additionalSpecFiles).onComplete(testContext.succeeding(
-      c -> testContext.verify(() -> {
-        assertThat(c.getRawContract()).isEqualTo(loadJson(vertx, bundled));
-        testContext.completeNow();
-      })));
+        c -> testContext.verify(() -> {
+          assertThat(c.getRawContract()).isEqualTo(loadJson(vertx, bundled));
+          testContext.completeNow();
+        })));
   }
 
   @Test
@@ -166,17 +163,17 @@ class OpenAPIContractTest {
 
     Map<String, JsonObject> additionalValidSpecFiles = ImmutableMap.of("https://example.com/petstore", validComponents);
     Map<String, JsonObject> additionalInvalidSpecFiles = ImmutableMap.of("https://example.com/petstore",
-      invalidComponents);
+        invalidComponents);
 
     OpenAPIContract.from(vertx, contract.copy(), additionalValidSpecFiles)
-      .compose(validResp -> Future.succeededFuture(validResp.getRawContract()))
-      .onSuccess(validJsonRef -> OpenAPIContract.from(vertx, contract.copy(), additionalInvalidSpecFiles)
-        .onSuccess(splitResp -> testContext.verify(() -> {
-          assertThat(splitResp.getRawContract()).isEqualTo(validJsonRef);
-          testContext.completeNow();
-        }))
-        .onFailure(testContext::failNow))
-      .onFailure(testContext::failNow);
+        .compose(validResp -> Future.succeededFuture(validResp.getRawContract()))
+        .onSuccess(validJsonRef -> OpenAPIContract.from(vertx, contract.copy(), additionalInvalidSpecFiles)
+            .onSuccess(splitResp -> testContext.verify(() -> {
+              assertThat(splitResp.getRawContract()).isEqualTo(validJsonRef);
+              testContext.completeNow();
+            }))
+            .onFailure(testContext::failNow))
+        .onFailure(testContext::failNow);
   }
 
   @Test
@@ -187,17 +184,17 @@ class OpenAPIContractTest {
     JsonObject malformedComponents = loadJson(vertx, resourcePath.resolve("malformedComponents.json"));
 
     Map<String, JsonObject> additionalMalformedSpecFiles = ImmutableMap.of("https://example.com/petstore",
-      malformedComponents);
+        malformedComponents);
 
     OpenAPIContract.from(vertx, contract.copy(), additionalMalformedSpecFiles)
-      .onComplete(handler -> testContext.verify(() -> {
-        assertTrue(handler.failed());
-        assertThat(handler.cause()).isInstanceOf(OpenAPIContractException.class);
-        assertThat(handler.cause()).hasMessageThat()
-          .isEqualTo("The passed OpenAPI contract is invalid: Found issue in specification for reference:" +
-            " -1 is less than 0");
-        testContext.completeNow();
-      }));
+        .onComplete(handler -> testContext.verify(() -> {
+          assertTrue(handler.failed());
+          assertThat(handler.cause()).isInstanceOf(OpenAPIContractException.class);
+          assertThat(handler.cause()).hasMessageThat()
+              .isEqualTo("The passed OpenAPI contract is invalid: Found issue in specification for reference:" +
+                  " -1 is less than 0");
+          testContext.completeNow();
+        }));
   }
 
   @Test
@@ -210,10 +207,10 @@ class OpenAPIContractTest {
 
     Map<String, String> additionalSpecFiles = ImmutableMap.of("https://schemas/Name.yaml", componentsPath.toString());
     OpenAPIContract.from(vertx, contractPath.toString(), additionalSpecFiles)
-      .onComplete(testContext.succeeding(c -> testContext.verify(() -> {
-        assertThat(c.getRawContract().toString()).isEqualTo(dereferenced.toString());
-        testContext.completeNow();
-      })));
+        .onComplete(testContext.succeeding(c -> testContext.verify(() -> {
+          assertThat(c.getRawContract().toString()).isEqualTo(dereferenced.toString());
+          testContext.completeNow();
+        })));
   }
 
   @Test

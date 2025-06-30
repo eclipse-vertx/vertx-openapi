@@ -36,12 +36,12 @@ public class OpenAPIContractException extends RuntimeException {
 
   public static OpenAPIContractException createUnsupportedVersion(String version) {
     return new OpenAPIContractException("The version of the passed OpenAPI contract is not supported: " + version,
-      UNSUPPORTED_SPEC, null);
+        UNSUPPORTED_SPEC, null);
   }
 
   public static OpenAPIContractException createUnsupportedFeature(String feature) {
     return new OpenAPIContractException(
-      "The passed OpenAPI contract contains a feature that is not supported: " + feature, UNSUPPORTED_FEATURE, null);
+        "The passed OpenAPI contract contains a feature that is not supported: " + feature, UNSUPPORTED_FEATURE, null);
   }
 
   public static OpenAPIContractException createInvalidStyle(Location in, String allowedStyles) {

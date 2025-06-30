@@ -12,6 +12,11 @@
 
 package io.vertx.openapi.contract;
 
+import static io.vertx.core.Future.failedFuture;
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.impl.Utils.readYamlOrJson;
+import static java.util.Collections.emptyMap;
+
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
@@ -24,16 +29,10 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
-import static io.vertx.openapi.impl.Utils.readYamlOrJson;
-import static java.util.Collections.emptyMap;
 
 @VertxGen
 public interface OpenAPIContract {
@@ -72,7 +71,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, String unresolvedContractPath,
-                                      Map<String, String> additionalContractFiles) {
+      Map<String, String> additionalContractFiles) {
 
     Map<String, Future<JsonObject>> jsonFilesFuture = new HashMap<>();
     jsonFilesFuture.put(unresolvedContractPath, readYamlOrJson(vertx, unresolvedContractPath));
@@ -97,7 +96,7 @@ public interface OpenAPIContract {
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject unresolvedContract,
-                                      Map<String, JsonObject> additionalContractFiles) {
+      Map<String, JsonObject> additionalContractFiles) {
     if (unresolvedContract == null) {
       return failedFuture(createInvalidContract("Spec must not be null"));
     }
@@ -109,36 +108,36 @@ public interface OpenAPIContract {
     Promise<OpenAPIContract> promise = ctx.promise();
 
     version.getRepository(vertx, baseUri)
-      .compose(repository -> {
-      List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
-      for (String ref : additionalContractFiles.keySet()) {
-        // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
-        //  method and reused below.
-        JsonObject file = additionalContractFiles.get(ref);
-        Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
-          .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
+        .compose(repository -> {
+          List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
+          for (String ref : additionalContractFiles.keySet()) {
+            // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
+            // method and reused below.
+            JsonObject file = additionalContractFiles.get(ref);
+            Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
+                .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
 
-        validationFutures.add(validationFuture);
-      }
-      return Future.all(validationFutures).map(repository);
-    }).compose(repository ->
-      version.validateContract(vertx, repository, unresolvedContract).compose(res -> {
-        try {
-          res.checkValidity();
-          return version.resolve(vertx, repository, unresolvedContract);
-        } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
-          return failedFuture(createInvalidContract(null, e));
-        }
-      })
-      .map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository))
-    ).recover(e -> {
-      //Convert any non-openapi exceptions into an OpenAPIContractException
-      if(e instanceof OpenAPIContractException) {
-        return failedFuture(e);
-      }
+            validationFutures.add(validationFuture);
+          }
+          return Future.all(validationFutures).map(repository);
+        }).compose(repository -> version.validateContract(vertx, repository, unresolvedContract).compose(res -> {
+          try {
+            res.checkValidity();
+            return version.resolve(vertx, repository, unresolvedContract);
+          } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
+            return failedFuture(createInvalidContract(null, e));
+          }
+        })
+            .map(resolvedSpec -> (OpenAPIContract) new OpenAPIContractImpl(resolvedSpec, version, repository)))
+        .recover(e -> {
+          // Convert any non-openapi exceptions into an OpenAPIContractException
+          if (e instanceof OpenAPIContractException) {
+            return failedFuture(e);
+          }
 
-      return failedFuture(createInvalidContract("Found issue in specification for reference: " + e.getMessage(), e));
-    }).onComplete(promise);
+          return failedFuture(
+              createInvalidContract("Found issue in specification for reference: " + e.getMessage(), e));
+        }).onComplete(promise);
 
     return promise.future();
   }

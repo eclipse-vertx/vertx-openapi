@@ -12,11 +12,6 @@
 
 package io.vertx.tests.validation.analyser;
 
-import io.vertx.openapi.contract.MediaType;
-import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
-import io.vertx.openapi.validation.analyser.MultipartFormAnalyser;
-import org.junit.jupiter.api.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_HAL_JSON;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON;
@@ -26,14 +21,23 @@ import static io.vertx.openapi.validation.analyser.ContentAnalyser.getContentAna
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
+import io.vertx.openapi.validation.analyser.MultipartFormAnalyser;
+import org.junit.jupiter.api.Test;
+
 public class ContentAnalyserTest {
 
   @Test
   void testGetContentAnalyser() {
-    assertThat(getContentAnalyser(mockMediaType(APPLICATION_JSON), null, null, null)).isInstanceOf(ApplicationJsonAnalyser.class);
-    assertThat(getContentAnalyser(mockMediaType(APPLICATION_JSON_UTF8), null, null, null)).isInstanceOf(ApplicationJsonAnalyser.class);
-    assertThat(getContentAnalyser(mockMediaType(APPLICATION_HAL_JSON), null, null, null)).isInstanceOf(ApplicationJsonAnalyser.class);
-    assertThat(getContentAnalyser(mockMediaType(MULTIPART_FORM_DATA), null, null, null)).isInstanceOf(MultipartFormAnalyser.class);
+    assertThat(getContentAnalyser(mockMediaType(APPLICATION_JSON), null, null, null))
+        .isInstanceOf(ApplicationJsonAnalyser.class);
+    assertThat(getContentAnalyser(mockMediaType(APPLICATION_JSON_UTF8), null, null, null))
+        .isInstanceOf(ApplicationJsonAnalyser.class);
+    assertThat(getContentAnalyser(mockMediaType(APPLICATION_HAL_JSON), null, null, null))
+        .isInstanceOf(ApplicationJsonAnalyser.class);
+    assertThat(getContentAnalyser(mockMediaType(MULTIPART_FORM_DATA), null, null, null))
+        .isInstanceOf(MultipartFormAnalyser.class);
 
     assertThat(getContentAnalyser(mockMediaType("application/xml"), null, null, null)).isNull();
   }

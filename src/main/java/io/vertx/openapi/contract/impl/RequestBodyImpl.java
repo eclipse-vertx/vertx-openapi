@@ -12,13 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.openapi.contract.MediaType;
-import io.vertx.openapi.contract.RequestBody;
-
-import java.util.Map;
-
 import static io.vertx.openapi.contract.MediaType.SUPPORTED_MEDIA_TYPES;
 import static io.vertx.openapi.contract.MediaType.isMediaTypeSupported;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
@@ -27,6 +20,12 @@ import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.lang.String.join;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toMap;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.contract.RequestBody;
+import java.util.Map;
 
 public class RequestBodyImpl implements RequestBody {
   private static final String KEY_REQUIRED = "required";
@@ -44,22 +43,23 @@ public class RequestBodyImpl implements RequestBody {
     JsonObject contentObject = requestBodyModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
 
     this.content = unmodifiableMap(
-      contentObject
-        .fieldNames()
-        .stream()
-        .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-        .filter(mediaTypeIdentifier -> {
-          if (isMediaTypeSupported(mediaTypeIdentifier)) {
-            return true;
-          }
-          String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
-          throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
-        })
-        .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+        contentObject
+            .fieldNames()
+            .stream()
+            .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+            .filter(mediaTypeIdentifier -> {
+              if (isMediaTypeSupported(mediaTypeIdentifier)) {
+                return true;
+              }
+              String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
+              throw createUnsupportedFeature(
+                  String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
+            })
+            .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
     if (content.isEmpty()) {
       String msg =
-        String.format("Operation %s defines a request body without or with empty property \"content\"", operationId);
+          String.format("Operation %s defines a request body without or with empty property \"content\"", operationId);
       throw createInvalidContract(msg);
     }
   }

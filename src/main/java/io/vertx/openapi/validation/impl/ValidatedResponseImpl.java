@@ -12,21 +12,20 @@
 
 package io.vertx.openapi.validation.impl;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toMap;
+
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.openapi.validation.ResponseParameter;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedResponse;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.toMap;
 
 public class ValidatedResponseImpl implements ValidatedResponse {
   private final Map<String, ResponseParameter> headers;
@@ -34,7 +33,7 @@ public class ValidatedResponseImpl implements ValidatedResponse {
   private final ValidatableResponse unvalidated;
 
   public ValidatedResponseImpl(Map<String, ResponseParameter> headers, ResponseParameter body,
-                               ValidatableResponse unvalidated) {
+      ValidatableResponse unvalidated) {
     this.headers = safeUnmodifiableMap(headers);
     this.body = body == null ? new RequestParameterImpl(null) : body;
     this.unvalidated = unvalidated;
@@ -42,21 +41,20 @@ public class ValidatedResponseImpl implements ValidatedResponse {
 
   protected static Map<String, ResponseParameter> safeUnmodifiableMap(Map<String, ResponseParameter> map) {
     Map<String, ResponseParameter> lowerCaseHeader =
-      Optional.ofNullable(map).orElse(emptyMap()).entrySet().stream().collect(toMap(
-        entry -> entry.getKey().toLowerCase(), Entry::getValue));
+        Optional.ofNullable(map).orElse(emptyMap()).entrySet().stream().collect(toMap(
+            entry -> entry.getKey().toLowerCase(), Entry::getValue));
 
-    return Collections.unmodifiableMap(map == null ? Collections.emptyMap() :
-      new HashMap<>(lowerCaseHeader) {
-        @Override
-        public ResponseParameter get(Object key) {
-          return super.get(key.toString().toLowerCase());
-        }
+    return Collections.unmodifiableMap(map == null ? Collections.emptyMap() : new HashMap<>(lowerCaseHeader) {
+      @Override
+      public ResponseParameter get(Object key) {
+        return super.get(key.toString().toLowerCase());
+      }
 
-        @Override
-        public boolean containsKey(Object key) {
-          return get(key) != null;
-        }
-      });
+      @Override
+      public boolean containsKey(Object key) {
+        return get(key) != null;
+      }
+    });
   }
 
   @Override
@@ -80,7 +78,8 @@ public class ValidatedResponseImpl implements ValidatedResponse {
       }
     }
 
-    if (body.isNull() || (body.isString() && body.getString().isEmpty()) || (body.isBuffer() && body.getBuffer().length() == 0)) {
+    if (body.isNull() || (body.isString() && body.getString().isEmpty())
+        || (body.isBuffer() && body.getBuffer().length() == 0)) {
       return serverResponse.send();
     } else {
       serverResponse.headers().add(CONTENT_TYPE.toString(), unvalidated.getContentType());

@@ -13,7 +13,6 @@
 package io.vertx.openapi.validation;
 
 import io.vertx.codegen.annotations.VertxGen;
-
 import java.util.Map;
 
 @VertxGen

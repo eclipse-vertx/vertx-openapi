@@ -12,13 +12,12 @@
 
 package io.vertx.openapi.contract;
 
+import static java.util.function.Function.identity;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.internal.JsonObjectProxy;
-
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.util.function.Function.identity;
 
 public interface OpenAPIObject {
 
@@ -48,6 +47,6 @@ public interface OpenAPIObject {
    */
   default Map<String, Object> getExtensions() {
     return getOpenAPIModel().fieldNames().stream().filter(fieldName -> fieldName.startsWith("x-"))
-      .collect(Collectors.toMap(identity(), getOpenAPIModel()::getValue));
+        .collect(Collectors.toMap(identity(), getOpenAPIModel()::getValue));
   }
 }

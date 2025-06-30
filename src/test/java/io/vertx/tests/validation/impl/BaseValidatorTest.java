@@ -12,6 +12,10 @@
 
 package io.vertx.tests.validation.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -27,6 +31,10 @@ import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.impl.BaseValidator;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
+import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,19 +42,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
-
 @ExtendWith(VertxExtension.class)
 class BaseValidatorTest {
   private BaseValidatorWrapper validator;
-
 
   @BeforeEach
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
@@ -64,10 +62,10 @@ class BaseValidatorTest {
   void testGetOperation(VertxTestContext testContext) {
     String operationId = "listPets";
     validator.getOperation(operationId).onFailure(testContext::failNow)
-      .onSuccess(operation -> testContext.verify(() -> {
-        assertThat(operation.getOperationId()).isEqualTo(operationId);
-        testContext.completeNow();
-      }));
+        .onSuccess(operation -> testContext.verify(() -> {
+          assertThat(operation.getOperationId()).isEqualTo(operationId);
+          testContext.completeNow();
+        }));
   }
 
   @Test
@@ -90,18 +88,17 @@ class BaseValidatorTest {
     MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema));
     MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema));
     MediaType typeStringFormatTime = new MediaTypeImpl("", buildMediaModel.apply(stringSchema.copy().put("format",
-      "time")));
+        "time")));
     MediaType typeStringFormatBinaryMinLength = new MediaTypeImpl("",
-      buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)));
+        buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)));
 
     return Stream.of(
-      Arguments.of("No media model is defined", noMediaModel, false),
-      Arguments.of("Type number", typeNumber, true),
-      Arguments.of("Type String without format", typeStringNoFormat, true),
-      Arguments.of("Type String and format binary", typeStringFormatBinary, false),
-      Arguments.of("Type String and format time", typeStringFormatTime, true),
-      Arguments.of("Type String and format binary but minLength", typeStringFormatBinaryMinLength, true)
-    );
+        Arguments.of("No media model is defined", noMediaModel, false),
+        Arguments.of("Type number", typeNumber, true),
+        Arguments.of("Type String without format", typeStringNoFormat, true),
+        Arguments.of("Type String and format binary", typeStringFormatBinary, false),
+        Arguments.of("Type String and format time", typeStringFormatTime, true),
+        Arguments.of("Type String and format binary but minLength", typeStringFormatBinaryMinLength, true));
   }
 
   @ParameterizedTest(name = "{index} {0}")
@@ -128,7 +125,7 @@ class BaseValidatorTest {
 
     @Override
     protected RequestParameterImpl validate(MediaType mediaType, String contentType, Buffer rawContent,
-                                            ValidationContext requestOrResponse) {
+        ValidationContext requestOrResponse) {
       return super.validate(mediaType, contentType, rawContent, requestOrResponse);
     }
   }

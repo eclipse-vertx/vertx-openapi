@@ -12,20 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.Path;
-import io.vertx.openapi.contract.SecurityRequirement;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.HEAD;
@@ -38,6 +24,19 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidCo
 import static io.vertx.openapi.contract.impl.ParameterImpl.parseParameters;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static java.util.Collections.unmodifiableList;
+
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.contract.SecurityRequirement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class PathImpl implements Path {
   // VisibleForTesting
@@ -71,7 +70,7 @@ public class PathImpl implements Path {
     }
     if (INVALID_CURLY_BRACES.matcher(name).find()) {
       throw createInvalidContract(
-        "Curly brace MUST be the first/last character in a path segment (/{parameterName}/): " + name);
+          "Curly brace MUST be the first/last character in a path segment (/{parameterName}/): " + name);
     }
     if (name.length() > 1 && name.endsWith("/")) {
       this.name = name.substring(0, name.length() - 1);
@@ -82,9 +81,9 @@ public class PathImpl implements Path {
 
     List<Operation> ops = new ArrayList<>();
     SUPPORTED_METHODS.forEach((methodName, method) -> Optional.ofNullable(pathModel.getJsonObject(methodName))
-      .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters,
-        getExtensions(), globalSecReq))
-      .ifPresent(ops::add));
+        .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters,
+            getExtensions(), globalSecReq))
+        .ifPresent(ops::add));
     this.operations = unmodifiableList(ops);
   }
 

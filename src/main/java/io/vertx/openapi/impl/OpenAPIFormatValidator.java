@@ -1,6 +1,5 @@
 package io.vertx.openapi.impl;
 
-
 import io.vertx.json.schema.JsonFormatValidator;
 
 public class OpenAPIFormatValidator implements JsonFormatValidator {
@@ -15,16 +14,17 @@ public class OpenAPIFormatValidator implements JsonFormatValidator {
       return getMessage(format);
     }
 
-    if("float".equalsIgnoreCase(format)) {
-      //Behind the scenes we use jackson, so even floats are converted into doubles for us.
-      //So now we will down cast the float back into a double, and check the usual isInfinite and isNan.
-      if (!(instance instanceof Double) || ((Float)((Double)instance).floatValue()).isInfinite() || ((Float)((Double)instance).floatValue()).isNaN()) {
+    if ("float".equalsIgnoreCase(format)) {
+      // Behind the scenes we use jackson, so even floats are converted into doubles for us.
+      // So now we will down cast the float back into a double, and check the usual isInfinite and isNan.
+      if (!(instance instanceof Double) || ((Float) ((Double) instance).floatValue()).isInfinite()
+          || ((Float) ((Double) instance).floatValue()).isNaN()) {
         return getMessage(format);
       }
     }
 
     if ("float".equalsIgnoreCase(format) || "double".equalsIgnoreCase(format)) {
-      if (!(instance instanceof Double) || ((Double)instance).isInfinite() || ((Double)instance).isNaN()) {
+      if (!(instance instanceof Double) || ((Double) instance).isInfinite() || ((Double) instance).isNaN()) {
         return getMessage(format);
       }
     }

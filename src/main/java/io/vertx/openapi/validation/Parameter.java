@@ -211,10 +211,10 @@ public interface Parameter {
    */
   default boolean isEmpty() {
     return isNull() ||
-      (isString() && getString().isEmpty()) ||
-      (isJsonObject() && getJsonObject().isEmpty()) ||
-      (isJsonArray() && getJsonArray().isEmpty()) ||
-      (isBuffer() && getBuffer().length() == 0);
+        (isString() && getString().isEmpty()) ||
+        (isJsonObject() && getJsonObject().isEmpty()) ||
+        (isJsonArray() && getJsonArray().isEmpty()) ||
+        (isBuffer() && getBuffer().length() == 0);
   }
 
   /**

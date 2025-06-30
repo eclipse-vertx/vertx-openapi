@@ -55,7 +55,8 @@ public interface SecurityScheme extends OpenAPIObject {
   /**
    *  An object containing configuration information for the flow types supported.
    */
-  @Nullable OAuthFlows getFlows();
+  @Nullable
+  OAuthFlows getFlows();
 
   /**
    * OpenId Connect URL to discover OAuth2 configuration values. This MUST be in the form of a URL.

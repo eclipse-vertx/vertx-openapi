@@ -15,7 +15,6 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.http.HttpMethod;
-
 import java.util.List;
 
 /**

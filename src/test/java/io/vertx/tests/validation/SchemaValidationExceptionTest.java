@@ -12,16 +12,6 @@
 
 package io.vertx.tests.validation;
 
-import com.google.common.collect.ImmutableList;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.JsonSchemaValidationException;
-import io.vertx.json.schema.OutputErrorType;
-import io.vertx.json.schema.OutputUnit;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.validation.SchemaValidationException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.openapi.contract.Location.PATH;
@@ -32,21 +22,31 @@ import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.tests.MockHelper.mockParameter;
 
+import com.google.common.collect.ImmutableList;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.JsonSchemaValidationException;
+import io.vertx.json.schema.OutputErrorType;
+import io.vertx.json.schema.OutputUnit;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.validation.SchemaValidationException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 class SchemaValidationExceptionTest {
 
   private static final Parameter DUMMY_PARAMETER =
-    mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
+      mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
 
   private static final JsonSchemaValidationException DUMMY_CAUSE = new JsonSchemaValidationException("dummy",
-    new Exception(), "dummyLocation", OutputErrorType.INVALID_VALUE);
+      new Exception(), "dummyLocation", OutputErrorType.INVALID_VALUE);
   private static final OutputUnit DUMMY_ERROR_UNIT = new OutputUnit("instanceLocation", "absoluteKeywordLocation",
-    "keywordLocation", "error", OutputErrorType.INVALID_VALUE);
+      "keywordLocation", "error", OutputErrorType.INVALID_VALUE);
   private static final OutputUnit DUMMY_OUTPUT_UNIT = new OutputUnit("instanceLocation2", "absoluteKeywordLocation2",
-    "keywordLocation2", "error2", OutputErrorType.MISSING_VALUE);
+      "keywordLocation2", "error2", OutputErrorType.MISSING_VALUE);
 
   private static final OutputUnit DUMMY_OUTPUT_UNIT_INVALID = new OutputUnit("instanceLocation2",
-    "absoluteKeywordLocation2",
-    "keywordLocation2", "error2", OutputErrorType.INVALID_VALUE);
+      "absoluteKeywordLocation2",
+      "keywordLocation2", "error2", OutputErrorType.INVALID_VALUE);
 
   @BeforeAll
   static void setup() {
@@ -57,7 +57,7 @@ class SchemaValidationExceptionTest {
   @Test
   void testCreateInvalidValueParameter() {
     SchemaValidationException exception = SchemaValidationException.createInvalidValueParameter(DUMMY_PARAMETER,
-      DUMMY_OUTPUT_UNIT, DUMMY_CAUSE);
+        DUMMY_OUTPUT_UNIT, DUMMY_CAUSE);
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
@@ -68,7 +68,7 @@ class SchemaValidationExceptionTest {
   @Test
   void testCreateInvalidValueRequestBody() {
     SchemaValidationException exception = SchemaValidationException.createInvalidValueBody(DUMMY_OUTPUT_UNIT, REQUEST,
-      DUMMY_CAUSE);
+        DUMMY_CAUSE);
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
@@ -79,7 +79,7 @@ class SchemaValidationExceptionTest {
   @Test
   void testCreateInvalidValueResponseBody() {
     SchemaValidationException exception = SchemaValidationException.createInvalidValueBody(DUMMY_OUTPUT_UNIT, RESPONSE,
-      DUMMY_CAUSE);
+        DUMMY_CAUSE);
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
@@ -90,7 +90,7 @@ class SchemaValidationExceptionTest {
   @Test
   void testCreateMissingValueRequestBody() {
     SchemaValidationException exception = SchemaValidationException.createMissingValueRequestBody(DUMMY_OUTPUT_UNIT,
-      DUMMY_CAUSE);
+        DUMMY_CAUSE);
 
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
@@ -103,7 +103,7 @@ class SchemaValidationExceptionTest {
   void testCreateErrorFromOutputUnitType() {
 
     SchemaValidationException exception = SchemaValidationException.createErrorFromOutputUnitType(DUMMY_PARAMETER,
-      DUMMY_OUTPUT_UNIT, DUMMY_CAUSE);
+        DUMMY_OUTPUT_UNIT, DUMMY_CAUSE);
 
     assertThat(exception.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT);
     assertThat(exception.getCause()).isEqualTo(DUMMY_CAUSE);
@@ -112,8 +112,8 @@ class SchemaValidationExceptionTest {
     assertThat(exception).hasMessageThat().isEqualTo(excpectedMsg);
 
     SchemaValidationException exception_invalid =
-      SchemaValidationException.createErrorFromOutputUnitType(DUMMY_PARAMETER,
-        DUMMY_OUTPUT_UNIT_INVALID, DUMMY_CAUSE);
+        SchemaValidationException.createErrorFromOutputUnitType(DUMMY_PARAMETER,
+            DUMMY_OUTPUT_UNIT_INVALID, DUMMY_CAUSE);
 
     assertThat(exception_invalid.getOutputUnit()).isEqualTo(DUMMY_OUTPUT_UNIT_INVALID);
     assertThat(exception_invalid.getCause()).isEqualTo(DUMMY_CAUSE);

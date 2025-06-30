@@ -12,15 +12,15 @@
 
 package io.vertx.tests.validation;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.truth.Truth;
 import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.impl.ResponseValidatorImpl;
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ResponseValidatorTest {
 

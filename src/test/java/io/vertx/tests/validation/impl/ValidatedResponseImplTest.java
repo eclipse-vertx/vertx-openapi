@@ -12,6 +12,12 @@
 
 package io.vertx.tests.validation.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.vertx.core.Future;
@@ -24,25 +30,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.tests.test.base.HttpServerTestBase;
 import io.vertx.openapi.validation.ResponseParameter;
 import io.vertx.openapi.validation.ResponseValidator;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatedResponse;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ValidatedResponseImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import io.vertx.tests.test.base.HttpServerTestBase;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ValidatedResponseImplTest extends HttpServerTestBase {
 
@@ -79,13 +78,14 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
 
   Future<?> verifyResponse(int statusCode, Buffer body, Map<String, String> headers, VertxTestContext testContext) {
     return createRequest(HttpMethod.GET, "/does_not_matter").compose(HttpClientRequest::send)
-      .compose(response -> response.body().onComplete(testContext.succeeding(receivedBody -> testContext.verify(() -> {
-        assertThat(response.statusCode()).isEqualTo(statusCode);
-        assertThat(receivedBody).isEqualTo(body);
-        assertThat(response.headers().size()).isEqualTo(headers.size());
-        headers.forEach((k, v) -> assertThat(response.headers().get(k)).isEqualTo(v));
-        testContext.completeNow();
-      }))));
+        .compose(
+            response -> response.body().onComplete(testContext.succeeding(receivedBody -> testContext.verify(() -> {
+              assertThat(response.statusCode()).isEqualTo(statusCode);
+              assertThat(receivedBody).isEqualTo(body);
+              assertThat(response.headers().size()).isEqualTo(headers.size());
+              headers.forEach((k, v) -> assertThat(response.headers().get(k)).isEqualTo(v));
+              testContext.completeNow();
+            }))));
   }
 
   @Test
@@ -94,7 +94,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     Map<String, String> headersExpected = ImmutableMap.of(CONTENT_LENGTH.toString(), "0");
     createServer(request -> {
       responseValidator.validate(ValidatableResponse.create(201), "createPets")
-        .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
+          .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
     }).compose(v -> verifyResponse(201, Buffer.buffer(), headersExpected, testContext));
   }
 
@@ -104,13 +104,13 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     Buffer body = new JsonArray().toBuffer();
     createServer(request -> {
       responseValidator.validate(ValidatableResponse.create(200, body, APPLICATION_JSON.toString()), "listPets")
-        .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
+          .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
     }).compose(v -> verifyResponse(200, body, buildHeaders(body), testContext));
   }
 
   private Map<String, String> buildHeaders(Buffer body) {
     return Maps.newHashMap(ImmutableMap.of(CONTENT_TYPE.toString(), APPLICATION_JSON.toString(),
-      CONTENT_LENGTH.toString(), "" + body.length()));
+        CONTENT_LENGTH.toString(), "" + body.length()));
   }
 
   @Test
@@ -120,7 +120,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     createServer(request -> {
       ValidatableResponse vr = ValidatableResponse.create(200, cat, APPLICATION_JSON.toString());
       responseValidator.validate(vr, "showPetById")
-        .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
+          .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
     }).compose(v -> verifyResponse(200, cat, buildHeaders(cat), testContext));
   }
 
@@ -135,7 +135,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
       Map<String, String> headers = ImmutableMap.of("x-next", "foo");
       ValidatableResponse vr = ValidatableResponse.create(200, headers, cats, APPLICATION_JSON.toString());
       responseValidator.validate(vr, "listPets")
-        .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
+          .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
     }).compose(v -> verifyResponse(200, cats, headersExpected, testContext));
   }
 }

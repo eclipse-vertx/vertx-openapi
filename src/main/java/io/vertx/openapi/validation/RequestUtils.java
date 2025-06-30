@@ -12,6 +12,9 @@
 
 package io.vertx.openapi.validation;
 
+import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
+import static java.util.stream.Collectors.joining;
+
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.Cookie;
@@ -21,7 +24,6 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
-
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -31,13 +33,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
-import static java.util.stream.Collectors.joining;
-
 public class RequestUtils {
   private static final RequestParameter EMPTY = new RequestParameterImpl(null);
   private static final Function<Collection<String>, String> GET_FIRST_VALUE =
-    values -> values.stream().findFirst().orElse(null);
+      values -> values.stream().findFirst().orElse(null);
 
   private RequestUtils() {
 
@@ -65,7 +64,7 @@ public class RequestUtils {
    * @return A {@link Future} holding the ValidatableRequest.
    */
   public static Future<ValidatableRequest> extract(HttpServerRequest request, Operation operation,
-                                                   Supplier<Future<Buffer>> bodySupplier) {
+      Supplier<Future<Buffer>> bodySupplier) {
     Map<String, RequestParameter> cookies = new HashMap<>();
     Map<String, RequestParameter> headers = new HashMap<>();
     Map<String, RequestParameter> pathParams = new HashMap<>();
@@ -105,10 +104,10 @@ public class RequestUtils {
 
   private static RequestParameter extractCookie(HttpServerRequest request, Parameter parameter) {
     Collection<String> cookies =
-      request.cookies(parameter.getName()).stream().map(Cookie::getValue).collect(Collectors.toList());
+        request.cookies(parameter.getName()).stream().map(Cookie::getValue).collect(Collectors.toList());
     return joinFormValues(cookies, parameter, () -> {
       String explodedObject =
-        request.cookies().stream().map(c -> c.getName() + "=" + decodeUrl(c.getValue())).collect(joining("&"));
+          request.cookies().stream().map(c -> c.getName() + "=" + decodeUrl(c.getValue())).collect(joining("&"));
       return new RequestParameterImpl(explodedObject);
     });
   }
@@ -130,14 +129,14 @@ public class RequestUtils {
     Collection<String> queryParams = request.params().getAll(parameter.getName());
     return joinFormValues(queryParams, parameter, () -> {
       String decodedQuery =
-        request.params().entries().stream().map(entry -> entry.getKey() + "=" + decodeUrl(entry.getValue()))
-          .collect(joining("&"));
+          request.params().entries().stream().map(entry -> entry.getKey() + "=" + decodeUrl(entry.getValue()))
+              .collect(joining("&"));
       return new RequestParameterImpl(decodedQuery);
     });
   }
 
   private static RequestParameter joinFormValues(Collection<String> formValues, Parameter parameter,
-                                                 Supplier<RequestParameter> explodedObjectSupplier) {
+      Supplier<RequestParameter> explodedObjectSupplier) {
     if (formValues.isEmpty()) {
       return EMPTY;
     }
@@ -152,7 +151,7 @@ public class RequestUtils {
       case ARRAY:
         if (parameter.isExplode()) {
           String explodedString =
-            formValues.stream().map(fv -> parameter.getName() + "=" + decodeUrl(fv)).collect(joining("&"));
+              formValues.stream().map(fv -> parameter.getName() + "=" + decodeUrl(fv)).collect(joining("&"));
           return new RequestParameterImpl(explodedString);
         } else {
           return new RequestParameterImpl(decodeUrl(GET_FIRST_VALUE.apply(formValues)));

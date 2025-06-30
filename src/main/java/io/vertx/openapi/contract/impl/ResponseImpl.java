@@ -12,16 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.openapi.contract.MediaType;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.Response;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.MediaType.SUPPORTED_MEDIA_TYPES;
@@ -33,6 +23,15 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableList;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Response;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class ResponseImpl implements Response {
   private static final String KEY_HEADERS = "headers";
@@ -51,23 +50,23 @@ public class ResponseImpl implements Response {
 
     JsonObject headersObject = responseModel.getJsonObject(KEY_HEADERS, EMPTY_JSON_OBJECT);
     this.headers = headersObject
-      .fieldNames()
-      .stream()
-      .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-      .filter(FILTER_CONTENT_TYPE)
-      .map(name -> {
-        JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in",
-          HEADER.toString());
-        return new ParameterImpl("", headerModel);
-      }).collect(toUnmodifiableList());
-
-    JsonObject contentObject = responseModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
-    this.content = unmodifiableMap(
-      contentObject
         .fieldNames()
         .stream()
         .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-        .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+        .filter(FILTER_CONTENT_TYPE)
+        .map(name -> {
+          JsonObject headerModel = headersObject.getJsonObject(name).copy().put("name", name).put("in",
+              HEADER.toString());
+          return new ParameterImpl("", headerModel);
+        }).collect(toUnmodifiableList());
+
+    JsonObject contentObject = responseModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
+    this.content = unmodifiableMap(
+        contentObject
+            .fieldNames()
+            .stream()
+            .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
+            .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
 
     if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type))) {
       String msgTemplate = "Operation %s defines a response with an unsupported media type. Supported: %s";

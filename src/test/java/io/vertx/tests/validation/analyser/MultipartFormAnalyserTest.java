@@ -12,27 +12,26 @@
 
 package io.vertx.tests.validation.analyser;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.validation.ValidatorErrorType;
-import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.MultipartFormAnalyser;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.validation.ValidationContext.REQUEST;
 import static io.vertx.openapi.validation.analyser.MultipartFormAnalyser.extractBoundary;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.validation.ValidatorErrorType;
+import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.analyser.MultipartFormAnalyser;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class MultipartFormAnalyserTest {
   private static final Path TEST_RESOURCE_PATH = getRelatedTestResourcePath(MultipartFormAnalyserTest.class);
@@ -55,8 +54,8 @@ class MultipartFormAnalyserTest {
   @MethodSource
   void testCheckSyntacticalCorrectnessThrowIfContentTypeisMissing(String contentType) {
     ValidatorException exception =
-      assertThrows(ValidatorException.class,
-        () -> new MultipartFormAnalyser(contentType, null, REQUEST).checkSyntacticalCorrectness());
+        assertThrows(ValidatorException.class,
+            () -> new MultipartFormAnalyser(contentType, null, REQUEST).checkSyntacticalCorrectness());
 
     String expectedMsg = "The expected multipart/form-data request doesn't contain the required content-type header.";
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_REQUIRED_PARAMETER);
@@ -71,8 +70,8 @@ class MultipartFormAnalyserTest {
   @MethodSource
   void testCheckSyntacticalCorrectnessThrowIfBoundaryIsMissing(String contentType) {
     ValidatorException exception =
-      assertThrows(ValidatorException.class,
-        () -> new MultipartFormAnalyser(contentType, null, REQUEST).checkSyntacticalCorrectness());
+        assertThrows(ValidatorException.class,
+            () -> new MultipartFormAnalyser(contentType, null, REQUEST).checkSyntacticalCorrectness());
 
     String expectedMsg = "The expected multipart/form-data request doesn't contain the required boundary information.";
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_REQUIRED_PARAMETER);
@@ -80,15 +79,15 @@ class MultipartFormAnalyserTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"multipart.txt", "multipart_extended_content_type.txt"})
+  @ValueSource(strings = { "multipart.txt", "multipart_extended_content_type.txt" })
   void testTransform(String file) throws IOException {
     Buffer multipartBody = Buffer.buffer(Files.readString(TEST_RESOURCE_PATH.resolve(file)));
     String contentType = "multipart/form-data; boundary=abcde12345";
     JsonObject expected = new JsonObject()
-      .put("id", "123e4567-e89b-12d3-a456-426655440000")
-      .put("address", new JsonObject()
-        .put("street", "3, Garden St")
-        .put("city", "Hillsbery, UT"));
+        .put("id", "123e4567-e89b-12d3-a456-426655440000")
+        .put("address", new JsonObject()
+            .put("street", "3, Garden St")
+            .put("city", "Hillsbery, UT"));
 
     MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
     analyser.checkSyntacticalCorrectness(); // must always be executed before transform
@@ -101,8 +100,8 @@ class MultipartFormAnalyserTest {
     Buffer multipartBody = Buffer.buffer(Files.readString(TEST_RESOURCE_PATH.resolve("multipart_octet_stream.txt")));
     String contentType = "multipart/form-data; boundary=abcde12345";
     JsonObject expected = new JsonObject()
-      .put("street", "3, Garden St")
-      .put("city", "Hillsbery, UT");
+        .put("street", "3, Garden St")
+        .put("city", "Hillsbery, UT");
 
     MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
     analyser.checkSyntacticalCorrectness(); // must always be executed before transform
@@ -116,9 +115,9 @@ class MultipartFormAnalyserTest {
     Buffer multipartBody = Buffer.buffer(Files.readString(TEST_RESOURCE_PATH.resolve("multipart_id_no_body.txt")));
     String contentType = "multipart/form-data; boundary=abcde12345";
     JsonObject expected = new JsonObject()
-      .put("address", new JsonObject()
-        .put("street", "3, Garden St")
-        .put("city", "Hillsbery, UT"));
+        .put("address", new JsonObject()
+            .put("street", "3, Garden St")
+            .put("city", "Hillsbery, UT"));
 
     MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
     analyser.checkSyntacticalCorrectness(); // must always be executed before transform
@@ -129,7 +128,7 @@ class MultipartFormAnalyserTest {
   @Test
   void testTransformPartWithInvalidContentType() throws IOException {
     Buffer multipartBody = Buffer.buffer(Files.readString(TEST_RESOURCE_PATH.resolve(
-      "multipart_part_invalid_contenttype.txt")));
+        "multipart_part_invalid_contenttype.txt")));
     String contentType = "multipart/form-data; boundary=abcde12345";
 
     MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
