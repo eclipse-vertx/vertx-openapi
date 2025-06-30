@@ -40,24 +40,24 @@ public class OpenAPIContractBuilder {
   }
 
   private final Vertx vertx;
-  private String contractFile;
+  private String contractPath;
   private JsonObject contract;
-  private final Map<String, String> additionalContractFiles = new HashMap<>();
-  private final Map<String, JsonObject> additionalContracts = new HashMap<>();
+  private final Map<String, String> additionalContractPaths = new HashMap<>();
+  private final Map<String, JsonObject> additionalContractParts = new HashMap<>();
 
   public OpenAPIContractBuilder(Vertx vertx) {
     this.vertx = vertx;
   }
 
   /**
-   * Sets the path to the contract file. Either provide the path to the contract or the parsed contract,
+   * Sets the path to the contract. Either provide the path to the contract or the parsed contract,
    * not both. Overrides the contract set by {@link #setContract(JsonObject)}.
    *
-   * @param contractPath The path to the contract file
+   * @param contractPath The path to the contract
    * @return The builder, for a fluent interface
    */
   public OpenAPIContractBuilder setContract(String contractPath) {
-    this.contractFile = contractPath;
+    this.contractPath = contractPath;
     this.contract = null;
     return this;
   }
@@ -71,71 +71,71 @@ public class OpenAPIContractBuilder {
    */
   public OpenAPIContractBuilder setContract(JsonObject contract) {
     this.contract = contract;
-    this.contractFile = null;
+    this.contractPath = null;
     return this;
   }
 
   /**
    * Puts a contract that is referenced by the main contract. This method can be
    * called multiple times to add multiple referenced contracts. Overrides a previously
-   * added contract, when the same key is used.
+   * added contract when the same key is used.
    *
    * @param key  The unique key for the contract.
-   * @param path The path to the contract file.
+   * @param path The path to the contract.
    * @return The builder, for a fluent interface
    */
-  public OpenAPIContractBuilder putAdditionalContractFile(String key, String path) {
-    additionalContractFiles.put(key, path);
-    additionalContracts.remove(key);
+  public OpenAPIContractBuilder putAdditionalContractPath(String key, String path) {
+    additionalContractPaths.put(key, path);
+    additionalContractParts.remove(key);
     return this;
   }
 
   /**
-   * Uses the contract files from the provided map to resolve referenced contracts.
-   * Replaces all previously put contracts by {@link #putAdditionalContractFile(String, String)}.
-   * If the same key is used also overrides the contracts set by {@link #putAdditionalContract(String, JsonObject)}
-   * and {@link #setAdditionalContracts(Map)}.
+   * Uses the contract paths from the provided map to resolve referenced contracts.
+   * Replaces all previously put contracts by {@link #putAdditionalContractPath(String, String)}.
+   * If the same key is used also overrides the contracts set by {@link #putAdditionalContractPart(String, JsonObject)}
+   * and {@link #setAdditionalContractParts(Map)}.
    *
-   * @param contractFiles A map that contains all additional contract files.
+   * @param contractPaths A map that contains all additional contract paths.
    * @return The builder, for a fluent interface.
    */
-  public OpenAPIContractBuilder setAdditionalContractFiles(Map<String, String> contractFiles) {
-    additionalContractFiles.clear();
-    for (var e : contractFiles.entrySet()) {
-      putAdditionalContractFile(e.getKey(), e.getValue());
-      additionalContracts.remove(e.getKey());
+  public OpenAPIContractBuilder setAdditionalContractPaths(Map<String, String> contractPaths) {
+    additionalContractPaths.clear();
+    for (var e : contractPaths.entrySet()) {
+      putAdditionalContractPath(e.getKey(), e.getValue());
+      additionalContractParts.remove(e.getKey());
     }
     return this;
   }
 
   /**
-   * Adds a contract that is referenced by the main contract. This method can be
+   * Puts a contract that is referenced by the main contract. This method can be
    * called multiple times to add multiple referenced contracts.
    *
    * @param key     The unique key for the contract.
-   * @param content The parsed contract.
+   * @param contractPart The contract object.
    * @return The builder, for a fluent interface
    */
-  public OpenAPIContractBuilder putAdditionalContract(String key, JsonObject content) {
-    additionalContracts.put(key, content);
-    additionalContractFiles.remove(key);
+  public OpenAPIContractBuilder putAdditionalContractPart(String key, JsonObject contractPart) {
+    additionalContractParts.put(key, contractPart);
+    additionalContractPaths.remove(key);
     return this;
   }
 
   /**
    * Uses the contracts from the provided map to resolve referenced contracts.
-   * Replaces all previously put contracts by {@link #putAdditionalContract(String, JsonObject)}.
-   * If the same key is used also replaces the contracts set by {@link #putAdditionalContractFile(String, String)}
-   * and {@link #setAdditionalContractFiles(Map)}.
+   * Replaces all previously put contracts by {@link #putAdditionalContractPart(String, JsonObject)}.
+   * If the same key is used also replaces the contracts set by {@link #putAdditionalContractPath(String, String)}
+   * and {@link #setAdditionalContractPaths(Map)}.
    *
-   * @param contracts A map that contains all additional contract files.
+   * @param contractParts A map that contains additional contract parts.
    * @return The builder, for a fluent interface.
    */
-  public OpenAPIContractBuilder setAdditionalContracts(Map<String, JsonObject> contracts) {
-    additionalContracts.clear();
-    for (var e : contracts.entrySet()) {
-      putAdditionalContract(e.getKey(), e.getValue());
-      additionalContractFiles.remove(e.getKey());
+  public OpenAPIContractBuilder setAdditionalContractParts(Map<String, JsonObject> contractParts) {
+    additionalContractParts.clear();
+    for (var e : contractParts.entrySet()) {
+      putAdditionalContractPart(e.getKey(), e.getValue());
+      additionalContractPaths.remove(e.getKey());
     }
     return this;
   }
@@ -146,61 +146,63 @@ public class OpenAPIContractBuilder {
    * @return The contract.
    */
   public Future<OpenAPIContract> build() {
-    if (contractFile == null && contract == null) {
+
+    if (contractPath == null && contract == null) {
       return Future.failedFuture(new OpenAPIContractBuilderException(
-          "Neither a contract file or a contract is set. One of them must be set."));
+          "Neither a contract path or a contract is set. One of them must be set."));
     }
 
-    Future<JsonObject> readContract = contractFile == null
+    Future<JsonObject> readContract = contractPath == null
         ? Future.succeededFuture(contract)
-        : Utils.readYamlOrJson(vertx, contractFile);
+        : Utils.readYamlOrJson(vertx, contractPath);
 
     var resolvedContracts = Future
-      .succeededFuture(additionalContracts)
-      .compose(x -> readContractFiles()
-        .map(r -> {
-          var all = new HashMap<>(x);
-          all.putAll(r);
-          return all;
-        }));
+        .succeededFuture(additionalContractParts)
+        .compose(x -> readContractPaths()
+            .map(r -> {
+              var all = new HashMap<>(x);
+              all.putAll(r);
+              return all;
+            }));
 
     return Future.all(readContract, resolvedContracts)
-      .compose(x -> {
-        JsonObject contract = x.resultAt(0);
-        Map<String, JsonObject> other = x.resultAt(1);
-        return buildOpenAPIContract(contract, other);
-      });
+        .compose(x -> {
+          JsonObject contract = x.resultAt(0);
+          Map<String, JsonObject> other = x.resultAt(1);
+          return buildOpenAPIContract(contract, other);
+        });
   }
 
-  private Future<OpenAPIContract> buildOpenAPIContract(JsonObject unresolvedContract,
-                                                       Map<String, JsonObject> additionalContractFiles) {
-    if (unresolvedContract == null) {
+  private Future<OpenAPIContract> buildOpenAPIContract(JsonObject resolvedContract,
+      Map<String, JsonObject> additionalContractParts) {
+    if (resolvedContract == null) {
       return failedFuture(createInvalidContract("Spec must not be null"));
     }
 
-    OpenAPIVersion version = OpenAPIVersion.fromContract(unresolvedContract);
+    OpenAPIVersion version = OpenAPIVersion.fromContract(resolvedContract);
     String baseUri = "app://";
 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     Promise<OpenAPIContract> promise = ctx.promise();
 
     version.getRepository(vertx, baseUri)
+
         .compose(repository -> {
-          List<Future<?>> validationFutures = new ArrayList<>(additionalContractFiles.size());
-          for (String ref : additionalContractFiles.keySet()) {
+          List<Future<?>> validationFutures = new ArrayList<>(additionalContractParts.size());
+          for (String ref : additionalContractParts.keySet()) {
             // Todo: As soon a more modern Java version is used the validate part could be extracted in a private static
             // method and reused below.
-            JsonObject file = additionalContractFiles.get(ref);
+            JsonObject file = additionalContractParts.get(ref);
             Future<?> validationFuture = version.validateAdditionalContractFile(vertx, repository, file)
                 .compose(v -> vertx.executeBlocking(() -> repository.dereference(ref, JsonSchema.of(ref, file))));
 
             validationFutures.add(validationFuture);
           }
           return Future.all(validationFutures).map(repository);
-        }).compose(repository -> version.validateContract(vertx, repository, unresolvedContract).compose(res -> {
+        }).compose(repository -> version.validateContract(vertx, repository, resolvedContract).compose(res -> {
           try {
             res.checkValidity();
-            return version.resolve(vertx, repository, unresolvedContract);
+            return version.resolve(vertx, repository, resolvedContract);
           } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
             return failedFuture(createInvalidContract(null, e));
           }
@@ -219,11 +221,12 @@ public class OpenAPIContractBuilder {
     return promise.future();
   }
 
-  private Future<Map<String, JsonObject>> readContractFiles() {
-    if (additionalContractFiles.isEmpty()) return Future.succeededFuture(Map.of());
+  private Future<Map<String, JsonObject>> readContractPaths() {
+    if (additionalContractPaths.isEmpty())
+      return Future.succeededFuture(Map.of());
 
     var read = new HashMap<String, JsonObject>();
-    return Future.all(additionalContractFiles.entrySet().stream()
+    return Future.all(additionalContractPaths.entrySet().stream()
         .map(e -> Utils.readYamlOrJson(vertx, e.getValue())
             .map(c -> read.put(e.getKey(), c)))
         .collect(Collectors.toList()))

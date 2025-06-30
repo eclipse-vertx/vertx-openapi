@@ -76,9 +76,9 @@ public interface OpenAPIContract {
       Map<String, String> additionalContractFiles) {
 
     return builder(vertx)
-      .setContract(unresolvedContractPath)
-      .setAdditionalContractFiles(additionalContractFiles)
-      .build();
+        .setContract(unresolvedContractPath)
+        .setAdditionalContractPaths(additionalContractFiles)
+        .build();
   }
 
   /**
@@ -97,9 +97,9 @@ public interface OpenAPIContract {
     if (unresolvedContract == null)
       return Future.failedFuture(OpenAPIContractException.createInvalidContract("Spec must not be null"));
     return builder(vertx)
-      .setContract(unresolvedContract)
-      .setAdditionalContracts(additionalContractFiles)
-      .build();
+        .setContract(unresolvedContract)
+        .setAdditionalContractParts(additionalContractFiles)
+        .build();
 
   }
 
