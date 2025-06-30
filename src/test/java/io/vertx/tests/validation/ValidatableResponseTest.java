@@ -12,17 +12,16 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.google.common.collect.ImmutableMap;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.ValidatableResponse;
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 class ValidatableResponseTest {
 
@@ -64,7 +63,7 @@ class ValidatableResponseTest {
   @Test
   void testCreate() {
     ValidatableResponse response =
-      ValidatableResponse.create(dummyStatusCode, dummyHeaders, dummyBody, dummyContentType);
+        ValidatableResponse.create(dummyStatusCode, dummyHeaders, dummyBody, dummyContentType);
     assertThat(response.getStatusCode()).isEqualTo(dummyStatusCode);
     assertThat(response.getHeaders()).hasSize(1);
     assertThat(response.getBody().get()).isEqualTo(dummyBody);
@@ -74,7 +73,7 @@ class ValidatableResponseTest {
   @Test
   void testCreateThrows() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-      () -> ValidatableResponse.create(dummyStatusCode, dummyHeaders, dummyBody, null));
+        () -> ValidatableResponse.create(dummyStatusCode, dummyHeaders, dummyBody, null));
     assertThat(exception).hasMessageThat().isEqualTo("When a body is passed, the content type MUST be specified");
   }
 }

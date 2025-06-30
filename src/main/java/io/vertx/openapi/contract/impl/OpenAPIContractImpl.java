@@ -12,6 +12,17 @@
 
 package io.vertx.openapi.contract.impl;
 
+import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
+import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
+
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
@@ -24,22 +35,10 @@ import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.openapi.contract.SecurityScheme;
 import io.vertx.openapi.contract.Server;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
-
-import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
-import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SERVERS = "servers";
@@ -47,7 +46,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SECURITY = "security";
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
-    path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
+      path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
 
   private final List<Server> servers;
 
@@ -66,7 +65,6 @@ public class OpenAPIContractImpl implements OpenAPIContract {
 
   private final Map<String, SecurityScheme> securitySchemes;
 
-
   // VisibleForTesting
   final String basePath;
 
@@ -76,16 +74,16 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     this.schemaRepository = schemaRepository;
 
     servers = resolvedSpec
-      .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
-      .stream()
-      .map(JsonObject.class::cast)
-      .map(ServerImpl::new).collect(toUnmodifiableList());
+        .getJsonArray(KEY_SERVERS, EMPTY_JSON_ARRAY)
+        .stream()
+        .map(JsonObject.class::cast)
+        .map(ServerImpl::new).collect(toUnmodifiableList());
 
     this.securityRequirements = resolvedSpec
-      .getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY)
-      .stream()
-      .map(JsonObject.class::cast)
-      .map(SecurityRequirementImpl::new).collect(toUnmodifiableList());
+        .getJsonArray(KEY_SECURITY, EMPTY_JSON_ARRAY)
+        .stream()
+        .map(JsonObject.class::cast)
+        .map(SecurityRequirementImpl::new).collect(toUnmodifiableList());
 
     if (servers.stream().collect(groupingBy(Server::getBasePath)).size() > 1) {
       throw createUnsupportedFeature("Different base paths in server urls");
@@ -93,27 +91,27 @@ public class OpenAPIContractImpl implements OpenAPIContract {
       this.basePath = servers.isEmpty() ? "" : servers.get(0).getBasePath();
     }
     List<PathImpl> unsortedPaths = resolvedSpec
-      .getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT)
-      .stream()
-      .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
-      .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
-        securityRequirements))
-      .collect(toList());
+        .getJsonObject(KEY_PATHS, EMPTY_JSON_OBJECT)
+        .stream()
+        .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
+        .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
+            securityRequirements))
+        .collect(toList());
 
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
     this.paths = unmodifiableList(sortedPaths);
     this.operations = paths.stream().flatMap(path -> path.getOperations().stream()).collect(toMap(
-      Operation::getOperationId, operation -> operation));
+        Operation::getOperationId, operation -> operation));
     // It is important that PathFinder gets the ordered Paths
     this.pathFinder = new PathFinder(sortedPaths);
 
     this.securitySchemes =
-      resolvedSpec
-        .getJsonObject("components", EMPTY_JSON_OBJECT)
-        .getJsonObject("securitySchemes", EMPTY_JSON_OBJECT)
-        .stream()
-        .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
-        .collect(toMap(Map.Entry::getKey, value -> new SecuritySchemeImpl((JsonObject) value.getValue())));
+        resolvedSpec
+            .getJsonObject("components", EMPTY_JSON_OBJECT)
+            .getJsonObject("securitySchemes", EMPTY_JSON_OBJECT)
+            .stream()
+            .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
+            .collect(toMap(Map.Entry::getKey, value -> new SecuritySchemeImpl((JsonObject) value.getValue())));
   }
 
   /**
@@ -158,7 +156,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
           throw createInvalidContract("Found Path duplicate: " + first);
         } else {
           throw createInvalidContract(
-            "Found Paths with same hierarchy but different templated names: " + firstWithoutPlaceHolder);
+              "Found Paths with same hierarchy but different templated names: " + firstWithoutPlaceHolder);
         }
       }
     }

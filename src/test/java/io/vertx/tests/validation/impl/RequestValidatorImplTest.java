@@ -12,49 +12,6 @@
 
 package io.vertx.tests.validation.impl;
 
-import com.google.common.collect.ImmutableMap;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.common.dsl.SchemaBuilder;
-import io.vertx.junit5.Checkpoint;
-import io.vertx.junit5.Timeout;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import io.vertx.openapi.contract.Location;
-import io.vertx.openapi.contract.MediaType;
-import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.RequestBody;
-import io.vertx.openapi.contract.Style;
-import io.vertx.openapi.validation.RequestParameter;
-import io.vertx.openapi.validation.RequestValidator;
-import io.vertx.openapi.validation.ValidatableRequest;
-import io.vertx.openapi.validation.ValidatedRequest;
-import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.impl.RequestParameterImpl;
-import io.vertx.openapi.validation.impl.RequestValidatorImpl;
-import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
-import io.vertx.openapi.validation.impl.ValidatedRequestImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -84,6 +41,48 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaBuilder;
+import io.vertx.junit5.Checkpoint;
+import io.vertx.junit5.Timeout;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import io.vertx.openapi.contract.Location;
+import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.Style;
+import io.vertx.openapi.validation.RequestParameter;
+import io.vertx.openapi.validation.RequestValidator;
+import io.vertx.openapi.validation.ValidatableRequest;
+import io.vertx.openapi.validation.ValidatedRequest;
+import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.impl.RequestParameterImpl;
+import io.vertx.openapi.validation.impl.RequestValidatorImpl;
+import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
+import io.vertx.openapi.validation.impl.ValidatedRequestImpl;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
 @ExtendWith(VertxExtension.class)
 class RequestValidatorImplTest {
 
@@ -101,9 +100,8 @@ class RequestValidatorImplTest {
 
   private static Stream<Arguments> provideNullRequestParameters() {
     return Stream.of(
-      Arguments.of("RequestParameter is null", null),
-      Arguments.of("Object in RequestParameter is null", new RequestParameterImpl(null))
-    );
+        Arguments.of("RequestParameter is null", null),
+        Arguments.of("Object in RequestParameter is null", new RequestParameterImpl(null)));
   }
 
   private static Stream<Arguments> testValidateWithValidatableRequestAndOperationId() {
@@ -132,73 +130,70 @@ class RequestValidatorImplTest {
     JsonObject body = new JsonObject().put("foo", "bar");
 
     Map<String, RequestParameter> expectedCookies =
-      ImmutableMap.of("CookieParamAge", new RequestParameterImpl(1337));
+        ImmutableMap.of("CookieParamAge", new RequestParameterImpl(1337));
     Map<String, RequestParameter> rawCookies = ImmutableMap.of("CookieParamAge", new RequestParameterImpl("1337"));
 
     Map<String, RequestParameter> expectedHeaderParameters =
-      ImmutableMap.of("HeaderParamUser",
-        new RequestParameterImpl(new JsonObject().put("name", "foo").put("id", 9001)));
+        ImmutableMap.of("HeaderParamUser",
+            new RequestParameterImpl(new JsonObject().put("name", "foo").put("id", 9001)));
     Map<String, RequestParameter> rawHeaderParameters =
-      ImmutableMap.of("HeaderParamUser", new RequestParameterImpl("name,foo,id,9001"));
+        ImmutableMap.of("HeaderParamUser", new RequestParameterImpl("name,foo,id,9001"));
 
     Map<String, RequestParameter> expectedPathParameters =
-      ImmutableMap.of("PathParamVersion", new RequestParameterImpl(4.2));
+        ImmutableMap.of("PathParamVersion", new RequestParameterImpl(4.2));
     Map<String, RequestParameter> rawPathParameters =
-      ImmutableMap.of("PathParamVersion", new RequestParameterImpl("4.2"));
+        ImmutableMap.of("PathParamVersion", new RequestParameterImpl("4.2"));
 
     Map<String, RequestParameter> expectedQuery =
-      ImmutableMap.of("QueryParamTrace", new RequestParameterImpl(true));
+        ImmutableMap.of("QueryParamTrace", new RequestParameterImpl(true));
     Map<String, RequestParameter> rawQuery = ImmutableMap.of("QueryParamTrace", new RequestParameterImpl("true"));
 
     ValidatedRequest expected =
-      new ValidatedRequestImpl(expectedCookies, expectedHeaderParameters, expectedPathParameters, expectedQuery,
-        new RequestParameterImpl(body));
+        new ValidatedRequestImpl(expectedCookies, expectedHeaderParameters, expectedPathParameters, expectedQuery,
+            new RequestParameterImpl(body));
     ValidatableRequest request =
-      new ValidatableRequestImpl(rawCookies, rawHeaderParameters, rawPathParameters, rawQuery,
-        new RequestParameterImpl(body.toBuffer()),
-        APPLICATION_JSON.toString());
+        new ValidatableRequestImpl(rawCookies, rawHeaderParameters, rawPathParameters, rawQuery,
+            new RequestParameterImpl(body.toBuffer()),
+            APPLICATION_JSON.toString());
 
     ValidatedRequest expectedBinaryBody =
-      new ValidatedRequestImpl(expectedCookies, expectedHeaderParameters, expectedPathParameters, expectedQuery,
-        new RequestParameterImpl(body.toBuffer()));
+        new ValidatedRequestImpl(expectedCookies, expectedHeaderParameters, expectedPathParameters, expectedQuery,
+            new RequestParameterImpl(body.toBuffer()));
 
     return Stream.of(
-      Arguments.of(parameters, mockedRequestBody, request, expected),
-      Arguments.of(parameters, mockedRequestBodyBinary, request, expectedBinaryBody)
-    );
+        Arguments.of(parameters, mockedRequestBody, request, expected),
+        Arguments.of(parameters, mockedRequestBodyBinary, request, expectedBinaryBody));
   }
 
   private static Stream<Arguments> getBadlyFormattedParameters() {
     return Stream.of(
-      Arguments.of("Int32", intSchema().toJson().put("format", "int32"), Long.MAX_VALUE,
-        "The value of path parameter Int32 is invalid. Reason: Integer does not match the format \"int32\""),
-      Arguments.of("Int64", intSchema().toJson().put("format", "int64"), "9999999999999999999999999999999",
-        "The value of path parameter Int64 is invalid. Reason: Integer does not match the format \"int64\""),
-      Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
-        "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
-      Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
-        "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\"")
-    );
+        Arguments.of("Int32", intSchema().toJson().put("format", "int32"), Long.MAX_VALUE,
+            "The value of path parameter Int32 is invalid. Reason: Integer does not match the format \"int32\""),
+        Arguments.of("Int64", intSchema().toJson().put("format", "int64"), "9999999999999999999999999999999",
+            "The value of path parameter Int64 is invalid. Reason: Integer does not match the format \"int64\""),
+        Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
+            "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+        Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
+            "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\""));
   }
 
   private static Stream<Arguments> getCorrectlyFormattedParameters() {
     return Stream.of(Arguments.of("Int32 max int32", intSchema().toJson().put("format", "int32"), Integer.MAX_VALUE),
-      Arguments.of("Int32 min int32", intSchema().toJson().put("format", "int32"), Integer.MIN_VALUE),
-      Arguments.of("Int32 max short", intSchema().toJson().put("format", "int32"), Short.MAX_VALUE),
-      Arguments.of("Int32 max byte", intSchema().toJson().put("format", "int32"), Byte.MAX_VALUE),
-      Arguments.of("Int64 max long", intSchema().toJson().put("format", "int64"), Long.MAX_VALUE),
-      Arguments.of("Int64 min long", intSchema().toJson().put("format", "int64"), Long.MIN_VALUE),
-      Arguments.of("Int64 max int32", intSchema().toJson().put("format", "int64"), Integer.MAX_VALUE),
-      Arguments.of("Int64 max short", intSchema().toJson().put("format", "int64"), Short.MAX_VALUE),
-      Arguments.of("Int64 max byte", intSchema().toJson().put("format", "int64"), Byte.MAX_VALUE),
-      Arguments.of("Double max double", numberSchema().toJson().put("format", "double"), Double.MAX_VALUE),
-      Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
-      Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
-      Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
-      Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
-      Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
-      Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456)
-    );
+        Arguments.of("Int32 min int32", intSchema().toJson().put("format", "int32"), Integer.MIN_VALUE),
+        Arguments.of("Int32 max short", intSchema().toJson().put("format", "int32"), Short.MAX_VALUE),
+        Arguments.of("Int32 max byte", intSchema().toJson().put("format", "int32"), Byte.MAX_VALUE),
+        Arguments.of("Int64 max long", intSchema().toJson().put("format", "int64"), Long.MAX_VALUE),
+        Arguments.of("Int64 min long", intSchema().toJson().put("format", "int64"), Long.MIN_VALUE),
+        Arguments.of("Int64 max int32", intSchema().toJson().put("format", "int64"), Integer.MAX_VALUE),
+        Arguments.of("Int64 max short", intSchema().toJson().put("format", "int64"), Short.MAX_VALUE),
+        Arguments.of("Int64 max byte", intSchema().toJson().put("format", "int64"), Byte.MAX_VALUE),
+        Arguments.of("Double max double", numberSchema().toJson().put("format", "double"), Double.MAX_VALUE),
+        Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
+        Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
+        Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
+        Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
+        Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
+        Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456));
   }
 
   @BeforeEach
@@ -255,8 +250,8 @@ class RequestValidatorImplTest {
   @MethodSource
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testValidateWithValidatableRequestAndOperationId(List<Parameter> parameters, RequestBody requestBody,
-                                                        ValidatableRequest request, ValidatedRequest expected,
-                                                        VertxTestContext testContext) {
+      ValidatableRequest request, ValidatedRequest expected,
+      VertxTestContext testContext) {
     Operation mockedOperation = mock(Operation.class);
     when(mockedOperation.getParameters()).thenReturn(parameters);
     when(mockedOperation.getRequestBody()).thenReturn(requestBody);
@@ -308,10 +303,10 @@ class RequestValidatorImplTest {
     List<Parameter> parameters = new ArrayList<>();
     parameters.add(buildParam("HeaderParamUser", HEADER, SIMPLE, objectSchema().toJson(), true));
     Map<String, RequestParameter> rawHeaderParameters =
-      ImmutableMap.of("HeaderParamUser", new RequestParameterImpl("name,foo,id"));
+        ImmutableMap.of("HeaderParamUser", new RequestParameterImpl("name,foo,id"));
 
     ValidatableRequest request =
-      new ValidatableRequestImpl(null, rawHeaderParameters, null, null, null, null);
+        new ValidatableRequestImpl(null, rawHeaderParameters, null, null, null, null);
 
     Operation mockedOperation = mock(Operation.class);
     when(mockedOperation.getParameters()).thenReturn(parameters);
@@ -333,10 +328,9 @@ class RequestValidatorImplTest {
 
   static Stream<Arguments> testValidateParameterThrowInvalidValue() {
     return Stream.of(
-      Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
-      Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
-      Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean")
-    );
+        Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
+        Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
+        Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean"));
   }
 
   @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
@@ -344,9 +338,9 @@ class RequestValidatorImplTest {
   void testValidateParameterThrowInvalidValue(SchemaBuilder<?, ?> schema, Object value, String reason) {
     Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
-      assertThrows(
-        ValidatorException.class,
-        () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+        assertThrows(
+            ValidatorException.class,
+            () -> validator.validateParameter(param, new RequestParameterImpl(value)));
 
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String expectedMsg = "The value of path parameter p1 is invalid. Reason: " + reason;
@@ -365,7 +359,7 @@ class RequestValidatorImplTest {
   void testValidateParameterThrowRequired(String scenario, RequestParameter value) {
     Parameter param = buildParam("p1", intSchema().toJson(), true);
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateParameter(param, value));
+        assertThrows(ValidatorException.class, () -> validator.validateParameter(param, value));
     String expectedMsg = "The related request / response does not contain the required path parameter p1";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -378,13 +372,13 @@ class RequestValidatorImplTest {
   }
 
   @ParameterizedTest(name = "{index} Throw UNSUPPORTED_VALUE_FORMAT error when param style is {0}")
-  @EnumSource(value = Style.class, names = {"SPACE_DELIMITED", "PIPE_DELIMITED", "DEEP_OBJECT"})
+  @EnumSource(value = Style.class, names = { "SPACE_DELIMITED", "PIPE_DELIMITED", "DEEP_OBJECT" })
   void testValidateParameterThrowUnsupportedValueFormat(Style style) {
     Parameter param = mockParameter("dummy", HEADER, style, false, JsonSchema.of(stringSchema().toJson()));
     ValidatorException exception = assertThrows(ValidatorException.class,
-      () -> validator.validateParameter(param, new RequestParameterImpl("foo")));
+        () -> validator.validateParameter(param, new RequestParameterImpl("foo")));
     String expectedMsg =
-      "Values in style " + style + " with exploded=false are not supported for header parameter dummy.";
+        "Values in style " + style + " with exploded=false are not supported for header parameter dummy.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
@@ -410,7 +404,8 @@ class RequestValidatorImplTest {
     when(mockedValidatableRequest.getBody()).thenReturn(parameter);
 
     ValidatorException exceptionEmpty =
-      assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
+        assertThrows(ValidatorException.class,
+            () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exceptionEmpty.type()).isEqualTo(MISSING_REQUIRED_PARAMETER);
     String expectedMsg = "The related request does not contain the required body.";
     assertThat(exceptionEmpty).hasMessageThat().isEqualTo(expectedMsg);
@@ -426,7 +421,7 @@ class RequestValidatorImplTest {
   }
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
-  @ValueSource(strings = {"application/png", "foo/bar"})
+  @ValueSource(strings = { "application/png", "foo/bar" })
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
@@ -437,7 +432,8 @@ class RequestValidatorImplTest {
     when(mockedValidatableRequest.getContentType()).thenReturn(contentType);
 
     ValidatorException exceptionEmpty =
-      assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
+        assertThrows(ValidatorException.class,
+            () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exceptionEmpty.type()).isEqualTo(UNSUPPORTED_VALUE_FORMAT);
     String expectedMsg = "The format of the request body is not supported";
     assertThat(exceptionEmpty).hasMessageThat().isEqualTo(expectedMsg);
@@ -451,7 +447,8 @@ class RequestValidatorImplTest {
     when(mockedValidatableRequest.getContentType()).thenReturn(APPLICATION_JSON.toString());
 
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
+        assertThrows(ValidatorException.class,
+            () -> validator.validateBody(mockedRequestBody, mockedValidatableRequest));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
     String expectedMsg = "The value of the request body is invalid. Reason: " + reason;
@@ -463,7 +460,7 @@ class RequestValidatorImplTest {
   public void testInvalidParameterFormats(String type, JsonObject schema, Object value, String expectedErrorMsg) {
     Parameter param = buildParam(type, schema, true);
     ValidatorException exception = assertThrows(ValidatorException.class,
-      () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+        () -> validator.validateParameter(param, new RequestParameterImpl(value)));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     assertThat(exception).hasMessageThat().isEqualTo(expectedErrorMsg);
   }

@@ -12,11 +12,18 @@
 
 package io.vertx.tests.contract.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.impl.SecurityRequirementImpl;
+import java.nio.file.Path;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,14 +31,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.nio.file.Path;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 @ExtendWith(VertxExtension.class)
 class SecurityRequirementImplTest {
@@ -51,38 +50,37 @@ class SecurityRequirementImplTest {
 
   private static Stream<Arguments> testGetters() {
     return Stream.of(
-      Arguments.of("0000_Test_No_Name_No_Scopes_(EMPTY)", (Consumer<SecurityRequirementImpl>) seqReq -> {
-        assertThat(seqReq.isEmpty()).isTrue();
-        assertThat(seqReq.size()).isEqualTo(0);
-        assertThat(seqReq.getNames()).isEmpty();
-      }),
-      Arguments.of("0001_Test_One_Name_No_Scope", (Consumer<SecurityRequirementImpl>) seqReq -> {
-        assertThat(seqReq.isEmpty()).isFalse();
-        assertThat(seqReq.size()).isEqualTo(1);
-        assertThat(seqReq.getNames()).containsExactly("api_key");
-        assertThat(seqReq.getScopes("api_key")).isEmpty();
-      }),
-      Arguments.of("0002_Test_One_Name_Two_Scopes", (Consumer<SecurityRequirementImpl>) seqReq -> {
-        assertThat(seqReq.isEmpty()).isFalse();
-        assertThat(seqReq.size()).isEqualTo(1);
-        assertThat(seqReq.getNames()).containsExactly("api_key");
-        assertThat(seqReq.getScopes("api_key")).containsExactly("scope1", "scope2").inOrder();
-      }),
-      Arguments.of("0003_Test_Two_Names_No_Scopes", (Consumer<SecurityRequirementImpl>) seqReq -> {
-        assertThat(seqReq.isEmpty()).isFalse();
-        assertThat(seqReq.size()).isEqualTo(2);
-        assertThat(seqReq.getNames()).containsExactly("api_key", "second_api_key");
-        assertThat(seqReq.getScopes("api_key")).isEmpty();
-        assertThat(seqReq.getScopes("second_api_key")).isEmpty();
-      }),
-      Arguments.of("0004_Test_Two_Names_One_Scope_Each", (Consumer<SecurityRequirementImpl>) seqReq -> {
-        assertThat(seqReq.isEmpty()).isFalse();
-        assertThat(seqReq.size()).isEqualTo(2);
-        assertThat(seqReq.getNames()).containsExactly("api_key", "second_api_key");
-        assertThat(seqReq.getScopes("api_key")).containsExactly("scope1");
-        assertThat(seqReq.getScopes("second_api_key")).containsExactly("scope2");
-      })
-    );
+        Arguments.of("0000_Test_No_Name_No_Scopes_(EMPTY)", (Consumer<SecurityRequirementImpl>) seqReq -> {
+          assertThat(seqReq.isEmpty()).isTrue();
+          assertThat(seqReq.size()).isEqualTo(0);
+          assertThat(seqReq.getNames()).isEmpty();
+        }),
+        Arguments.of("0001_Test_One_Name_No_Scope", (Consumer<SecurityRequirementImpl>) seqReq -> {
+          assertThat(seqReq.isEmpty()).isFalse();
+          assertThat(seqReq.size()).isEqualTo(1);
+          assertThat(seqReq.getNames()).containsExactly("api_key");
+          assertThat(seqReq.getScopes("api_key")).isEmpty();
+        }),
+        Arguments.of("0002_Test_One_Name_Two_Scopes", (Consumer<SecurityRequirementImpl>) seqReq -> {
+          assertThat(seqReq.isEmpty()).isFalse();
+          assertThat(seqReq.size()).isEqualTo(1);
+          assertThat(seqReq.getNames()).containsExactly("api_key");
+          assertThat(seqReq.getScopes("api_key")).containsExactly("scope1", "scope2").inOrder();
+        }),
+        Arguments.of("0003_Test_Two_Names_No_Scopes", (Consumer<SecurityRequirementImpl>) seqReq -> {
+          assertThat(seqReq.isEmpty()).isFalse();
+          assertThat(seqReq.size()).isEqualTo(2);
+          assertThat(seqReq.getNames()).containsExactly("api_key", "second_api_key");
+          assertThat(seqReq.getScopes("api_key")).isEmpty();
+          assertThat(seqReq.getScopes("second_api_key")).isEmpty();
+        }),
+        Arguments.of("0004_Test_Two_Names_One_Scope_Each", (Consumer<SecurityRequirementImpl>) seqReq -> {
+          assertThat(seqReq.isEmpty()).isFalse();
+          assertThat(seqReq.size()).isEqualTo(2);
+          assertThat(seqReq.getNames()).containsExactly("api_key", "second_api_key");
+          assertThat(seqReq.getScopes("api_key")).containsExactly("scope1");
+          assertThat(seqReq.getScopes("second_api_key")).containsExactly("scope2");
+        }));
   }
 
   @ParameterizedTest(name = "{index} should build SecurityRequirementImpl correct: {0}")
@@ -96,7 +94,7 @@ class SecurityRequirementImplTest {
   void testGetScopesError() {
     SecurityRequirementImpl secReq = fromTestData("0001_Test_One_Name_No_Scope", validTestData);
     IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
-      () -> secReq.getScopes("Hodor"));
+        () -> secReq.getScopes("Hodor"));
     assertThat(exception).hasMessageThat().isEqualTo("No security requirement with name Hodor");
   }
 }

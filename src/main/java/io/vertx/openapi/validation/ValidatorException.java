@@ -12,15 +12,15 @@
 
 package io.vertx.openapi.validation;
 
-import io.vertx.core.http.HttpMethod;
-import io.vertx.openapi.contract.Parameter;
-
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMAT;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_RESPONSE;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+
+import io.vertx.core.http.HttpMethod;
+import io.vertx.openapi.contract.Parameter;
 
 /**
  * A ValidatorException is thrown, if the validation of a request or response fails. The validation can fail for
@@ -43,26 +43,27 @@ public class ValidatorException extends RuntimeException {
 
   public static ValidatorException createMissingRequiredParameter(Parameter parameter) {
     String msg = String.format("The related request / response does not contain the required %s parameter %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName());
+        parameter.getIn().name().toLowerCase(), parameter.getName());
     return new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
   }
 
   public static ValidatorException createInvalidValueFormat(Parameter parameter) {
     String msg = String.format("The formatting of the value of %s parameter %s doesn't match to style %s.",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), parameter.getStyle());
+        parameter.getIn().name().toLowerCase(), parameter.getName(), parameter.getStyle());
     return new ValidatorException(msg, INVALID_VALUE_FORMAT);
   }
 
   public static ValidatorException createUnsupportedValueFormat(Parameter parameter) {
     String msg =
-      String.format("Values in style %s with exploded=%s are not supported for %s parameter %s.", parameter.getStyle(),
-        parameter.isExplode(), parameter.getIn().name().toLowerCase(), parameter.getName());
+        String.format("Values in style %s with exploded=%s are not supported for %s parameter %s.",
+            parameter.getStyle(),
+            parameter.isExplode(), parameter.getIn().name().toLowerCase(), parameter.getName());
     return new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
   }
 
   public static ValidatorException createCantDecodeValue(Parameter parameter) {
     String msg = String.format("The value of %s parameter %s can't be decoded.", parameter.getIn().name().toLowerCase(),
-      parameter.getName());
+        parameter.getName());
     return new ValidatorException(msg, ILLEGAL_VALUE);
   }
 

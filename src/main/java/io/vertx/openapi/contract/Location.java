@@ -13,7 +13,6 @@
 package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.VertxGen;
-
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -24,9 +23,8 @@ public enum Location {
   public static Location parse(String location) {
     Predicate<String> eq = Predicate.isEqual(location);
     // Contract validation happened before, so it will find one of these values.
-    return location == null ?
-      null :
-      Arrays.stream(Location.values()).filter(l -> eq.test(l.toString())).findFirst().orElse(null);
+    return location == null ? null
+        : Arrays.stream(Location.values()).filter(l -> eq.test(l.toString())).findFirst().orElse(null);
   }
 
   @Override

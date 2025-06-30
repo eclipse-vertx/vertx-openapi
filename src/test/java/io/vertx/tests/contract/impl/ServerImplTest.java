@@ -12,20 +12,19 @@
 
 package io.vertx.tests.contract.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Server;
 import io.vertx.openapi.contract.impl.ServerImpl;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ServerImplTest {
 
@@ -42,12 +41,11 @@ public class ServerImplTest {
 
   private static Stream<Arguments> testBasePathExtraction() {
     return Stream.of(
-      Arguments.of("https://example.com", ""),
-      Arguments.of("https://example.com/", ""),
-      Arguments.of("https://example.com/foo", "/foo"),
-      Arguments.of("https://example.com/foo/", "/foo"),
-      Arguments.of("https://example.com/foo/bar", "/foo/bar")
-    );
+        Arguments.of("https://example.com", ""),
+        Arguments.of("https://example.com/", ""),
+        Arguments.of("https://example.com/foo", "/foo"),
+        Arguments.of("https://example.com/foo/", "/foo"),
+        Arguments.of("https://example.com/foo/bar", "/foo/bar"));
   }
 
   @ParameterizedTest(name = "{index} BasePath extraction: {0} should result into {1}")
@@ -63,15 +61,15 @@ public class ServerImplTest {
     String msgUnsupported = "The passed OpenAPI contract contains a feature that is not supported: Server Variables";
 
     OpenAPIContractException exceptionUnsupported =
-      assertThrows(OpenAPIContractException.class,
-        () -> new ServerImpl(new JsonObject().put("url", "http://{foo}.bar")));
+        assertThrows(OpenAPIContractException.class,
+            () -> new ServerImpl(new JsonObject().put("url", "http://{foo}.bar")));
     assertThat(exceptionUnsupported.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionUnsupported).hasMessageThat().isEqualTo(msgUnsupported);
 
     String msgInvalid = "The passed OpenAPI contract is invalid: The specified URL is malformed: http://foo.bar:-80";
     OpenAPIContractException exceptionInvalid =
-      assertThrows(OpenAPIContractException.class,
-        () -> new ServerImpl(new JsonObject().put("url", "http://foo.bar:-80")));
+        assertThrows(OpenAPIContractException.class,
+            () -> new ServerImpl(new JsonObject().put("url", "http://foo.bar:-80")));
     assertThat(exceptionInvalid.type()).isEqualTo(ContractErrorType.INVALID_SPEC);
     assertThat(exceptionInvalid).hasMessageThat().isEqualTo(msgInvalid);
   }

@@ -12,9 +12,9 @@
 
 package io.vertx.openapi.validation.transformer;
 
-import io.vertx.openapi.contract.Parameter;
-
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueFormat;
+
+import io.vertx.openapi.contract.Parameter;
 
 /**
  * +--------+---------+--------+-------------+------------------------------+-------------------------------+
@@ -40,11 +40,13 @@ public class LabelTransformer extends ParameterTransformer {
     }
   }
 
-  @Override protected String[] getArrayValues(Parameter parameter, String rawValue) {
+  @Override
+  protected String[] getArrayValues(Parameter parameter, String rawValue) {
     return parameter.isExplode() ? rawValue.split("\\.") : rawValue.split(",");
   }
 
-  @Override protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+  @Override
+  protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
     return parameter.isExplode() ? rawValue.split("[=|.]") : rawValue.split(",");
   }
 }

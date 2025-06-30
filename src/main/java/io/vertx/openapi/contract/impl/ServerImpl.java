@@ -12,14 +12,13 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.contract.Server;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupportedFeature;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.contract.Server;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class ServerImpl implements Server {
 

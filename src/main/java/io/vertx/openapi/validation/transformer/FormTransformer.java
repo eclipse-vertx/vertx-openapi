@@ -40,7 +40,8 @@ public class FormTransformer extends ParameterTransformer {
     }
   }
 
-  @Override protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+  @Override
+  protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
     return parameter.isExplode() ? rawValue.split("[=&]") : rawValue.split(",");
   }
 }

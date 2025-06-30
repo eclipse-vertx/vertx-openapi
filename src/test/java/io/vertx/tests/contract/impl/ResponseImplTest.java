@@ -12,22 +12,6 @@
 
 package io.vertx.tests.contract.impl;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.common.dsl.SchemaType;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.openapi.contract.ContractErrorType;
-import io.vertx.openapi.contract.OpenAPIContractException;
-import io.vertx.openapi.contract.impl.ResponseImpl;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.json.schema.common.dsl.SchemaType.INTEGER;
@@ -35,6 +19,21 @@ import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.common.dsl.SchemaType;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.impl.ResponseImpl;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(VertxExtension.class)
 class ResponseImplTest {
@@ -57,20 +56,18 @@ class ResponseImplTest {
   private static Stream<Arguments> testGetters() {
     String contentKey = APPLICATION_JSON.toString();
     return Stream.of(
-      Arguments.of("0000_Test_Getters_No_Headers", 1, contentKey, 0, null),
-      Arguments.of("0001_Test_Getters_With_Headers", 1, contentKey, 1, STRING),
-      Arguments.of("0002_Test_Getters_With_Headers_Ignore_Content_Type_Header", 1, contentKey, 1, INTEGER),
-      Arguments.of("0003_Test_Getters_No_Headers_No_Content", 0, null, 0, null)
-    );
+        Arguments.of("0000_Test_Getters_No_Headers", 1, contentKey, 0, null),
+        Arguments.of("0001_Test_Getters_With_Headers", 1, contentKey, 1, STRING),
+        Arguments.of("0002_Test_Getters_With_Headers_Ignore_Content_Type_Header", 1, contentKey, 1, INTEGER),
+        Arguments.of("0003_Test_Getters_No_Headers_No_Content", 0, null, 0, null));
   }
 
   private static Stream<Arguments> testExceptions() {
     return Stream.of(
-      Arguments.of("0000_Response_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
-        "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
-          "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8, " +
-          "multipart/form-data, application/hal+json, application/octet-stream, text/plain, text/plain; charset=utf-8")
-    );
+        Arguments.of("0000_Response_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
+            "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a "
+                + "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8, "
+                + "multipart/form-data, application/hal+json, application/octet-stream, text/plain, text/plain; charset=utf-8"));
   }
 
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")
@@ -97,7 +94,7 @@ class ResponseImplTest {
   void testExceptions(String testId, ContractErrorType type, String msg) {
     JsonObject response = invalidTestData.getJsonObject(testId);
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new ResponseImpl(response, DUMMY_OPERATION_ID));
+        assertThrows(OpenAPIContractException.class, () -> new ResponseImpl(response, DUMMY_OPERATION_ID));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }

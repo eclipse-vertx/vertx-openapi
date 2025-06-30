@@ -12,30 +12,29 @@
 
 package io.vertx.tests.validation.transformer;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Style.MATRIX;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
+import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+import static io.vertx.tests.MockHelper.mockParameter;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.transformer.MatrixTransformer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
-import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
-import static io.vertx.openapi.contract.Location.PATH;
-import static io.vertx.openapi.contract.Style.MATRIX;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 class MatrixTransformerTest implements SchemaSupport {
 
@@ -57,38 +56,35 @@ class MatrixTransformerTest implements SchemaSupport {
 
   private static Stream<Arguments> provideValidPrimitiveValues() {
     return Stream.of(
-      Arguments.of("(String) empty", STRING_PARAM, ";dummy=", ""),
-      Arguments.of("(String) \";dummy=foobar\"", STRING_PARAM, ";dummy=foobar", "foobar"),
-      Arguments.of("(Number) ;dummy=14.6767", NUMBER_PARAM, ";dummy=14.6767", 14.6767),
-      Arguments.of("(Integer) ;dummy=42", INTEGER_PARAM, ";dummy=42", 42),
-      Arguments.of("(Boolean) ;dummy=true", BOOLEAN_PARAM, ";dummy=true", true)
-    );
+        Arguments.of("(String) empty", STRING_PARAM, ";dummy=", ""),
+        Arguments.of("(String) \";dummy=foobar\"", STRING_PARAM, ";dummy=foobar", "foobar"),
+        Arguments.of("(Number) ;dummy=14.6767", NUMBER_PARAM, ";dummy=14.6767", 14.6767),
+        Arguments.of("(Integer) ;dummy=42", INTEGER_PARAM, ";dummy=42", 42),
+        Arguments.of("(Boolean) ;dummy=true", BOOLEAN_PARAM, ";dummy=true", true));
   }
 
   private static Stream<Arguments> provideValidArrayValues() {
     JsonArray expectedComplex = new JsonArray().add("Hello").add(1).add(false).add(13.37);
     return Stream.of(
-      Arguments.of("empty ;dummy=", ARRAY_PARAM, ";dummy=", EMPTY_JSON_ARRAY),
-      Arguments.of(";dummy=3", ARRAY_PARAM, ";dummy=3", new JsonArray().add(3)),
-      Arguments.of(";dummy=3 (exploded)", ARRAY_PARAM_EXPLODE, ";dummy=3", new JsonArray().add(3)),
-      Arguments.of(";dummy=Hello,1,false,13.37", ARRAY_PARAM, ";dummy=Hello,1,false,13.37", expectedComplex),
-      Arguments.of(";dummy=Hello;dummy=1;dummy=false;dummy=13.37 (exploded)", ARRAY_PARAM_EXPLODE,
-        ";dummy=Hello;dummy=1;dummy=false;dummy=13.37", expectedComplex)
-    );
+        Arguments.of("empty ;dummy=", ARRAY_PARAM, ";dummy=", EMPTY_JSON_ARRAY),
+        Arguments.of(";dummy=3", ARRAY_PARAM, ";dummy=3", new JsonArray().add(3)),
+        Arguments.of(";dummy=3 (exploded)", ARRAY_PARAM_EXPLODE, ";dummy=3", new JsonArray().add(3)),
+        Arguments.of(";dummy=Hello,1,false,13.37", ARRAY_PARAM, ";dummy=Hello,1,false,13.37", expectedComplex),
+        Arguments.of(";dummy=Hello;dummy=1;dummy=false;dummy=13.37 (exploded)", ARRAY_PARAM_EXPLODE,
+            ";dummy=Hello;dummy=1;dummy=false;dummy=13.37", expectedComplex));
   }
 
   private static Stream<Arguments> provideValidObjectValues() {
     String complexRaw = ";dummy=string,foo,number,13.37,integer,42,boolean,true";
     String complexExplodedRaw = ";string=foo;number=13.37;integer=42;boolean=true";
     JsonObject expected =
-      new JsonObject().put("string", "foo").put("integer", 42).put("boolean", true).put("number", 13.37);
+        new JsonObject().put("string", "foo").put("integer", 42).put("boolean", true).put("number", 13.37);
 
     return Stream.of(
-      Arguments.of("empty", OBJECT_PARAM, ";dummy=", EMPTY_JSON_OBJECT),
-      Arguments.of("empty (exploded)", OBJECT_PARAM_EXPLODE, ";", EMPTY_JSON_OBJECT),
-      Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expected),
-      Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw, expected)
-    );
+        Arguments.of("empty", OBJECT_PARAM, ";dummy=", EMPTY_JSON_OBJECT),
+        Arguments.of("empty (exploded)", OBJECT_PARAM_EXPLODE, ";", EMPTY_JSON_OBJECT),
+        Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expected),
+        Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw, expected));
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with primitive value: {0}")
@@ -119,16 +115,16 @@ class MatrixTransformerTest implements SchemaSupport {
   void testInvalidValues() {
     String invalidObject = ";dummy=string,foo,number";
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(OBJECT_PARAM, invalidObject));
+        assertThrows(ValidatorException.class, () -> TRANSFORMER.transformObject(OBJECT_PARAM, invalidObject));
     String expectedMsg = "The formatting of the value of path parameter dummy doesn't match to style matrix.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @ParameterizedTest(name = "{index} Ensure that parameter of style \"matrix\" start with a ;parameterName=: {0}")
-  @ValueSource(strings = {"", ";dummy", ";foo="})
+  @ValueSource(strings = { "", ";dummy", ";foo=" })
   void testTransformException(String invalidValue) {
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> TRANSFORMER.transform(STRING_PARAM, invalidValue));
+        assertThrows(ValidatorException.class, () -> TRANSFORMER.transform(STRING_PARAM, invalidValue));
     String expectedMsg = "The formatting of the value of path parameter dummy doesn't match to style matrix.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }

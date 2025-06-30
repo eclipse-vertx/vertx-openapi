@@ -12,23 +12,23 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Style.LABEL;
+import static io.vertx.tests.MockHelper.mockParameter;
+
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.openapi.contract.Location.PATH;
-import static io.vertx.openapi.contract.Style.LABEL;
-
 class ValidatorExceptionTest {
 
   private static final Parameter DUMMY_PARAMETER =
-    mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
+      mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
 
   @Test
   void testCreateMissingRequiredParameter() {

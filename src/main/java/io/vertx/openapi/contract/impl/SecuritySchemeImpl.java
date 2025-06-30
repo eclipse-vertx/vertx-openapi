@@ -15,7 +15,6 @@ public class SecuritySchemeImpl implements SecurityScheme {
   private final OAuthFlows flows;
   private final String openIdConnectUrl;
 
-
   public SecuritySchemeImpl(JsonObject json) {
     this.model = json;
 
@@ -24,9 +23,7 @@ public class SecuritySchemeImpl implements SecurityScheme {
     this.in = json.getString("in");
     this.scheme = json.getString("scheme");
     this.bearerFormat = json.getString("bearerFormat");
-    this.flows = json.containsKey("flows") ?
-      new OAuthFlowsImpl(json.getJsonObject("flows")) :
-      null;
+    this.flows = json.containsKey("flows") ? new OAuthFlowsImpl(json.getJsonObject("flows")) : null;
     this.openIdConnectUrl = json.getString("openIdConnectUrl");
 
   }

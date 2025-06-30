@@ -13,22 +13,15 @@ public class OAuthFlowsImpl implements OAuthFlows {
   private final OAuthFlow clientCredentials;
   private final OAuthFlow authorizationCode;
 
-
   public OAuthFlowsImpl(JsonObject json) {
     this.model = json;
 
-    this.implicit = json.containsKey("implicit") ?
-      new OAuthFlowImpl(json.getJsonObject("implicit")) :
-      null;
-    this.password = json.containsKey("password") ?
-      new OAuthFlowImpl(json.getJsonObject("password")) :
-      null;
-    this.clientCredentials = json.containsKey("clientCredentials") ?
-      new OAuthFlowImpl(json.getJsonObject("clientCredentials")) :
-      null;
-    this.authorizationCode = json.containsKey("authorizationCode") ?
-      new OAuthFlowImpl(json.getJsonObject("authorizationCode")) :
-      null;
+    this.implicit = json.containsKey("implicit") ? new OAuthFlowImpl(json.getJsonObject("implicit")) : null;
+    this.password = json.containsKey("password") ? new OAuthFlowImpl(json.getJsonObject("password")) : null;
+    this.clientCredentials =
+        json.containsKey("clientCredentials") ? new OAuthFlowImpl(json.getJsonObject("clientCredentials")) : null;
+    this.authorizationCode =
+        json.containsKey("authorizationCode") ? new OAuthFlowImpl(json.getJsonObject("authorizationCode")) : null;
   }
 
   @Override

@@ -12,23 +12,6 @@
 
 package io.vertx.tests.contract.impl;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.openapi.contract.ContractErrorType;
-import io.vertx.openapi.contract.OpenAPIContractException;
-import io.vertx.openapi.contract.RequestBody;
-import io.vertx.openapi.contract.impl.RequestBodyImpl;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
@@ -36,6 +19,22 @@ import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON_UTF8;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.impl.RequestBodyImpl;
+import java.nio.file.Path;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(VertxExtension.class)
 class RequestBodyImplTest {
@@ -60,25 +59,23 @@ class RequestBodyImplTest {
 
   private static Stream<Arguments> testGetters() {
     return Stream.of(
-      Arguments.of("0000_Test_Getters_Required_True_Content_Schema_String", true),
-      Arguments.of("0001_Test_Getters_Required_False_Content_Schema_String", false),
-      Arguments.of("0002_Test_Getters_Without_Required_Content_Schema_String", false)
-    );
+        Arguments.of("0000_Test_Getters_Required_True_Content_Schema_String", true),
+        Arguments.of("0001_Test_Getters_Required_False_Content_Schema_String", false),
+        Arguments.of("0002_Test_Getters_Without_Required_Content_Schema_String", false));
   }
 
   private static Stream<Arguments> testExceptions() {
     return Stream.of(
-      Arguments.of("0000_RequestBody_Without_Content", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with " +
-          "empty property \"content\""),
-      Arguments.of("0001_RequestBody_With_Empty_Content", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with " +
-          "empty property \"content\""),
-      Arguments.of("0002_RequestBody_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
-        "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a " +
-          "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8," +
-          " multipart/form-data, application/hal+json, application/octet-stream, text/plain, text/plain; charset=utf-8")
-    );
+        Arguments.of("0000_RequestBody_Without_Content", INVALID_SPEC,
+            "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with "
+                + "empty property \"content\""),
+        Arguments.of("0001_RequestBody_With_Empty_Content", INVALID_SPEC,
+            "The passed OpenAPI contract is invalid: Operation dummyOperation defines a request body without or with "
+                + "empty property \"content\""),
+        Arguments.of("0002_RequestBody_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
+            "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a "
+                + "request body with an unsupported media type. Supported: application/json, application/json; charset=utf-8,"
+                + " multipart/form-data, application/hal+json, application/octet-stream, text/plain, text/plain; charset=utf-8"));
   }
 
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")
@@ -98,11 +95,10 @@ class RequestBodyImplTest {
   void testExceptions(String testId, ContractErrorType type, String msg) {
     JsonObject requestBody = invalidTestData.getJsonObject(testId);
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> new RequestBodyImpl(requestBody, DUMMY_OPERATION_ID));
+        assertThrows(OpenAPIContractException.class, () -> new RequestBodyImpl(requestBody, DUMMY_OPERATION_ID));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }
-
 
   private RequestBodyImpl buildWithContent(String... contentTypes) {
     JsonObject dummySchema = new JsonObject().put("schema", new JsonObject().put("type", "string"));
@@ -129,7 +125,8 @@ class RequestBodyImplTest {
     assertThat(bodyAppJsonUTF8.determineContentType(appJson)).isNull();
 
     // No Whitespace before semicolon
-    assertThat(bodyBoth.determineContentType(appJson + ";charset=utf-8").getIdentifier()).isEqualTo(APPLICATION_JSON_UTF8);
+    assertThat(bodyBoth.determineContentType(appJson + ";charset=utf-8").getIdentifier())
+        .isEqualTo(APPLICATION_JSON_UTF8);
 
     assertThat(bodyBoth.determineContentType("application/text")).isNull();
   }

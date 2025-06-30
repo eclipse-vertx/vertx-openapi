@@ -14,7 +14,6 @@ package io.vertx.tests;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

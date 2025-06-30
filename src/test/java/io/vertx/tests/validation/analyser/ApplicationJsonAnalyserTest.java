@@ -12,17 +12,17 @@
 
 package io.vertx.tests.validation.analyser;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
-import org.junit.jupiter.api.Test;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.openapi.validation.ValidationContext.REQUEST;
 import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.analyser.ApplicationJsonAnalyser;
+import org.junit.jupiter.api.Test;
 
 class ApplicationJsonAnalyserTest {
 
@@ -30,7 +30,7 @@ class ApplicationJsonAnalyserTest {
   void testTransform() {
     JsonObject dummyBody = new JsonObject().put("foo", "bar");
     ApplicationJsonAnalyser analyser = new ApplicationJsonAnalyser(APPLICATION_JSON.toString(), dummyBody.toBuffer(),
-      REQUEST);
+        REQUEST);
 
     analyser.checkSyntacticalCorrectness(); // must always be executed before transform
     assertThat(analyser.transform()).isEqualTo(dummyBody);
@@ -39,7 +39,7 @@ class ApplicationJsonAnalyserTest {
   @Test
   void testCheckSyntacticalCorrectnessThrows() {
     ApplicationJsonAnalyser analyser = new ApplicationJsonAnalyser(APPLICATION_JSON.toString(), Buffer.buffer(
-      "\"foobar"), REQUEST);
+        "\"foobar"), REQUEST);
 
     ValidatorException exception = assertThrows(ValidatorException.class, analyser::checkSyntacticalCorrectness);
     String expectedMsg = "The request body can't be decoded";

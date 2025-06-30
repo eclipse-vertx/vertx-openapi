@@ -12,14 +12,14 @@
 
 package io.vertx.tests;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Location;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Style;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public final class MockHelper {
 
@@ -32,7 +32,7 @@ public final class MockHelper {
   }
 
   public static Parameter mockParameter(String name, Location in, Style style, boolean explode, JsonSchema schema,
-                                        boolean required) {
+      boolean required) {
     Parameter mockedParam = mock(Parameter.class);
     when(mockedParam.getName()).thenReturn(name);
     when(mockedParam.getIn()).thenReturn(in);

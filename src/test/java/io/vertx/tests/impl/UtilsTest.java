@@ -12,6 +12,9 @@
 
 package io.vertx.tests.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -19,20 +22,16 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.impl.Utils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(VertxExtension.class)
 class UtilsTest {
@@ -42,9 +41,8 @@ class UtilsTest {
     Path petstoreJson = getRelatedTestResourcePath("io.vertx.tests").resolve("petstore.json");
     JsonObject expectedJson = Buffer.buffer(Files.readAllBytes(petstoreJson)).toJsonObject();
     return Stream.of(
-      Arguments.of(petstoreYaml.toString(), expectedJson),
-      Arguments.of(petstoreJson.toString(), expectedJson)
-    );
+        Arguments.of(petstoreYaml.toString(), expectedJson),
+        Arguments.of(petstoreJson.toString(), expectedJson));
   }
 
   @ParameterizedTest(name = "{index} test testReadYamlOrJson with: {0}")
@@ -60,14 +58,14 @@ class UtilsTest {
   @Test
   public void testNumericYamlKeysAsString(Vertx vertx, VertxTestContext testContext) {
     Utils.readYamlOrJson(vertx, "quirks/test.yaml")
-      .onSuccess(json -> testContext.verify(() -> {
-        assertThat(json).isNotNull();
-        for (Object key : json.getMap().keySet()) {
-          assertThat(key).isInstanceOf(String.class);
-        }
-        testContext.completeNow();
-      }))
-      .onFailure(testContext::failNow);
+        .onSuccess(json -> testContext.verify(() -> {
+          assertThat(json).isNotNull();
+          for (Object key : json.getMap().keySet()) {
+            assertThat(key).isInstanceOf(String.class);
+          }
+          testContext.completeNow();
+        }))
+        .onFailure(testContext::failNow);
   }
 
 }

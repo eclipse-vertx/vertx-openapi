@@ -19,11 +19,10 @@ import io.vertx.core.http.*;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("NewClassNamingConvention")
 @ExtendWith(VertxExtension.class)
@@ -42,8 +41,8 @@ public class HttpServerTestBase {
    * @return a succeeded {@link Future} if the server is running, otherwise a failed {@link Future}.
    */
   protected Future<Void> createServer(Handler<HttpServerRequest> requestHandler) {
-    return vertx.createHttpServer().requestHandler(requestHandler).listen(0).
-      onSuccess(server -> port = server.actualPort()).mapEmpty();
+    return vertx.createHttpServer().requestHandler(requestHandler).listen(0)
+        .onSuccess(server -> port = server.actualPort()).mapEmpty();
   }
 
   @BeforeEach

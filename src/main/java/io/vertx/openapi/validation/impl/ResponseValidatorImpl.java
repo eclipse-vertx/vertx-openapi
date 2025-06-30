@@ -12,6 +12,14 @@
 
 package io.vertx.openapi.validation.impl;
 
+import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
+import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
+import static io.vertx.openapi.validation.ValidationContext.RESPONSE;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
+import static io.vertx.openapi.validation.ValidatorException.createResponseNotFound;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -28,18 +36,9 @@ import io.vertx.openapi.validation.ValidatedResponse;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.transformer.ParameterTransformer;
 import io.vertx.openapi.validation.transformer.SimpleTransformer;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import static io.vertx.core.Future.failedFuture;
-import static io.vertx.core.Future.succeededFuture;
-import static io.vertx.openapi.validation.SchemaValidationException.createInvalidValueParameter;
-import static io.vertx.openapi.validation.ValidationContext.RESPONSE;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorException.createMissingRequiredParameter;
-import static io.vertx.openapi.validation.ValidatorException.createResponseNotFound;
 
 public class ResponseValidatorImpl extends BaseValidator implements ResponseValidator {
   private static final ParameterTransformer TRANSFORMER = new SimpleTransformer();
@@ -100,7 +99,7 @@ public class ResponseValidatorImpl extends BaseValidator implements ResponseVali
     }
     if (params.getBody() == null || params.getBody().isEmpty()) {
       throw new ValidatorException("The related response does not contain the required body.",
-        MISSING_REQUIRED_PARAMETER);
+          MISSING_REQUIRED_PARAMETER);
     }
 
     MediaType mediaType = response.getContent().get(params.getContentType());

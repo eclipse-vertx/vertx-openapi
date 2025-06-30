@@ -17,7 +17,6 @@ package io.vertx.openapi.contract;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-
 import java.util.Set;
 
 /**

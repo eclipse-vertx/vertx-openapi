@@ -12,12 +12,12 @@
 
 package io.vertx.openapi.validation;
 
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.json.schema.OutputUnit;
 import io.vertx.openapi.contract.Parameter;
-
-import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 
 /**
  * A SchemaValidationException is a special case of a {@link ValidatorException} and is thrown, if the validation of a
@@ -34,28 +34,28 @@ public class SchemaValidationException extends ValidatorException {
   }
 
   public static SchemaValidationException createInvalidValueParameter(Parameter parameter, OutputUnit outputUnit,
-                                                                      JsonSchemaValidationException cause) {
+      JsonSchemaValidationException cause) {
     String msg = String.format("The value of %s parameter %s is invalid. Reason: %s",
-      parameter.getIn().name().toLowerCase(), parameter.getName(), extractReason(outputUnit));
+        parameter.getIn().name().toLowerCase(), parameter.getName(), extractReason(outputUnit));
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
   public static SchemaValidationException createInvalidValueBody(OutputUnit outputUnit,
-                                                                 ValidationContext requestOrResponse,
-                                                                 JsonSchemaValidationException cause) {
+      ValidationContext requestOrResponse,
+      JsonSchemaValidationException cause) {
     String msg = String.format("The value of the " + requestOrResponse + " body is invalid. Reason: %s",
-      extractReason(outputUnit));
+        extractReason(outputUnit));
     return new SchemaValidationException(msg, INVALID_VALUE, outputUnit, cause);
   }
 
   public static SchemaValidationException createMissingValueRequestBody(OutputUnit outputUnit,
-                                                                        JsonSchemaValidationException cause) {
+      JsonSchemaValidationException cause) {
     String msg = String.format("The value of the request body is missing. Reason: %s", extractReason(outputUnit));
     return new SchemaValidationException(msg, MISSING_REQUIRED_PARAMETER, outputUnit, cause);
   }
 
   public static SchemaValidationException createErrorFromOutputUnitType(Parameter parameter, OutputUnit outputUnit,
-                                                                        JsonSchemaValidationException cause) {
+      JsonSchemaValidationException cause) {
     switch (outputUnit.getErrorType()) {
       case MISSING_VALUE:
         return createMissingValueRequestBody(outputUnit, cause);
