@@ -96,7 +96,7 @@ class OpenAPIContractTest {
     OpenAPIContract.from(vertx, (JsonObject) null).onComplete(testContext.failing(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(OpenAPIContractBuilder.OpenAPIContractBuilderException.class);
       assertThat(t).hasMessageThat()
-          .isEqualTo("Neither a contract path or a contract is set. One of them must be set.");
+          .isEqualTo("Neither a contract path nor a contract is set. One of them must be set.");
       testContext.completeNow();
     })));
   }

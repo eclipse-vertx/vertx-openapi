@@ -39,7 +39,7 @@ public interface OpenAPIContract {
    * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
    *
    * @param vertx        The related Vert.x instance.
-   * @param contractPath The path to contract.
+   * @param contractPath The path to the contract.
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, String contractPath) {
@@ -62,19 +62,19 @@ public interface OpenAPIContract {
   /**
    * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
    * <p>
-   * This method can be used in case that the contract is split into several files. These files can be passed in a
-   * Map that has the reference as key and the path to the file as value.
+   * This method can be used in case that the contract is split into several parts. These parts can be passed in a
+   * Map that has the reference as key and the path to the part as value.
    *
    * @param vertx                       The related Vert.x instance.
-   * @param contract                    The path to the contract.
+   * @param contractPath                The path to the contract.
    * @param additionalContractPartPaths The additional contract part paths
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
-  static Future<OpenAPIContract> from(Vertx vertx, String contract,
+  static Future<OpenAPIContract> from(Vertx vertx, String contractPath,
       Map<String, String> additionalContractPartPaths) {
 
     return builder(vertx)
-        .setContractPath(contract)
+        .setContractPath(contractPath)
         .setAdditionalContractPartPaths(additionalContractPartPaths)
         .build();
   }
@@ -82,8 +82,8 @@ public interface OpenAPIContract {
   /**
    * Resolves / dereferences the passed contract and creates an {@link OpenAPIContract} instance.
    * <p>
-   * This method can be used in case that the contract is split into several files. These files can be passed in a
-   * Map that has the reference as key and the path to the file as value.
+   * This method can be used in case that the contract is split into several parts. These parts can be passed in a
+   * Map that has the reference as key and the part as value.
    *
    * @param vertx                   The related Vert.x instance.
    * @param contract                The unresolved contract.

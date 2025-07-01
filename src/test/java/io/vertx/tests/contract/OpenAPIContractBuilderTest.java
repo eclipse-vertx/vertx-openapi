@@ -12,6 +12,7 @@
 package io.vertx.tests.contract;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -22,6 +23,7 @@ import io.vertx.openapi.contract.OpenAPIContractBuilder;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.impl.Utils;
 import io.vertx.tests.ResourceHelper;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +41,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class OpenAPIContractBuilderTest {
 
   private static final String CONTRACT_PATH = "v3.1/petstore.json";
-  private static final String SPLIT_CONTRACT_PATH =
-      "io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json";
-  private static final String SPLIT_CONTRACT_REFERENCE_PATH =
-      "io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json";
-  private static final String SPLIT_CONTRACT_REFERENCE_KEY = "htts://example.com/petstore";
+  private static final Path BASE_PATH =
+      getRelatedTestResourcePath(OpenAPIContractBuilderTest.class).resolve("from_with_path_and_additional_files");
+  private static final Path SPLIT_CONTRACT_PATH = BASE_PATH.resolve("petstore.json");
+  private static final Path SPLIT_CONTRACT_REFERENCE_PATH = BASE_PATH.resolve("components.json");
+  private static final String SPLIT_CONTRACT_REFERENCE_KEY = "https://example.com/petstore";
 
   @Test
   void should_create_contract_when_valid_contract_path_is_provided(Vertx vertx, VertxTestContext ctx) {
@@ -66,8 +68,8 @@ public class OpenAPIContractBuilderTest {
   void should_create_contract_when_valid_contract_path_and_additional_contract_paths_are_provided(Vertx vertx,
       VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
-        .setContractPath(SPLIT_CONTRACT_PATH)
-        .putAdditionalContractPartPath(SPLIT_CONTRACT_REFERENCE_KEY, SPLIT_CONTRACT_REFERENCE_PATH)
+        .setContractPath(SPLIT_CONTRACT_PATH.toString())
+        .putAdditionalContractPartPath(SPLIT_CONTRACT_REFERENCE_KEY, SPLIT_CONTRACT_REFERENCE_PATH.toString())
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
@@ -76,11 +78,11 @@ public class OpenAPIContractBuilderTest {
   void should_create_contract_when_valid_contract_and_additional_contract_path_is_provided(Vertx vertx,
       VertxTestContext ctx) {
     var contract = ResourceHelper.loadJson(vertx,
-        Paths.get(SPLIT_CONTRACT_PATH));
+        Paths.get(SPLIT_CONTRACT_PATH.toString()));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
         .putAdditionalContractPartPath(SPLIT_CONTRACT_REFERENCE_KEY,
-            SPLIT_CONTRACT_REFERENCE_PATH)
+            SPLIT_CONTRACT_REFERENCE_PATH.toString())
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
@@ -88,10 +90,9 @@ public class OpenAPIContractBuilderTest {
   @Test
   void should_create_contract_when_valid_contract_path_and_additional_contract_part_is_provided(Vertx vertx,
       VertxTestContext ctx) {
-    var components = ResourceHelper.loadJson(vertx,
-        Paths.get(SPLIT_CONTRACT_REFERENCE_PATH));
+    var components = ResourceHelper.loadJson(vertx, SPLIT_CONTRACT_REFERENCE_PATH);
     OpenAPIContract.builder(vertx)
-        .setContractPath(SPLIT_CONTRACT_PATH)
+        .setContractPath(SPLIT_CONTRACT_PATH.toString())
         .putAdditionalContractPart(SPLIT_CONTRACT_REFERENCE_KEY, components)
         .build()
         .onComplete(ctx.succeedingThenComplete());
@@ -104,7 +105,7 @@ public class OpenAPIContractBuilderTest {
         .onComplete(ctx.failing(t -> ctx.verify(() -> {
           assertThat(t).isInstanceOf(OpenAPIContractBuilder.OpenAPIContractBuilderException.class);
           assertThat(t).hasMessageThat()
-              .isEqualTo("Neither a contract path or a contract is set. One of them must be set.");
+              .isEqualTo("Neither a contract path nor a contract is set. One of them must be set.");
           ctx.completeNow();
         })));
   }
@@ -129,14 +130,16 @@ public class OpenAPIContractBuilderTest {
   @Nested
   @ExtendWith(VertxExtension.class)
   class TestSetupOfAdditionalContractParts {
-
-    private static final String CONTRACT_FILE = "io/vertx/tests/builder/contract.yaml";
     private static final String REF1_ID = "http://example.com/ref1";
     private static final String REF2_ID = "http://example.com/ref2";
-    private static final String REF1_1_FILE = "io/vertx/tests/builder/ref1.1.yaml";
-    private static final String REF1_2_FILE = "io/vertx/tests/builder/ref1.2.yaml";
-    private static final String REF2_1_FILE = "io/vertx/tests/builder/ref2.1.yaml";
-    private static final String REF2_2_FILE = "io/vertx/tests/builder/ref2.2.yaml";
+
+    private final Path BASE_PATH =
+        getRelatedTestResourcePath(TestSetupOfAdditionalContractParts.class).resolve("builder");
+    private final String CONTRACT_FILE = BASE_PATH.resolve("contract.yaml").toString();
+    private final String REF1_1_FILE = BASE_PATH.resolve("ref1.1.yaml").toString();
+    private final String REF1_2_FILE = BASE_PATH.resolve("ref1.2.yaml").toString();
+    private final String REF2_1_FILE = BASE_PATH.resolve("ref2.1.yaml").toString();
+    private final String REF2_2_FILE = BASE_PATH.resolve("ref2.2.yaml").toString();
 
     private Vertx vertx;
 

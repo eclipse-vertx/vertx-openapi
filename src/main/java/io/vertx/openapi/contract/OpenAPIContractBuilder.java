@@ -12,6 +12,7 @@
 package io.vertx.openapi.contract;
 
 import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
 import static io.vertx.openapi.contract.OpenAPIContractException.createInvalidContract;
 
 import io.vertx.codegen.annotations.GenIgnore;
@@ -90,25 +91,25 @@ public class OpenAPIContractBuilder {
   /**
    * Puts an additional contract part path that is referenced by the main contract. This method can be
    * called multiple times to add multiple referenced additional contract parts. Overrides a previously
-   * added additional contract part when the same key is used.
+   * added additional contract part when the same reference is used.
    *
-   * @param key  The unique key for the contract.
+   * @param ref  The unique reference of the additional contract part.
    * @param path The path to the contract part.
    * @return The builder, for a fluent interface
    */
-  public OpenAPIContractBuilder putAdditionalContractPartPath(String key, String path) {
-    additionalContractPartPaths.put(key, path);
-    additionalContractParts.remove(key);
+  public OpenAPIContractBuilder putAdditionalContractPartPath(String ref, String path) {
+    additionalContractPartPaths.put(ref, path);
+    additionalContractParts.remove(ref);
     return this;
   }
 
   /**
-   * Uses the additional contract part paths from the provided map to resolve referenced contracts parts.
-   * Replaces all previously put additional contracts part paths by {@link #putAdditionalContractPartPath(String, String)}.
-   * If the same key is used also overrides the additional contract part path set by {@link #putAdditionalContractPart(String, JsonObject)}
-   * and {@link #setAdditionalContractParts(Map)}.
+   * Uses the additional contract part paths from the provided map to resolve referenced contract parts.
+   * Replaces all previously put additional contract part paths by {@link #putAdditionalContractPartPath(String, String)}.
+   * If the same reference is used it overrides the additional contract part path added by {@link #putAdditionalContractPart(String, JsonObject)}
+   * or {@link #setAdditionalContractParts(Map)}.
    *
-   * @param contractPartPaths A map that contains all additional contract paths.
+   * @param contractPartPaths A map that contains all additional contract part paths.
    * @return The builder, for a fluent interface.
    */
   public OpenAPIContractBuilder setAdditionalContractPartPaths(Map<String, String> contractPartPaths) {
@@ -122,23 +123,23 @@ public class OpenAPIContractBuilder {
 
   /**
    * Puts an additional contract part that is referenced by the main contract. This method can be
-   * called multiple times to add multiple referenced contracts.
+   * called multiple times to add multiple referenced additional contract parts.
    *
-   * @param key          The unique key for the contract.
+   * @param ref          The unique reference of the additional contract part.
    * @param contractPart The additional contract part.
    * @return The builder, for a fluent interface
    */
-  public OpenAPIContractBuilder putAdditionalContractPart(String key, JsonObject contractPart) {
-    additionalContractParts.put(key, contractPart);
-    additionalContractPartPaths.remove(key);
+  public OpenAPIContractBuilder putAdditionalContractPart(String ref, JsonObject contractPart) {
+    additionalContractParts.put(ref, contractPart);
+    additionalContractPartPaths.remove(ref);
     return this;
   }
 
   /**
    * Uses the additional contract parts from the provided map to resolve referenced additional contract parts.
    * Replaces all previously put additional contract parts by {@link #putAdditionalContractPart(String, JsonObject)}.
-   * If the same key is used also replaces the additional contract part paths set by {@link #putAdditionalContractPartPath(String, String)}
-   * and {@link #setAdditionalContractPartPaths(Map)}.
+   * If the same reference is used also replaces the additional contract part paths added by {@link #putAdditionalContractPartPath(String, String)}
+   * or {@link #setAdditionalContractPartPaths(Map)}.
    *
    * @param contractParts A map that contains additional contract parts.
    * @return The builder, for a fluent interface.
@@ -161,31 +162,14 @@ public class OpenAPIContractBuilder {
 
     if (contractPath == null && contract == null) {
       return Future.failedFuture(new OpenAPIContractBuilderException(
-          "Neither a contract path or a contract is set. One of them must be set."));
+          "Neither a contract path nor a contract is set. One of them must be set."));
     }
 
-    Future<JsonObject> readContract = contractPath == null
-        ? Future.succeededFuture(contract)
-        : Utils.readYamlOrJson(vertx, contractPath);
-
-    var resolvedContractParts = readContractPaths()
-        .map(r -> {
-          var all = new HashMap<>(additionalContractParts);
-          all.putAll(r);
-          return all;
-        });
-
-    return Future.all(readContract, resolvedContractParts)
-        .compose(composite -> {
-          JsonObject contract = composite.resultAt(0);
-          Map<String, JsonObject> contractParts = composite.resultAt(1);
-          return buildOpenAPIContract(contract, contractParts);
-        });
+    return Future.all(resolveContract(), resolveContractParts()).compose(v -> buildOpenAPIContract());
   }
 
-  private Future<OpenAPIContract> buildOpenAPIContract(JsonObject resolvedContract,
-      Map<String, JsonObject> additionalContractParts) {
-    OpenAPIVersion version = OpenAPIVersion.fromContract(resolvedContract);
+  private Future<OpenAPIContract> buildOpenAPIContract() {
+    OpenAPIVersion version = OpenAPIVersion.fromContract(contract);
     String baseUri = "app://";
 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
@@ -200,10 +184,10 @@ public class OpenAPIContractBuilder {
                       () -> repository.dereference(entry.getKey(), JsonSchema.of(entry.getKey(), entry.getValue())))))
               .collect(Collectors.toList());
           return Future.all(validationFutures).map(repository);
-        }).compose(repository -> version.validateContract(vertx, repository, resolvedContract).compose(res -> {
+        }).compose(repository -> version.validateContract(vertx, repository, contract).compose(res -> {
           try {
             res.checkValidity();
-            return version.resolve(vertx, repository, resolvedContract);
+            return version.resolve(vertx, repository, contract);
           } catch (JsonSchemaValidationException | UnsupportedOperationException e) {
             return failedFuture(createInvalidContract(null, e));
           }
@@ -221,16 +205,20 @@ public class OpenAPIContractBuilder {
     return promise.future();
   }
 
-  private Future<Map<String, JsonObject>> readContractPaths() {
-    if (additionalContractPartPaths.isEmpty())
-      return Future.succeededFuture(Map.of());
-
-    var read = new HashMap<String, JsonObject>();
-    return Future.all(additionalContractPartPaths.entrySet().stream()
-        .map(e -> Utils.readYamlOrJson(vertx, e.getValue())
-            .map(c -> read.put(e.getKey(), c)))
-        .collect(Collectors.toList()))
-        .map(ign -> read);
+  private Future<Void> resolveContract() {
+    if (contractPath == null) {
+      return succeededFuture();
+    }
+    return Utils.readYamlOrJson(vertx, contractPath).onSuccess(c -> contract = c).mapEmpty();
   }
 
+  private Future<Void> resolveContractParts() {
+    if (additionalContractPartPaths.isEmpty()) {
+      return succeededFuture();
+    }
+    return Future.all(additionalContractPartPaths.entrySet().stream()
+        .map(e -> Utils.readYamlOrJson(vertx, e.getValue())
+            .map(c -> additionalContractParts.put(e.getKey(), c)))
+        .collect(Collectors.toList())).mapEmpty();
+  }
 }
