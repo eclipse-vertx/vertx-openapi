@@ -21,7 +21,13 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.*;
+import io.vertx.json.schema.Draft;
+import io.vertx.json.schema.JsonFormatValidator;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.json.schema.JsonSchemaValidationException;
+import io.vertx.json.schema.OutputUnit;
+import io.vertx.json.schema.SchemaRepository;
 import io.vertx.openapi.impl.OpenAPIFormatValidator;
 import java.util.ArrayList;
 import java.util.Arrays;
