@@ -24,7 +24,11 @@ import io.vertx.openapi.impl.Utils;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Paths;
 import java.util.Map;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
@@ -34,17 +38,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class OpenAPIContractBuilderTest {
 
+  private static final String CONTRACT_PATH = "v3.1/petstore.json";
+  private static final String SPLIT_CONTRACT_PATH =
+      "io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json";
+  private static final String SPLIT_CONTRACT_REFERENCE_PATH =
+      "io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json";
+  private static final String SPLIT_CONTRACT_REFERENCE_KEY = "htts://example.com/petstore";
+
   @Test
   void should_create_contract_when_valid_contract_path_is_provided(Vertx vertx, VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
-        .setContractPath("v3.1/petstore.json")
+        .setContractPath(CONTRACT_PATH)
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
 
   @Test
   void should_create_contract_when_valid_contract_is_provided(Vertx vertx, VertxTestContext ctx) {
-    var contract = ResourceHelper.loadJson(vertx, Paths.get("v3.1/petstore.json"));
+    var contract = ResourceHelper.loadJson(vertx, Paths.get(CONTRACT_PATH));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
         .build()
@@ -55,36 +66,33 @@ public class OpenAPIContractBuilderTest {
   void should_create_contract_when_valid_contract_path_and_additional_contract_paths_are_provided(Vertx vertx,
       VertxTestContext ctx) {
     OpenAPIContract.builder(vertx)
-        .setContractPath("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
-        .putAdditionalContractPartPath("https://example.com/petstore",
-            "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
+        .setContractPath(SPLIT_CONTRACT_PATH)
+        .putAdditionalContractPartPath(SPLIT_CONTRACT_REFERENCE_KEY, SPLIT_CONTRACT_REFERENCE_PATH)
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
 
   @Test
-
   void should_create_contract_when_valid_contract_and_additional_contract_path_is_provided(Vertx vertx,
       VertxTestContext ctx) {
     var contract = ResourceHelper.loadJson(vertx,
-        Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json"));
+        Paths.get(SPLIT_CONTRACT_PATH));
     OpenAPIContract.builder(vertx)
         .setContract(contract)
-        .putAdditionalContractPartPath("https://example.com/petstore",
-            "io/vertx/tests/contract/from_with_path_and_additional_files/components.json")
+        .putAdditionalContractPartPath(SPLIT_CONTRACT_REFERENCE_KEY,
+            SPLIT_CONTRACT_REFERENCE_PATH)
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
 
   @Test
-
   void should_create_contract_when_valid_contract_path_and_additional_contract_part_is_provided(Vertx vertx,
       VertxTestContext ctx) {
     var components = ResourceHelper.loadJson(vertx,
-        Paths.get("io/vertx/tests/contract/from_with_path_and_additional_files/components.json"));
+        Paths.get(SPLIT_CONTRACT_REFERENCE_PATH));
     OpenAPIContract.builder(vertx)
-        .setContractPath("io/vertx/tests/contract/from_with_path_and_additional_files/petstore.json")
-        .putAdditionalContractPart("https://example.com/petstore", components)
+        .setContractPath(SPLIT_CONTRACT_PATH)
+        .putAdditionalContractPart(SPLIT_CONTRACT_REFERENCE_KEY, components)
         .build()
         .onComplete(ctx.succeedingThenComplete());
   }
@@ -122,6 +130,7 @@ public class OpenAPIContractBuilderTest {
   @ExtendWith(VertxExtension.class)
   class TestSetupOfAdditionalContractParts {
 
+    private static final String CONTRACT_FILE = "io/vertx/tests/builder/contract.yaml";
     private static final String REF1_ID = "http://example.com/ref1";
     private static final String REF2_ID = "http://example.com/ref2";
     private static final String REF1_1_FILE = "io/vertx/tests/builder/ref1.1.yaml";
@@ -144,7 +153,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_part_should_override_existing_path(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
           .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
           .setAdditionalContractParts(Map.of(REF1_ID, content(REF1_2_FILE)))
@@ -156,7 +165,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void put_additional_contract_part_should_override_existing_path(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
           .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
           .putAdditionalContractPart(REF1_ID, content(REF1_2_FILE))
@@ -168,7 +177,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_path_should_override_existing_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
           .setAdditionalContractPartPaths(Map.of(REF2_ID, REF2_2_FILE))
@@ -180,7 +189,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void put_additional_contract_path_should_override_existing_additional_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
           .putAdditionalContractPartPath(REF2_ID, REF2_2_FILE)
@@ -201,7 +210,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_parts_should_replace_existing_contract_part(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPart(REF1_ID, content(REF1_1_FILE))
           .putAdditionalContractPart(REF2_ID, content(REF2_1_FILE))
           .setAdditionalContractParts(Map.of(REF2_ID, content(REF2_2_FILE)))
@@ -213,7 +222,7 @@ public class OpenAPIContractBuilderTest {
     @Test
     void set_additional_contract_paths_should_replace_existing_contract_paths(Vertx vertx) {
       var c = OpenAPIContract.builder(vertx)
-          .setContractPath("io/vertx/tests/builder/contract.yaml")
+          .setContractPath(CONTRACT_FILE)
           .putAdditionalContractPartPath(REF1_ID, REF1_1_FILE)
           .putAdditionalContractPartPath(REF2_ID, REF2_1_FILE)
           .setAdditionalContractPartPaths(Map.of(REF2_ID, REF2_2_FILE))
