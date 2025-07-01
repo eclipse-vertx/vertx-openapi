@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * Builder for OpenAPIContracts.<br>
- *
+ * <p>
  * In the simplest case (you only have one contract) you must either provide a path to your openapi-contract in json
  * or yaml format or an already parsed openapi-spec as a {@link JsonObject}.
  * See {@link OpenAPIContractBuilder#setContractPath(String)} and {@link OpenAPIContractBuilder#setContract(JsonObject)}.
@@ -88,12 +88,12 @@ public class OpenAPIContractBuilder {
   }
 
   /**
-   * Puts a contract that is referenced by the main contract. This method can be
-   * called multiple times to add multiple referenced contracts. Overrides a previously
-   * added contract when the same key is used.
+   * Puts an additional contract part path that is referenced by the main contract. This method can be
+   * called multiple times to add multiple referenced additional contract parts. Overrides a previously
+   * added additional contract part when the same key is used.
    *
    * @param key  The unique key for the contract.
-   * @param path The path to the contract.
+   * @param path The path to the contract part.
    * @return The builder, for a fluent interface
    */
   public OpenAPIContractBuilder putAdditionalContractPartPath(String key, String path) {
@@ -103,9 +103,9 @@ public class OpenAPIContractBuilder {
   }
 
   /**
-   * Uses the contract paths from the provided map to resolve referenced contracts.
-   * Replaces all previously put contracts by {@link #putAdditionalContractPartPath(String, String)}.
-   * If the same key is used also overrides the contracts set by {@link #putAdditionalContractPart(String, JsonObject)}
+   * Uses the additional contract part paths from the provided map to resolve referenced contracts parts.
+   * Replaces all previously put additional contracts part paths by {@link #putAdditionalContractPartPath(String, String)}.
+   * If the same key is used also overrides the additional contract part path set by {@link #putAdditionalContractPart(String, JsonObject)}
    * and {@link #setAdditionalContractParts(Map)}.
    *
    * @param contractPartPaths A map that contains all additional contract paths.
@@ -121,11 +121,11 @@ public class OpenAPIContractBuilder {
   }
 
   /**
-   * Puts a contract that is referenced by the main contract. This method can be
+   * Puts an additional contract part that is referenced by the main contract. This method can be
    * called multiple times to add multiple referenced contracts.
    *
    * @param key          The unique key for the contract.
-   * @param contractPart The contract object.
+   * @param contractPart The additional contract part.
    * @return The builder, for a fluent interface
    */
   public OpenAPIContractBuilder putAdditionalContractPart(String key, JsonObject contractPart) {
@@ -135,9 +135,9 @@ public class OpenAPIContractBuilder {
   }
 
   /**
-   * Uses the contracts from the provided map to resolve referenced contracts.
-   * Replaces all previously put contracts by {@link #putAdditionalContractPart(String, JsonObject)}.
-   * If the same key is used also replaces the contracts set by {@link #putAdditionalContractPartPath(String, String)}
+   * Uses the additional contract parts from the provided map to resolve referenced additional contract parts.
+   * Replaces all previously put additional contract parts by {@link #putAdditionalContractPart(String, JsonObject)}.
+   * If the same key is used also replaces the additional contract part paths set by {@link #putAdditionalContractPartPath(String, String)}
    * and {@link #setAdditionalContractPartPaths(Map)}.
    *
    * @param contractParts A map that contains additional contract parts.

@@ -85,16 +85,16 @@ public interface OpenAPIContract {
    * This method can be used in case that the contract is split into several files. These files can be passed in a
    * Map that has the reference as key and the path to the file as value.
    *
-   * @param vertx                       The related Vert.x instance.
-   * @param contract                    The unresolved contract.
-   * @param additionalContractPartPaths The additional contract part paths
+   * @param vertx                   The related Vert.x instance.
+   * @param contract                The unresolved contract.
+   * @param additionalContractParts The additional contract parts
    * @return A succeeded {@link Future} holding an {@link OpenAPIContract} instance, otherwise a failed {@link Future}.
    */
   static Future<OpenAPIContract> from(Vertx vertx, JsonObject contract,
-      Map<String, JsonObject> additionalContractPartPaths) {
+      Map<String, JsonObject> additionalContractParts) {
     return builder(vertx)
         .setContract(contract)
-        .setAdditionalContractParts(additionalContractPartPaths)
+        .setAdditionalContractParts(additionalContractParts)
         .build();
 
   }
