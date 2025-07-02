@@ -106,7 +106,7 @@ public class OpenAPIContractBuilder {
   /**
    * Uses the additional contract part paths from the provided map to resolve referenced contract parts.
    * Replaces all previously put additional contract part paths by {@link #putAdditionalContractPartPath(String, String)}.
-   * If the same reference is used it overrides the additional contract part path added by {@link #putAdditionalContractPart(String, JsonObject)}
+   * If the same reference is used it overrides the additional contract part added by {@link #putAdditionalContractPart(String, JsonObject)}
    * or {@link #setAdditionalContractParts(Map)}.
    *
    * @param contractPartPaths A map that contains all additional contract part paths.
