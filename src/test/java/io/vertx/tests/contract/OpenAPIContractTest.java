@@ -27,6 +27,7 @@ import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
+import io.vertx.openapi.contract.OpenAPIContractBuilder;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -93,8 +94,9 @@ class OpenAPIContractTest {
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testFromFailsInvalidSpecMustNotNull(Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, (JsonObject) null).onComplete(testContext.failing(t -> testContext.verify(() -> {
-      assertThat(t).isInstanceOf(OpenAPIContractException.class);
-      assertThat(t).hasMessageThat().isEqualTo("The passed OpenAPI contract is invalid: Spec must not be null");
+      assertThat(t).isInstanceOf(OpenAPIContractBuilder.OpenAPIContractBuilderException.class);
+      assertThat(t).hasMessageThat()
+          .isEqualTo("Neither a contract path nor a contract is set. One of them must be set.");
       testContext.completeNow();
     })));
   }
