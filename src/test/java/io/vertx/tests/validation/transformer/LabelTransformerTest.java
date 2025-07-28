@@ -94,7 +94,8 @@ class LabelTransformerTest implements SchemaSupport {
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
     // Leading dot will be removed in transform method
-    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue.substring(1))).isEqualTo(expectedValue);
+    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue.substring(1)))
+        .isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"label\" with array value: {0}")

@@ -92,7 +92,8 @@ class MatrixTransformerTest implements SchemaSupport {
   void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
     // Leading prefix will be removed in transform method
     int prefixLength = TRANSFORMER.buildPrefix(parameter).length();
-    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue.substring(prefixLength))).isEqualTo(expectedValue);
+    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue.substring(prefixLength)))
+        .isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"matrix\" with array value: {0}")

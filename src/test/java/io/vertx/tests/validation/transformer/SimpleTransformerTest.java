@@ -88,7 +88,7 @@ class SimpleTransformerTest implements SchemaSupport {
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"simple\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue)).isEqualTo(expectedValue);
+    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue)).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Path\" parameter of style \"simple\" with array value: {0}")
@@ -105,7 +105,8 @@ class SimpleTransformerTest implements SchemaSupport {
 
   @Test
   void testInvalidValues() {
-    assertThrows(DecodeException.class, () -> TRANSFORMER.transformPrimitive(INTEGER_PARAM, "\"no_integer"));
+    assertThrows(DecodeException.class,
+        () -> TRANSFORMER.transformPrimitive(INTEGER_PARAM.getSchemaType(), "\"no_integer"));
 
     String invalidObject = "string,foo,number";
     ValidatorException exception =

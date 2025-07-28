@@ -1,6 +1,7 @@
 package io.vertx.tests.validation.transformer;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.when;
 import io.vertx.core.json.DecodeException;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
+import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.transformer.ParameterTransformer;
@@ -50,7 +52,7 @@ class ParameterTransformerTest {
       }
 
       @Override
-      public Object transformPrimitive(Parameter parameter, String rawValue) {
+      public Object transformPrimitive(SchemaType type, String rawValue) {
         return "primitive";
       }
 
@@ -83,5 +85,11 @@ class ParameterTransformerTest {
     assertThat(TRANSFORMER.transform(buildSimplePathParameter(booleanSchema()), value)).isEqualTo("primitive");
     assertThat(TRANSFORMER.transform(buildSimplePathParameter(arraySchema()), value)).isEqualTo("array");
     assertThat(TRANSFORMER.transform(buildSimplePathParameter(objectSchema()), value)).isEqualTo("object");
+  }
+
+  @Test
+  void testGetArrayItemSchemaType() {
+    Parameter arrayParam = buildSimplePathParameter(arraySchema().items(stringSchema()));
+    assertThat(TRANSFORMER.getArrayItemSchemaType(arrayParam)).isEqualTo(STRING);
   }
 }
