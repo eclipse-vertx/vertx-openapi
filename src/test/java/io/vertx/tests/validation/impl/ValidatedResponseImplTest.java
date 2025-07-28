@@ -95,7 +95,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     createServer(request -> {
       responseValidator.validate(ValidatableResponse.create(201), "createPets")
           .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
-    }).compose(v -> verifyResponse(201, Buffer.buffer(), headersExpected, testContext));
+    }, testContext::failNow).compose(v -> verifyResponse(201, Buffer.buffer(), headersExpected, testContext));
   }
 
   @Test
@@ -105,7 +105,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
     createServer(request -> {
       responseValidator.validate(ValidatableResponse.create(200, body, APPLICATION_JSON.toString()), "listPets")
           .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
-    }).compose(v -> verifyResponse(200, body, buildHeaders(body), testContext));
+    }, testContext::failNow).compose(v -> verifyResponse(200, body, buildHeaders(body), testContext));
   }
 
   private Map<String, String> buildHeaders(Buffer body) {
@@ -121,7 +121,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
       ValidatableResponse vr = ValidatableResponse.create(200, cat, APPLICATION_JSON.toString());
       responseValidator.validate(vr, "showPetById")
           .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
-    }).compose(v -> verifyResponse(200, cat, buildHeaders(cat), testContext));
+    }, testContext::failNow).compose(v -> verifyResponse(200, cat, buildHeaders(cat), testContext));
   }
 
   @Test
@@ -136,6 +136,6 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
       ValidatableResponse vr = ValidatableResponse.create(200, headers, cats, APPLICATION_JSON.toString());
       responseValidator.validate(vr, "listPets")
           .compose(validatedResponse -> validatedResponse.send(request.response())).onFailure(testContext::failNow);
-    }).compose(v -> verifyResponse(200, cats, headersExpected, testContext));
+    }, testContext::failNow).compose(v -> verifyResponse(200, cats, headersExpected, testContext));
   }
 }

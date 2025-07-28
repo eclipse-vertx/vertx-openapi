@@ -54,6 +54,9 @@ class SimpleTransformerTest implements SchemaSupport {
     return Stream.of(
         Arguments.of("(String) empty", STRING_PARAM, "", ""),
         Arguments.of("(String) 44", STRING_PARAM, "44", "44"),
+        Arguments.of("(String) phone number: +901200", STRING_PARAM, "+901200", "+901200"),
+        Arguments.of("(String) phone number: +90 1200", STRING_PARAM, "+90 1200", "+90 1200"),
+        Arguments.of("(Integer) -100", INTEGER_PARAM, "-101", -101),
         Arguments.of("(String) \"foobar\"", STRING_PARAM, "foobar", "foobar"),
         Arguments.of("(Number) 14.6767", NUMBER_PARAM, "14.6767", 14.6767),
         Arguments.of("(Integer) 42", INTEGER_PARAM, "42", 42),
@@ -102,7 +105,7 @@ class SimpleTransformerTest implements SchemaSupport {
 
   @Test
   void testInvalidValues() {
-    assertThrows(DecodeException.class, () -> TRANSFORMER.transformPrimitive(STRING_PARAM, "\""));
+    assertThrows(DecodeException.class, () -> TRANSFORMER.transformPrimitive(INTEGER_PARAM, "\"no_integer"));
 
     String invalidObject = "string,foo,number";
     ValidatorException exception =
