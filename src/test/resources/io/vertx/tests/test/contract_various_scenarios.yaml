@@ -62,6 +62,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /arrayItems:
+    get:
+      summary: https://github.com/eclipse-vertx/vertx-openapi/issues/104
+      operationId: arrayItems
+      parameters:
+        - in: query
+          name: entityId
+          description: Entity Id
+          schema:
+            type: array
+            items:
+              type: string
+          example:
+            - "234534"
+            - "123452"
+
+      responses:
+        "200":
+          description: Doesn't matter
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     Error:

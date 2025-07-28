@@ -87,7 +87,7 @@ class FormTransformerTest implements SchemaSupport {
   @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(parameter, rawValue)).isEqualTo(expectedValue);
+    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue)).isEqualTo(expectedValue);
   }
 
   @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with array value: {0}")

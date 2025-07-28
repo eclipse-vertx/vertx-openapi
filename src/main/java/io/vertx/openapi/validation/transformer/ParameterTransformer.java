@@ -22,6 +22,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
 
 public abstract class ParameterTransformer {
@@ -42,7 +43,7 @@ public abstract class ParameterTransformer {
         case ARRAY:
           return transformArray(parameter, rawValue);
         default:
-          return transformPrimitive(parameter, rawValue);
+          return transformPrimitive(parameter.getSchemaType(), rawValue);
       }
     } catch (DecodeException e) {
       throw createCantDecodeValue(parameter);
@@ -52,12 +53,12 @@ public abstract class ParameterTransformer {
   /**
    * Like {@link #transform(Parameter, String)}, but only for values considered to be primitive.
    *
-   * @param parameter The parameter model
+   * @param type The parameter schema type
    * @param rawValue  The parameter value
    * @return An {@link Object} holding the transformed value.
    */
-  public Object transformPrimitive(Parameter parameter, String rawValue) {
-    if (STRING.equals(parameter.getSchemaType())) {
+  public Object transformPrimitive(SchemaType type, String rawValue) {
+    if (STRING.equals(type)) {
       return rawValue;
     }
 
@@ -70,7 +71,7 @@ public abstract class ParameterTransformer {
         throw de;
       } else {
         // let's try it as JSON String
-        return transformPrimitive(parameter, "\"" + rawValue + "\"");
+        return transformPrimitive(type, "\"" + rawValue + "\"");
       }
     }
   }
@@ -88,9 +89,11 @@ public abstract class ParameterTransformer {
     if (rawValue.isEmpty()) {
       return EMPTY_JSON_ARRAY;
     }
+
+    SchemaType itemsType = getArrayItemSchemaType(parameter);
     JsonArray array = new JsonArray();
     for (String value : getArrayValues(parameter, rawValue)) {
-      array.add(transformPrimitive(parameter, value));
+      array.add(transformPrimitive(itemsType, value));
     }
     return array;
   }
@@ -115,8 +118,18 @@ public abstract class ParameterTransformer {
     }
     JsonObject object = new JsonObject();
     for (int i = 0; i < keysAndValues.length; i = i + 2) {
-      object.put(keysAndValues[i], transformPrimitive(parameter, keysAndValues[i + 1]));
+      object.put(keysAndValues[i], transformPrimitive(parameter.getSchemaType(), keysAndValues[i + 1]));
     }
     return object;
+  }
+
+  // VisibleForTesting
+  public SchemaType getArrayItemSchemaType(Parameter parameter) {
+    String itemsType = parameter.getSchema().get("items", new JsonObject()).getString("type");
+    if (itemsType == null) {
+      // This allows everything
+      return SchemaType.OBJECT;
+    }
+    return SchemaType.valueOf(itemsType.toUpperCase());
   }
 }
