@@ -1,7 +1,7 @@
 package io.vertx.tests.validation.transformer;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
+import static io.vertx.json.schema.common.dsl.SchemaType.*;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import io.vertx.core.json.DecodeException;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
@@ -91,5 +92,20 @@ class ParameterTransformerTest {
   void testGetArrayItemSchemaType() {
     Parameter arrayParam = buildSimplePathParameter(arraySchema().items(stringSchema()));
     assertThat(TRANSFORMER.getArrayItemSchemaType(arrayParam)).isEqualTo(STRING);
+  }
+
+  @Test
+  void testGetObjectPropertySchemaType() {
+    ObjectSchemaBuilder schema = objectSchema()
+        .property("string", stringSchema())
+        .property("number", numberSchema())
+        .property("integer", intSchema())
+        .property("boolean", booleanSchema());
+    Parameter objectParam = buildSimplePathParameter(schema);
+
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "string")).isEqualTo(STRING);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "number")).isEqualTo(NUMBER);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "integer")).isEqualTo(INTEGER);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "boolean")).isEqualTo(BOOLEAN);
   }
 }

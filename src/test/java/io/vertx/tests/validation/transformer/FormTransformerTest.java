@@ -13,6 +13,8 @@
 package io.vertx.tests.validation.transformer;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
@@ -74,14 +76,20 @@ class FormTransformerTest implements SchemaSupport {
   private static Stream<Arguments> provideValidObjectValues() {
     String complexRaw = "string,foo,number,13.37,integer,42,boolean,true";
     String complexExplodedRaw = "string=foo&number=13.37&integer=42&boolean=true";
-    JsonObject expected =
+    JsonObject expectedComplex =
         new JsonObject().put("string", "foo").put("integer", 42).put("boolean", true).put("number", 13.37);
+
+    String stringWithIntValue = "string,42";
+    JsonObject expectedStringWithIntValue = new JsonObject().put("string", "42");
+    JsonSchema stringWithIntSchema = JsonSchema.of(objectSchema().property("string", stringSchema()).toJson());
+    Parameter stringWIthIntParam = mockFormParameter(stringWithIntSchema, false);
 
     return Stream.of(
         Arguments.of("empty", OBJECT_PARAM, "", EMPTY_JSON_OBJECT),
         Arguments.of("empty (exploded)", OBJECT_PARAM_EXPLODE, "", EMPTY_JSON_OBJECT),
-        Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expected),
-        Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw, expected));
+        Arguments.of(complexRaw, OBJECT_PARAM, complexRaw, expectedComplex),
+        Arguments.of(stringWithIntValue, stringWIthIntParam, stringWithIntValue, expectedStringWithIntValue),
+        Arguments.of(complexExplodedRaw + " (exploded)", OBJECT_PARAM_EXPLODE, complexExplodedRaw, expectedComplex));
   }
 
   @ParameterizedTest(name = "{index} Transform \"Cookie\" parameter of style \"from\" with primitive value: {0}")
