@@ -90,7 +90,7 @@ class ParameterImplTest {
         Arguments.of("0008_Query_With_Wrong_Style", INVALID_SPEC,
             "The passed OpenAPI contract is invalid: The style of a query parameter MUST be form, spaceDelimited, pipeDelimited or deepObject"),
         Arguments.of("0009_Query_With_Unsupported_Style_DeepObject", UNSUPPORTED_FEATURE,
-            "The passed OpenAPI contract contains a feature that is not supported: Parameters of style: deepObject"),
+            "The passed OpenAPI contract contains a feature that is not supported: Query parameter in non-exploded deepObject style"),
         Arguments.of("0010_Query_With_Unsupported_Style_SpaceDelimited", UNSUPPORTED_FEATURE,
             "The passed OpenAPI contract contains a feature that is not supported: Parameters of style: spaceDelimited"),
         Arguments.of("0011_Query_With_Unsupported_Style_pipeDelimited", UNSUPPORTED_FEATURE,

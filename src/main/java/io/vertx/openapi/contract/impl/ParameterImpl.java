@@ -111,8 +111,11 @@ public class ParameterImpl implements Parameter {
       if (!(style == FORM || style == SPACE_DELIMITED || style == PIPE_DELIMITED || style == DEEP_OBJECT)) {
         throw createInvalidStyle(in, "form, spaceDelimited, pipeDelimited or deepObject");
       } else {
-        if (style == SPACE_DELIMITED || style == PIPE_DELIMITED || style == DEEP_OBJECT) {
+        if (style == SPACE_DELIMITED || style == PIPE_DELIMITED) {
           throw createUnsupportedFeature("Parameters of style: " + style);
+        }
+        if (style == DEEP_OBJECT && !explode) {
+          throw createUnsupportedFeature("Query parameter in non-exploded deepObject style");
         }
       }
     }

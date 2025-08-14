@@ -17,6 +17,7 @@ import static io.vertx.openapi.contract.Style.FORM;
 import static io.vertx.openapi.contract.Style.LABEL;
 import static io.vertx.openapi.contract.Style.MATRIX;
 import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.openapi.contract.Style.DEEP_OBJECT;
 import static io.vertx.openapi.validation.SchemaValidationException.createErrorFromOutputUnitType;
 import static io.vertx.openapi.validation.ValidationContext.REQUEST;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
@@ -41,11 +42,8 @@ import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
 import io.vertx.openapi.validation.ValidatedRequest;
 import io.vertx.openapi.validation.ValidatorException;
-import io.vertx.openapi.validation.transformer.FormTransformer;
-import io.vertx.openapi.validation.transformer.LabelTransformer;
-import io.vertx.openapi.validation.transformer.MatrixTransformer;
-import io.vertx.openapi.validation.transformer.ParameterTransformer;
-import io.vertx.openapi.validation.transformer.SimpleTransformer;
+import io.vertx.openapi.validation.transformer.*;
+
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +58,7 @@ public class RequestValidatorImpl extends BaseValidator implements RequestValida
     parameterTransformers.put(LABEL, new LabelTransformer());
     parameterTransformers.put(MATRIX, new MatrixTransformer());
     parameterTransformers.put(FORM, new FormTransformer());
+    parameterTransformers.put(DEEP_OBJECT, new DeepObjectTransformer());
   }
 
   @Override
