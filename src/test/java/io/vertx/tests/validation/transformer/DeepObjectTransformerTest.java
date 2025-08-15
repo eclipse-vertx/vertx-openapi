@@ -31,8 +31,21 @@ public class DeepObjectTransformerTest implements SchemaSupport {
 
   private static final Parameter DEEP_OBJECT_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, true, OBJECT_SCHEMA);
   private static final Parameter DEEP_OBJECT_ARRAY_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, true, ARRAY_SCHEMA);
+  private static final Parameter STRING_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, false, STRING_SCHEMA);
+  private static final Parameter NUMBER_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, false, NUMBER_SCHEMA);
+  private static final Parameter INTEGER_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, false, INTEGER_SCHEMA);
+  private static final Parameter BOOLEAN_PARAM = mockParameter(NAME, QUERY, DEEP_OBJECT, false, BOOLEAN_SCHEMA);
 
   private static final DeepObjectTransformer TRANSFORMER = new DeepObjectTransformer();
+
+  private static Stream<Arguments> provideValidPrimitiveValues() {
+    return Stream.of(
+        Arguments.of("(String) empty", STRING_PARAM, "", ""),
+        Arguments.of("(String) 44", STRING_PARAM, "44", "44"),
+        Arguments.of("(Integer) -100", INTEGER_PARAM, "-101", -101),
+        Arguments.of("(Number) 14.6767", NUMBER_PARAM, "14.6767", 14.6767),
+        Arguments.of("(Boolean) true", BOOLEAN_PARAM, "true", true));
+  }
 
   private static Stream<Arguments> provideValidObjectValues() {
     String complexExplodedRaw = "dummy[role]=admin&dummy[firstName]=Alex";
@@ -63,5 +76,11 @@ public class DeepObjectTransformerTest implements SchemaSupport {
         assertThrows(ValidatorException.class, () -> TRANSFORMER.transform(DEEP_OBJECT_ARRAY_PARAM, validExplodedRaw));
     String expectedMsg = "Transformation in style deepObject to schema type ARRAY is not supported.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @ParameterizedTest(name = "{index} Transform \"Query\" parameter of style \"deepObject\" with primitive value: {0}")
+  @MethodSource("provideValidPrimitiveValues")
+  void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
+    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue)).isEqualTo(expectedValue);
   }
 }

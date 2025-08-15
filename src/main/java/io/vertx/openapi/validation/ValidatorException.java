@@ -12,7 +12,13 @@
 
 package io.vertx.openapi.validation;
 
-import static io.vertx.openapi.validation.ValidatorErrorType.*;
+import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMAT;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_RESPONSE;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_TRANSFORMATION;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.openapi.contract.Parameter;

@@ -59,7 +59,8 @@ public class DeepObjectTransformer extends ParameterTransformer {
 
   @Override
   protected String[] getArrayValues(Parameter parameter, String rawValue) {
-    throw createUnsupportedTransformation(parameter);
+    // this is never called due to transformArray overridden and throwing an exception.
+    return null;
   }
 
 }
