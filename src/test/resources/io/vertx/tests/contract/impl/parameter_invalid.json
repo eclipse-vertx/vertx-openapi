@@ -153,5 +153,18 @@
         "type": "array"
       }
     }
+  },
+  "0014_Query_With_Unsupported_Schema_DeepObject": {
+    "path": "/pets/{petId}",
+    "parameterModel": {
+      "name": "petId",
+      "in": "query",
+      "required": true,
+      "explode": true,
+      "style": "deepObject",
+      "schema": {
+        "type": "array"
+      }
+    }
   }
 }

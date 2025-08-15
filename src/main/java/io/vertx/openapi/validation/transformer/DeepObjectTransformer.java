@@ -12,6 +12,7 @@ package io.vertx.openapi.validation.transformer;
 
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedTransformation;
 
+import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,11 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * +--------+---------+--------+-------------+-------------------------------------+------------------+
+ * +------------+---------+--------+----------+-----------+-------------------------------------------+
  * | style      | explode | empty  | string   | array     | object                                    |
- * +--------+---------+--------+-------------+-------------------------------------+------------------+
- * | deepObject | true    |  n/a   | n/a      | n/a       | dummy[role]=admin&dummy[firstName]=Alex   |
- * +--------+---------+--------+-------------+-------------------------------------+------------------+
+ * +------------+---------+--------+----------+-----------+-------------------------------------------+
+ * | deepObject | true    | n/a    | n/a      | n/a       | dummy[role]=admin&dummy[firstName]=Alex   |
+ * +------------+---------+--------+----------+-----------+-------------------------------------------+
  */
 public class DeepObjectTransformer extends ParameterTransformer {
 
@@ -32,6 +33,11 @@ public class DeepObjectTransformer extends ParameterTransformer {
    * Matches name=[key]=value
    */
   private final Pattern PATTERN = Pattern.compile("(\\w+)\\[(\\w+)]\\s*=\\s*([^&]+)");
+
+  @Override
+  public Object transformPrimitive(SchemaType type, String rawValue) {
+    throw createUnsupportedTransformation(type);
+  }
 
   @Override
   protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {

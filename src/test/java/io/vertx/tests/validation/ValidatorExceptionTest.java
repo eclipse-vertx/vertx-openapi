@@ -93,4 +93,12 @@ class ValidatorExceptionTest {
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.UNSUPPORTED_TRANSFORMATION);
   }
+
+  @Test
+  void testCreateUnsupportedTransformationForSchemaFormat() {
+    ValidatorException exception = ValidatorException.createUnsupportedTransformation(DUMMY_PARAMETER.getSchemaType());
+    String expectedMsg = "Transformation to schema type INTEGER is not supported.";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+    assertThat(exception.type()).isEqualTo(ValidatorErrorType.UNSUPPORTED_TRANSFORMATION);
+  }
 }

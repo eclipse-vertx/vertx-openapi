@@ -98,7 +98,10 @@ class ParameterImplTest {
         Arguments.of("0012_With_Schema_No_Type", INVALID_SPEC,
             "The passed OpenAPI contract is invalid: Missing \"type\" for \"schema\" property in parameter: petId"),
         Arguments.of("0013_Cookie_With_Unsupported_Combination_Array_And_Exploded", UNSUPPORTED_FEATURE,
-            "The passed OpenAPI contract contains a feature that is not supported: Cookie parameter values formatted as exploded array"));
+            "The passed OpenAPI contract contains a feature that is not supported: Cookie parameter values formatted as exploded array"),
+        Arguments.of("0014_Query_With_Unsupported_Schema_DeepObject", UNSUPPORTED_FEATURE,
+            "The passed OpenAPI contract contains a feature that is not supported: Query parameter in deepObject style can only be an object"));
+
   }
 
   private static Stream<Arguments> provideDefaultValuesScenarios() {

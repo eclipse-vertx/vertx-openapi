@@ -13,6 +13,7 @@
 package io.vertx.openapi.contract.impl;
 
 import static io.vertx.json.schema.common.dsl.SchemaType.ARRAY;
+import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Location.PATH;
@@ -116,6 +117,9 @@ public class ParameterImpl implements Parameter {
         }
         if (style == DEEP_OBJECT && !explode) {
           throw createUnsupportedFeature("Query parameter in non-exploded deepObject style");
+        }
+        if (style == DEEP_OBJECT && schemaType != OBJECT) {
+          throw createUnsupportedFeature("Query parameter in deepObject style can only be an object");
         }
       }
     }

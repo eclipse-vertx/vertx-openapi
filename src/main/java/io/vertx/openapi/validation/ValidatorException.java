@@ -21,6 +21,7 @@ import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_TRANSFO
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
 import io.vertx.core.http.HttpMethod;
+import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
 
 /**
@@ -65,6 +66,11 @@ public class ValidatorException extends RuntimeException {
   public static ValidatorException createUnsupportedTransformation(Parameter parameter) {
     String msg = String.format("Transformation in style %s to schema type %s is not supported.", parameter.getStyle(),
         parameter.getSchemaType());
+    return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
+  }
+
+  public static ValidatorException createUnsupportedTransformation(SchemaType schemaType) {
+    String msg = String.format("Transformation to schema type %s is not supported.", schemaType);
     return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
   }
 
