@@ -49,5 +49,10 @@ public enum ValidatorErrorType {
   /**
    * The response can't get validated due to missing response definition for the related status code information.
    */
-  MISSING_RESPONSE
+  MISSING_RESPONSE,
+
+  /**
+   * Transformation to the chosen output format is not supported.
+   */
+  UNSUPPORTED_TRANSFORMATION
 }

@@ -17,10 +17,13 @@ import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE_FORMA
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_OPERATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_RESPONSE;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_TRANSFORMATION;
 import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
 import io.vertx.core.http.HttpMethod;
+import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Style;
 
 /**
  * A ValidatorException is thrown, if the validation of a request or response fails. The validation can fail for
@@ -59,6 +62,11 @@ public class ValidatorException extends RuntimeException {
             parameter.getStyle(),
             parameter.isExplode(), parameter.getIn().name().toLowerCase(), parameter.getName());
     return new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
+  }
+
+  public static ValidatorException createUnsupportedTransformation(Style style, SchemaType schemaType) {
+    String msg = String.format("Transformation in style %s to schema type %s is not supported.", style, schemaType);
+    return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
   }
 
   public static ValidatorException createCantDecodeValue(Parameter parameter) {

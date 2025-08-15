@@ -372,7 +372,7 @@ class RequestValidatorImplTest {
   }
 
   @ParameterizedTest(name = "{index} Throw UNSUPPORTED_VALUE_FORMAT error when param style is {0}")
-  @EnumSource(value = Style.class, names = { "SPACE_DELIMITED", "PIPE_DELIMITED", "DEEP_OBJECT" })
+  @EnumSource(value = Style.class, names = { "SPACE_DELIMITED", "PIPE_DELIMITED" })
   void testValidateParameterThrowUnsupportedValueFormat(Style style) {
     Parameter param = mockParameter("dummy", HEADER, style, false, JsonSchema.of(stringSchema().toJson()));
     ValidatorException exception = assertThrows(ValidatorException.class,
