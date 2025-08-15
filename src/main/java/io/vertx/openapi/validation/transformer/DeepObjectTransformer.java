@@ -10,6 +10,7 @@
  */
 package io.vertx.openapi.validation.transformer;
 
+import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedTransformation;
 
 import io.vertx.json.schema.common.dsl.SchemaType;
@@ -36,6 +37,10 @@ public class DeepObjectTransformer extends ParameterTransformer {
 
   @Override
   public Object transformPrimitive(SchemaType type, String rawValue) {
+    // as transformObject calls transformPrimitive internally, we delegate to the base method for type OBJECT
+    // to avoid breaking transformObject.
+    if (type == OBJECT)
+      return super.transformPrimitive(type, rawValue);
     throw createUnsupportedTransformation(type);
   }
 

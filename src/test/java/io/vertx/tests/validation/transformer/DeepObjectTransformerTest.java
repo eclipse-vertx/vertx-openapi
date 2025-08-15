@@ -81,6 +81,10 @@ public class DeepObjectTransformerTest implements SchemaSupport {
   @ParameterizedTest(name = "{index} Transform \"Query\" parameter of style \"deepObject\" with primitive value: {0}")
   @MethodSource("provideValidPrimitiveValues")
   void testTransformPrimitiveValid(String scenario, Parameter parameter, String rawValue, Object expectedValue) {
-    assertThat(TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue)).isEqualTo(expectedValue);
+    ValidatorException exception =
+        assertThrows(ValidatorException.class,
+            () -> TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue));
+    String expectedMsg = String.format("Transformation to schema type %s is not supported.", parameter.getSchemaType());
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 }
