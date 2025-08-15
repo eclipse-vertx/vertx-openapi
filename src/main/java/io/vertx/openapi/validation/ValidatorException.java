@@ -12,9 +12,6 @@
 
 package io.vertx.openapi.validation;
 
-import io.vertx.core.http.HttpMethod;
-import io.vertx.openapi.contract.Parameter;
-
 import static io.vertx.openapi.validation.ValidatorErrorType.*;
 
 import io.vertx.core.http.HttpMethod;
@@ -61,7 +58,7 @@ public class ValidatorException extends RuntimeException {
 
   public static ValidatorException createUnsupportedTransformation(Parameter parameter) {
     String msg = String.format("Transformation in style %s to schema type %s is not supported.", parameter.getStyle(),
-      parameter.getSchemaType());
+        parameter.getSchemaType());
     return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
   }
 

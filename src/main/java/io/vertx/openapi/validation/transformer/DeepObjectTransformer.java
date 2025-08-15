@@ -10,14 +10,13 @@
  */
 package io.vertx.openapi.validation.transformer;
 
-import io.vertx.openapi.contract.Parameter;
+import static io.vertx.openapi.validation.ValidatorException.createUnsupportedTransformation;
 
+import io.vertx.openapi.contract.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static io.vertx.openapi.validation.ValidatorException.createUnsupportedTransformation;
 
 /**
  * <p>
