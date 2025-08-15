@@ -84,7 +84,8 @@ public class DeepObjectTransformerTest implements SchemaSupport {
     ValidatorException exception =
         assertThrows(ValidatorException.class,
             () -> TRANSFORMER.transformPrimitive(parameter.getSchemaType(), rawValue));
-    String expectedMsg = String.format("Transformation to schema type %s is not supported.", parameter.getSchemaType());
+    String expectedMsg = String.format("Transformation in style deepObject to schema type %s is not supported.",
+        parameter.getSchemaType());
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 }

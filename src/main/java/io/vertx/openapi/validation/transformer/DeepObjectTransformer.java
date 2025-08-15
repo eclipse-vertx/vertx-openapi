@@ -11,6 +11,7 @@
 package io.vertx.openapi.validation.transformer;
 
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
+import static io.vertx.openapi.contract.Style.DEEP_OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createUnsupportedTransformation;
 
 import io.vertx.json.schema.common.dsl.SchemaType;
@@ -41,7 +42,7 @@ public class DeepObjectTransformer extends ParameterTransformer {
     // to avoid breaking transformObject.
     if (type == OBJECT)
       return super.transformPrimitive(type, rawValue);
-    throw createUnsupportedTransformation(type);
+    throw createUnsupportedTransformation(DEEP_OBJECT, type);
   }
 
   @Override
@@ -65,7 +66,7 @@ public class DeepObjectTransformer extends ParameterTransformer {
 
   @Override
   public Object transformArray(Parameter parameter, String rawValue) {
-    throw createUnsupportedTransformation(parameter);
+    throw createUnsupportedTransformation(parameter.getStyle(), parameter.getSchemaType());
   }
 
   @Override

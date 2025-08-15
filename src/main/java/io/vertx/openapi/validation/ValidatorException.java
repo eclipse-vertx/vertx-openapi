@@ -23,6 +23,7 @@ import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_F
 import io.vertx.core.http.HttpMethod;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Style;
 
 /**
  * A ValidatorException is thrown, if the validation of a request or response fails. The validation can fail for
@@ -63,14 +64,8 @@ public class ValidatorException extends RuntimeException {
     return new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
   }
 
-  public static ValidatorException createUnsupportedTransformation(Parameter parameter) {
-    String msg = String.format("Transformation in style %s to schema type %s is not supported.", parameter.getStyle(),
-        parameter.getSchemaType());
-    return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
-  }
-
-  public static ValidatorException createUnsupportedTransformation(SchemaType schemaType) {
-    String msg = String.format("Transformation to schema type %s is not supported.", schemaType);
+  public static ValidatorException createUnsupportedTransformation(Style style, SchemaType schemaType) {
+    String msg = String.format("Transformation in style %s to schema type %s is not supported.", style, schemaType);
     return new ValidatorException(msg, UNSUPPORTED_TRANSFORMATION);
   }
 
