@@ -58,7 +58,7 @@ public abstract class ParameterTransformer {
    */
   public Object transformPrimitive(Parameter parameter, String rawValue) {
     boolean isString = STRING.equals(parameter.getSchemaType());
-    if (isString && rawValue.matches("\\w+")) {
+    if (isString) {
       return rawValue;
     }
 

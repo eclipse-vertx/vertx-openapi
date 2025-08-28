@@ -94,6 +94,11 @@ class ParameterTransformerTest {
     JsonObject parameterModel = new JsonObject().put("in", "query").put("schema", new JsonObject().put("type", "string"));
     Parameter parameter = new ParameterImpl(path, parameterModel);
     ParameterTransformer formTransformer = new FormTransformer();
+    assertThat(formTransformer.transform(parameter, "3").getClass()).isEqualTo(String.class);
+    assertThat(formTransformer.transform(parameter, "v3").getClass()).isEqualTo(String.class);
+    assertThat(formTransformer.transform(parameter, "3.x.@").getClass()).isEqualTo(String.class);
+    assertThat(formTransformer.transform(parameter, "#3.0").getClass()).isEqualTo(String.class);
+    assertThat(formTransformer.transform(parameter, "3.0.0").getClass()).isEqualTo(String.class);
     assertThat(formTransformer.transform(parameter, "3.0").getClass()).isEqualTo(String.class);
   }
 
