@@ -12,16 +12,15 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.openapi.contract.Path;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
+import io.vertx.openapi.contract.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 
 public class PathFinder {
 
@@ -101,7 +100,7 @@ public class PathFinder {
       String templateSegment = pathTemplateSegments[i];
       if (templateSegment.contains("{")) {
         // valid segment
-      } else if(templateSegment.equals(pathSegments[i])){
+      } else if (templateSegment.equals(pathSegments[i])) {
         // We want to have a bias to paths that match "more" perfectly from left to right.
         numPerfectMatches += pathTemplateSegments.length - i;
       } else {

@@ -13,19 +13,31 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.json.schema.common.dsl.SchemaType.*;
 import static io.vertx.json.schema.common.dsl.Schemas.arraySchema;
 import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
-import static io.vertx.tests.MockHelper.mockParameter;
 import static io.vertx.openapi.contract.Location.PATH;
 import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.tests.MockHelper.mockParameter;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import io.vertx.core.json.DecodeException;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
+import io.vertx.json.schema.common.dsl.SchemaBuilder;
+import io.vertx.json.schema.common.dsl.SchemaType;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.transformer.ParameterTransformer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ParameterTransformerTest {
   private ParameterTransformer TRANSFORMER;
@@ -53,7 +65,7 @@ class ParameterTransformerTest {
       }
 
       @Override
-      public Object transformPrimitive(Parameter parameter, String rawValue) {
+      public Object transformPrimitive(SchemaType type, String rawValue) {
         return "primitive";
       }
 
@@ -70,8 +82,8 @@ class ParameterTransformerTest {
     when(TRANSFORMER.transformObject(any(), any())).thenThrow(DecodeException.class);
     String invalidValue = "\"";
     ValidatorException exception =
-      assertThrows(ValidatorException.class,
-        () -> TRANSFORMER.transform(buildSimplePathParameter(objectSchema()), invalidValue));
+        assertThrows(ValidatorException.class,
+            () -> TRANSFORMER.transform(buildSimplePathParameter(objectSchema()), invalidValue));
     String expectedMsg = "The value of path parameter dummy can't be decoded.";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -100,6 +112,27 @@ class ParameterTransformerTest {
     assertThat(formTransformer.transform(parameter, "#3.0").getClass()).isEqualTo(String.class);
     assertThat(formTransformer.transform(parameter, "3.0.0").getClass()).isEqualTo(String.class);
     assertThat(formTransformer.transform(parameter, "3.0").getClass()).isEqualTo(String.class);
+  }
+
+  @Test
+  void testGetArrayItemSchemaType() {
+    Parameter arrayParam = buildSimplePathParameter(arraySchema().items(stringSchema()));
+    assertThat(TRANSFORMER.getArrayItemSchemaType(arrayParam)).isEqualTo(STRING);
+  }
+
+  @Test
+  void testGetObjectPropertySchemaType() {
+    ObjectSchemaBuilder schema = objectSchema()
+        .property("string", stringSchema())
+        .property("number", numberSchema())
+        .property("integer", intSchema())
+        .property("boolean", booleanSchema());
+    Parameter objectParam = buildSimplePathParameter(schema);
+
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "string")).isEqualTo(STRING);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "number")).isEqualTo(NUMBER);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "integer")).isEqualTo(INTEGER);
+    assertThat(TRANSFORMER.getObjectPropertySchemaType(objectParam, "boolean")).isEqualTo(BOOLEAN);
   }
 
 }

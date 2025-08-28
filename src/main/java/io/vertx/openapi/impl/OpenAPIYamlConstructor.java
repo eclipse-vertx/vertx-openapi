@@ -11,12 +11,11 @@
  */
 package io.vertx.openapi.impl;
 
+import java.util.Date;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
-
-import java.util.Date;
 
 /**
  * A SafeConstructor that converts timestamps to Instant to comply with Vert.x JsonObject expectations.

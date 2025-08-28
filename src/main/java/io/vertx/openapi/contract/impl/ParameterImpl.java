@@ -12,19 +12,8 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.netty.util.internal.StringUtil;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.json.schema.common.dsl.SchemaType;
-import io.vertx.openapi.contract.Location;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.Style;
-
-import java.util.List;
-import java.util.Optional;
-
 import static io.vertx.json.schema.common.dsl.SchemaType.ARRAY;
+import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Location.PATH;
@@ -40,6 +29,17 @@ import static io.vertx.openapi.contract.Style.PIPE_DELIMITED;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.contract.Style.SPACE_DELIMITED;
 import static java.util.stream.Collectors.toList;
+
+import io.netty.util.internal.StringUtil;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.SchemaType;
+import io.vertx.openapi.contract.Location;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.Style;
+import java.util.List;
+import java.util.Optional;
 
 public class ParameterImpl implements Parameter {
 
@@ -66,7 +66,7 @@ public class ParameterImpl implements Parameter {
     this.required = Optional.ofNullable(parameterModel.getBoolean(KEY_REQUIRED)).orElse(false);
     this.in = Location.parse(parameterModel.getString(KEY_IN));
     this.style =
-      Optional.ofNullable(Style.parse(parameterModel.getString(KEY_STYLE))).orElse(Style.defaultByLocation(in));
+        Optional.ofNullable(Style.parse(parameterModel.getString(KEY_STYLE))).orElse(Style.defaultByLocation(in));
     this.explode = Optional.ofNullable(parameterModel.getBoolean(KEY_EXPLODE)).orElse(style == FORM);
     this.parameterModel = parameterModel;
     JsonObject schemaJson = parameterModel.getJsonObject(KEY_SCHEMA);
@@ -112,8 +112,14 @@ public class ParameterImpl implements Parameter {
       if (!(style == FORM || style == SPACE_DELIMITED || style == PIPE_DELIMITED || style == DEEP_OBJECT)) {
         throw createInvalidStyle(in, "form, spaceDelimited, pipeDelimited or deepObject");
       } else {
-        if (style == SPACE_DELIMITED || style == PIPE_DELIMITED || style == DEEP_OBJECT) {
+        if (style == SPACE_DELIMITED || style == PIPE_DELIMITED) {
           throw createUnsupportedFeature("Parameters of style: " + style);
+        }
+        if (style == DEEP_OBJECT && !explode) {
+          throw createUnsupportedFeature("Query parameter in non-exploded deepObject style");
+        }
+        if (style == DEEP_OBJECT && schemaType != OBJECT) {
+          throw createUnsupportedFeature("Query parameter in deepObject style can only be an object");
         }
       }
     }
@@ -121,10 +127,10 @@ public class ParameterImpl implements Parameter {
 
   public static List<Parameter> parseParameters(String path, JsonArray parametersArray) {
     return parametersArray
-      .stream()
-      .map(JsonObject.class::cast)
-      .map(parameterModel -> new ParameterImpl(path, parameterModel))
-      .collect(toList());
+        .stream()
+        .map(JsonObject.class::cast)
+        .map(parameterModel -> new ParameterImpl(path, parameterModel))
+        .collect(toList());
   }
 
   @Override

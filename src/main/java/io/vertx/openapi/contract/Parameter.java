@@ -26,6 +26,8 @@ import io.vertx.json.schema.common.dsl.SchemaType;
 @VertxGen
 public interface Parameter extends OpenAPIObject {
 
+  String EXTENSION_URLDECODE = "x-vertx-openapi-urldecode";
+
   /**
    * @return name of this parameter
    */

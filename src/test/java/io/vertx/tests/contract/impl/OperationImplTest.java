@@ -12,34 +12,6 @@
 
 package io.vertx.tests.contract.impl;
 
-import com.google.common.collect.ImmutableMap;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.Timeout;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.openapi.contract.impl.OperationImpl;
-import io.vertx.openapi.contract.impl.SecurityRequirementImpl;
-import io.vertx.tests.ResourceHelper;
-import io.vertx.openapi.contract.ContractErrorType;
-import io.vertx.openapi.contract.OpenAPIContractException;
-import io.vertx.openapi.contract.Operation;
-import io.vertx.openapi.contract.Parameter;
-import io.vertx.openapi.contract.RequestBody;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.openapi.contract.ContractErrorType.INVALID_SPEC;
@@ -50,6 +22,33 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.google.common.collect.ImmutableMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.Timeout;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.Operation;
+import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.contract.impl.OperationImpl;
+import io.vertx.openapi.contract.impl.SecurityRequirementImpl;
+import io.vertx.tests.ResourceHelper;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @ExtendWith(VertxExtension.class)
 class OperationImplTest {
@@ -70,14 +69,13 @@ class OperationImplTest {
 
   private static Stream<Arguments> provideErrorScenarios() {
     return Stream.of(
-      Arguments.of("0000_Multiple_Exploded_Form_Parameters_In_Query_With_Content_Object", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type " +
-          "object in operation: showPetById"),
-      Arguments.of("0001_No_Responses", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: No responses were found in operation: getPets"),
-      Arguments.of("0002_Empty_Responses", INVALID_SPEC,
-        "The passed OpenAPI contract is invalid: No responses were found in operation: getPets")
-    );
+        Arguments.of("0000_Multiple_Exploded_Form_Parameters_In_Query_With_Content_Object", INVALID_SPEC,
+            "The passed OpenAPI contract is invalid: Found multiple exploded query parameters of style form with type "
+                + "object in operation: showPetById"),
+        Arguments.of("0001_No_Responses", INVALID_SPEC,
+            "The passed OpenAPI contract is invalid: No responses were found in operation: getPets"),
+        Arguments.of("0002_Empty_Responses", INVALID_SPEC,
+            "The passed OpenAPI contract is invalid: No responses were found in operation: getPets"));
   }
 
   private static OperationImpl fromTestData(String id, JsonObject testData, SecurityRequirementImpl... secReqs) {
@@ -87,14 +85,14 @@ class OperationImplTest {
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
     return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, emptyMap(),
-      Arrays.asList(secReqs));
+        Arrays.asList(secReqs));
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
   @MethodSource(value = "provideErrorScenarios")
   void testExceptions(String testId, ContractErrorType type, String msg) {
     OpenAPIContractException exception =
-      assertThrows(OpenAPIContractException.class, () -> fromTestData(testId, invalidTestData));
+        assertThrows(OpenAPIContractException.class, () -> fromTestData(testId, invalidTestData));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }
@@ -161,12 +159,12 @@ class OperationImplTest {
 
     Map<String, Object> pathWithSame = ImmutableMap.of("x-some-string", "pathValue");
     Arguments pathContainsSame = Arguments.of("Path contains an extensions with same name", pathWithSame,
-      operationExtensions);
+        operationExtensions);
 
     Map<String, Object> pathWithNew = ImmutableMap.of("x-some-string", "pathValue", "x-path-extension",
-      new JsonObject());
+        new JsonObject());
     Map<String, Object> expected = ImmutableMap.<String, Object>builder().putAll(operationExtensions).put("x-path" +
-      "-extension", new JsonObject()).build();
+        "-extension", new JsonObject()).build();
     Arguments pathContainsAlsoNew = Arguments.of("Path contains an extensions with same name", pathWithNew, expected);
 
     return Stream.of(pathEmpty, pathContainsSame, pathContainsAlsoNew);

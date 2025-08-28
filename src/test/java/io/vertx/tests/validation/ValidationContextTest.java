@@ -12,10 +12,10 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import io.vertx.openapi.validation.ValidationContext;
 import org.junit.jupiter.api.Test;
-
-import static com.google.common.truth.Truth.assertThat;
 
 public class ValidationContextTest {
 

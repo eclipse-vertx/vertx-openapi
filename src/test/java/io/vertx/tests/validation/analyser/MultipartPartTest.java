@@ -12,23 +12,22 @@
 
 package io.vertx.tests.validation.analyser;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.google.common.truth.Truth;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.analyser.MultipartPart;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class MultipartPartTest {
   private static final Path TEST_RESOURCE_PATH = getRelatedTestResourcePath(MultipartPartTest.class);
@@ -43,12 +42,12 @@ class MultipartPartTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"multipart_invalid_structure", "multipart_invalid_structure_2"})
+  @ValueSource(strings = { "multipart_invalid_structure", "multipart_invalid_structure_2" })
   void testParsePartsInvalidStructure(String file) throws IOException {
     String multipartBody = Files.readString(TEST_RESOURCE_PATH.resolve(file + ".txt"));
 
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> MultipartPart.parseParts(multipartBody, "abcde12345"));
+        assertThrows(ValidatorException.class, () -> MultipartPart.parseParts(multipartBody, "abcde12345"));
 
     String expectedMsg = "The multipart message doesn't contain any parts, or has an invalid structure.";
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.INVALID_VALUE);
@@ -68,8 +67,8 @@ class MultipartPartTest {
     assertThat(mpp2.getName()).isEqualTo("address");
     assertThat(mpp2.getContentType()).isEqualTo("application/json");
     JsonObject body = new JsonObject()
-      .put("street", "3, Garden St")
-      .put("city", "Hillsbery, UT");
+        .put("street", "3, Garden St")
+        .put("city", "Hillsbery, UT");
     assertThat(mpp2.getBody().toJsonObject()).isEqualTo(body);
 
     String part3 = Files.readString(TEST_RESOURCE_PATH.resolve("part3.txt"));
@@ -84,7 +83,7 @@ class MultipartPartTest {
     String part = Files.readString(TEST_RESOURCE_PATH.resolve("part_without_name.txt"));
 
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> MultipartPart.parsePart(part));
+        assertThrows(ValidatorException.class, () -> MultipartPart.parsePart(part));
 
     String expectedMsg = "A part of the multipart message doesn't contain a name.";
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.INVALID_VALUE);

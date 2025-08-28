@@ -9,6 +9,9 @@ of this component:
 * [web-site docs](https://vertx.io/docs/vertx-openapi/java/)
 * [in-source docs](src/main/asciidoc/index.adoc)
 
+## Spotless Formatter
+Spotless will be executed on the `check` goal during the `validation` phase. If you want to apply the formatter rules automatically run `mvn spotless::apply`
+
 ## TODOs
 
 ### LabelTransformer

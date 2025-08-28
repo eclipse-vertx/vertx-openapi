@@ -12,6 +12,25 @@
 
 package io.vertx.tests.validation.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
+import static io.vertx.openapi.contract.Location.HEADER;
+import static io.vertx.openapi.contract.Style.SIMPLE;
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+import static io.vertx.tests.MockHelper.mockParameter;
+import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -33,6 +52,11 @@ import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatorException;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ResponseValidatorImpl;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,31 +64,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
-import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
-import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
-import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
-import static io.vertx.openapi.contract.Location.HEADER;
-import static io.vertx.openapi.contract.Style.SIMPLE;
-import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(VertxExtension.class)
 class ResponseValidatorImplTest {
@@ -77,9 +76,8 @@ class ResponseValidatorImplTest {
 
   private static Stream<Arguments> provideNullRequestParameters() {
     return Stream.of(
-      Arguments.of("RequestParameter is null", null),
-      Arguments.of("Object in RequestParameter is null", new RequestParameterImpl(null))
-    );
+        Arguments.of("RequestParameter is null", null),
+        Arguments.of("Object in RequestParameter is null", new RequestParameterImpl(null)));
   }
 
   private static Response mockResponse() {
@@ -113,15 +111,15 @@ class ResponseValidatorImplTest {
     JsonArray body = new JsonArray().add(new JsonObject().put("id", 1337).put("name", "foo"));
 
     ValidatableResponse validatableResponse =
-      ValidatableResponse.create(200, headers, body.toBuffer(), APPLICATION_JSON.toString());
+        ValidatableResponse.create(200, headers, body.toBuffer(), APPLICATION_JSON.toString());
 
     validator.validate(validatableResponse, "listPets")
-      .onComplete(testContext.succeeding(validated -> testContext.verify(() -> {
-        assertThat(validated.getBody().getJsonArray()).isEqualTo(body);
-        assertThat(validated.getHeaders()).hasSize(1);
-        assertThat(validated.getHeaders().get("x-next").getString()).isEqualTo("foo");
-        testContext.completeNow();
-      })));
+        .onComplete(testContext.succeeding(validated -> testContext.verify(() -> {
+          assertThat(validated.getBody().getJsonArray()).isEqualTo(body);
+          assertThat(validated.getHeaders()).hasSize(1);
+          assertThat(validated.getHeaders().get("x-next").getString()).isEqualTo("foo");
+          testContext.completeNow();
+        })));
   }
 
   @Test
@@ -156,15 +154,15 @@ class ResponseValidatorImplTest {
     Checkpoint cp = testContext.checkpoint(2);
 
     validator.getResponse(ValidatableResponse.create(1337), operationId)
-      .onComplete(testContext.succeeding(resp -> testContext.verify(() -> {
-        assertThat(resp).isEqualTo(mockedResponse);
-        cp.flag();
-      })));
+        .onComplete(testContext.succeeding(resp -> testContext.verify(() -> {
+          assertThat(resp).isEqualTo(mockedResponse);
+          cp.flag();
+        })));
     validator.getResponse(ValidatableResponse.create(0), operationId)
-      .onComplete(testContext.succeeding(resp -> testContext.verify(() -> {
-        assertThat(resp).isEqualTo(mockedDefaultResponse);
-        cp.flag();
-      })));
+        .onComplete(testContext.succeeding(resp -> testContext.verify(() -> {
+          assertThat(resp).isEqualTo(mockedDefaultResponse);
+          cp.flag();
+        })));
   }
 
   @Test
@@ -176,10 +174,9 @@ class ResponseValidatorImplTest {
 
   static Stream<Arguments> testValidateParameterThrowInvalidValue() {
     return Stream.of(
-      Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
-      Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
-      Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean")
-    );
+        Arguments.of(numberSchema(), true, "Instance type boolean is invalid. Expected number"),
+        Arguments.of(booleanSchema(), "{}", "Instance type object is invalid. Expected boolean"),
+        Arguments.of(booleanSchema(), "3", "Instance type number is invalid. Expected boolean"));
   }
 
   @ParameterizedTest(name = "{index} Throw invalid value error for [{1}]")
@@ -187,9 +184,9 @@ class ResponseValidatorImplTest {
   void testValidateParameterThrowInvalidValue(SchemaBuilder<?, ?> schema, Object value, String reason) {
     Parameter param = buildParam("p1", schema.toJson(), false);
     ValidatorException exception =
-      assertThrows(
-        ValidatorException.class,
-        () -> validator.validateParameter(param, new RequestParameterImpl(value)));
+        assertThrows(
+            ValidatorException.class,
+            () -> validator.validateParameter(param, new RequestParameterImpl(value)));
 
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String expectedMsg = "The value of header parameter p1 is invalid. Reason: " + reason;
@@ -201,7 +198,7 @@ class ResponseValidatorImplTest {
   void testValidateParameterThrowRequired(String scenario, ResponseParameter value) {
     Parameter param = buildParam("p1", intSchema().toJson(), true);
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateParameter(param, value));
+        assertThrows(ValidatorException.class, () -> validator.validateParameter(param, value));
     String expectedMsg = "The related request / response does not contain the required header parameter p1";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
@@ -230,15 +227,15 @@ class ResponseValidatorImplTest {
     when(mockedValidatableResponse.getBody()).thenReturn(parameter);
 
     ValidatorException exceptionEmpty =
-      assertThrows(ValidatorException.class,
-        () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
+        assertThrows(ValidatorException.class,
+            () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
     assertThat(exceptionEmpty.type()).isEqualTo(MISSING_REQUIRED_PARAMETER);
     String expectedMsg = "The related response does not contain the required body.";
     assertThat(exceptionEmpty).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @ParameterizedTest(name = "validateBody should throw an error if MediaType or Transformer is null")
-  @ValueSource(strings = {"application/png", "foo/bar"})
+  @ValueSource(strings = { "application/png", "foo/bar" })
   void testValidateBodyMediaTypeOrAnalyserNull(String contentType) {
     MediaType mockedMediaType = mock(MediaType.class);
     when(mockedMediaType.getIdentifier()).thenReturn(contentType);
@@ -251,8 +248,8 @@ class ResponseValidatorImplTest {
     when(mockedValidatableResponse.getBody()).thenReturn(new RequestParameterImpl("foo"));
 
     ValidatorException exceptionEmpty =
-      assertThrows(ValidatorException.class,
-        () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
+        assertThrows(ValidatorException.class,
+            () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
     assertThat(exceptionEmpty.type()).isEqualTo(UNSUPPORTED_VALUE_FORMAT);
     String expectedMsg = "The format of the response body is not supported";
     assertThat(exceptionEmpty).hasMessageThat().isEqualTo(expectedMsg);
@@ -266,7 +263,7 @@ class ResponseValidatorImplTest {
     when(mockedValidatableResponse.getContentType()).thenReturn(APPLICATION_JSON.toString());
 
     ValidatorException exception =
-      assertThrows(ValidatorException.class, () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
+        assertThrows(ValidatorException.class, () -> validator.validateBody(mockedResponse, mockedValidatableResponse));
     assertThat(exception.type()).isEqualTo(INVALID_VALUE);
     String reason = "Instance type number is invalid. Expected object";
     String expectedMsg = "The value of the response body is invalid. Reason: " + reason;

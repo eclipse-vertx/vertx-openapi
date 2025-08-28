@@ -15,5 +15,4 @@ package io.vertx.openapi.validation;
 import io.vertx.codegen.annotations.VertxGen;
 
 @VertxGen
-public interface ResponseParameter extends Parameter {
-}
+public interface ResponseParameter extends Parameter {}

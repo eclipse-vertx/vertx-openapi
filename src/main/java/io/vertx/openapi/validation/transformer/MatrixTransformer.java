@@ -12,10 +12,10 @@
 
 package io.vertx.openapi.validation.transformer;
 
-import io.vertx.openapi.contract.Parameter;
-
 import static io.vertx.json.schema.common.dsl.SchemaType.OBJECT;
 import static io.vertx.openapi.validation.ValidatorException.createInvalidValueFormat;
+
+import io.vertx.openapi.contract.Parameter;
 
 /**
  * <p>
@@ -52,7 +52,8 @@ public class MatrixTransformer extends ParameterTransformer {
 
   }
 
-  @Override protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
+  @Override
+  protected String[] getObjectKeysAndValues(Parameter parameter, String rawValue) {
     return parameter.isExplode() ? rawValue.split("(" + buildPrefix(parameter) + "|=)") : rawValue.split(",");
   }
 }

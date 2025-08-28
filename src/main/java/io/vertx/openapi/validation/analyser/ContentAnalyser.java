@@ -12,14 +12,14 @@
 
 package io.vertx.openapi.validation.analyser;
 
+import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
-
-import static io.vertx.openapi.validation.ValidatorErrorType.ILLEGAL_VALUE;
 
 /**
  * The content analyser is responsible for checking if the content is syntactically correct, and transforming the
@@ -59,7 +59,7 @@ public abstract class ContentAnalyser {
    * @return the content analyser for the given content type.
    */
   public static ContentAnalyser getContentAnalyser(MediaType mediaType, String contentType, Buffer content,
-                                                   ValidationContext context) {
+      ValidationContext context) {
     switch (mediaType.getIdentifier()) {
       case MediaType.APPLICATION_JSON:
       case MediaType.APPLICATION_JSON_UTF8:

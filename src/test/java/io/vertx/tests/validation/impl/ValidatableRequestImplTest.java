@@ -12,17 +12,16 @@
 
 package io.vertx.tests.validation.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+
 import com.google.common.collect.ImmutableMap;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.ValidatableRequest;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import org.junit.jupiter.api.Test;
 
 class ValidatableRequestImplTest {
 

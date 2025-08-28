@@ -12,15 +12,6 @@
 
 package io.vertx.openapi.contract.impl;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.json.schema.JsonSchema;
-import io.vertx.openapi.contract.SecurityRequirement;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -28,6 +19,14 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableSet;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.JsonSchema;
+import io.vertx.openapi.contract.SecurityRequirement;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SecurityRequirementImpl implements SecurityRequirement {
   private final JsonObject securityRequirementModel;
@@ -42,20 +41,20 @@ public class SecurityRequirementImpl implements SecurityRequirement {
       this.scopes = emptyMap();
     } else {
       this.names = securityRequirementModel
-        .fieldNames()
-        .stream()
-        .filter(JsonSchema.EXCLUDE_ANNOTATIONS).collect(toUnmodifiableSet());
+          .fieldNames()
+          .stream()
+          .filter(JsonSchema.EXCLUDE_ANNOTATIONS).collect(toUnmodifiableSet());
 
       this.scopes = unmodifiableMap(
-        this.names
-          .stream()
-          .collect(Collectors.toMap(identity(), name -> extractScopes(securityRequirementModel, name))));
+          this.names
+              .stream()
+              .collect(Collectors.toMap(identity(), name -> extractScopes(securityRequirementModel, name))));
     }
   }
 
   private static List<String> extractScopes(JsonObject securityRequirementModel, String name) {
     return securityRequirementModel.getJsonArray(name, EMPTY_JSON_ARRAY).stream().map(Object::toString)
-      .collect(toList());
+        .collect(toList());
   }
 
   @Override

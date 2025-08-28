@@ -12,11 +12,11 @@
 
 package io.vertx.tests.validation.impl;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.common.truth.Truth;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import org.junit.jupiter.api.Test;
-
-import static com.google.common.truth.Truth.assertThat;
 
 class RequestParameterImplTest {
 

@@ -12,6 +12,12 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+
 import com.google.common.truth.Truth;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.Future;
@@ -24,27 +30,20 @@ import io.vertx.json.schema.OutputUnit;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
-import io.vertx.tests.test.base.HttpServerTestBase;
 import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.SchemaValidationException;
 import io.vertx.openapi.validation.ValidatorException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
+import io.vertx.tests.test.base.HttpServerTestBase;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import static com.google.common.truth.Truth.assertThat;
-import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
-import static io.vertx.core.http.HttpMethod.POST;
-import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
-import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests indirectly the method {@link SchemaValidationException#extractReason(OutputUnit)},
@@ -53,7 +52,7 @@ import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
 class ExtractReasonTest extends HttpServerTestBase {
 
   private final Path contractPath =
-    getRelatedTestResourcePath(ExtractReasonTest.class).resolve("guestbook.yaml");
+      getRelatedTestResourcePath(ExtractReasonTest.class).resolve("guestbook.yaml");
   private OpenAPIContract contract;
   private RequestValidator validator;
 
@@ -81,16 +80,15 @@ class ExtractReasonTest extends HttpServerTestBase {
     JsonObject validGuest = buildGuest("Hodor");
     JsonObject invalidGuest = buildGuest("Hodor", 13.37);
     return Stream.of(
-      Arguments.of("Number for message", buildEntry(420, validGuest),
-        "Reason: Instance type number is invalid. Expected string at #/message"),
-      Arguments.of("Boolean for message", buildEntry(true, validGuest),
-        "Reason: Instance type boolean is invalid. Expected string at #/message"),
-      Arguments.of("Number for age of guest", buildEntry("msg", invalidGuest),
-        "Reason: Instance type number is invalid. Expected integer at #/guest/age"),
-      Arguments.of("Number for age of first friend of guest",
-        buildEntry("msg", buildGuest("Hodor", 1337, invalidGuest)),
-        "Reason: Instance type number is invalid. Expected integer at #/guest/friends/0/age")
-    );
+        Arguments.of("Number for message", buildEntry(420, validGuest),
+            "Reason: Instance type number is invalid. Expected string at #/message"),
+        Arguments.of("Boolean for message", buildEntry(true, validGuest),
+            "Reason: Instance type boolean is invalid. Expected string at #/message"),
+        Arguments.of("Number for age of guest", buildEntry("msg", invalidGuest),
+            "Reason: Instance type number is invalid. Expected integer at #/guest/age"),
+        Arguments.of("Number for age of first friend of guest",
+            buildEntry("msg", buildGuest("Hodor", 1337, invalidGuest)),
+            "Reason: Instance type number is invalid. Expected integer at #/guest/friends/0/age"));
   }
 
   @BeforeEach
@@ -107,9 +105,10 @@ class ExtractReasonTest extends HttpServerTestBase {
   @MethodSource
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testErrorMessage(String scenario, JsonObject payload, String expected, VertxTestContext testContext) {
-    createValidationHandler(validatorException -> Truth.assertThat(validatorException).hasMessageThat().endsWith(expected),
-      testContext)
-      .compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
+    createValidationHandler(
+        validatorException -> Truth.assertThat(validatorException).hasMessageThat().endsWith(expected),
+        testContext)
+            .compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
   }
 
   @Test
@@ -134,15 +133,16 @@ class ExtractReasonTest extends HttpServerTestBase {
   }
 
   private Future<Void> createValidationHandler(Consumer<ValidatorException> validatorException,
-                                               VertxTestContext testContext) {
+      VertxTestContext testContext) {
     return createServer(
-      request -> validator.validate(request).onSuccess(v -> testContext.failNow("A validation error is expected"))
-        .onFailure(t -> testContext.verify(() -> {
-          assertThat(t).isInstanceOf(ValidatorException.class);
-          ValidatorException exception = (ValidatorException) t;
-          assertThat(exception.type()).isEqualTo(INVALID_VALUE);
-          validatorException.accept(exception);
-          testContext.completeNow();
-        })));
+        request -> validator.validate(request).onSuccess(v -> testContext.failNow("A validation error is expected"))
+            .onFailure(t -> testContext.verify(() -> {
+              assertThat(t).isInstanceOf(ValidatorException.class);
+              ValidatorException exception = (ValidatorException) t;
+              assertThat(exception.type()).isEqualTo(INVALID_VALUE);
+              validatorException.accept(exception);
+              testContext.completeNow();
+            })),
+        testContext::failNow);
   }
 }

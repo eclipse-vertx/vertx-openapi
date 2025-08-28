@@ -14,7 +14,6 @@ package io.vertx.openapi.validation.impl;
 
 import io.vertx.openapi.validation.ResponseParameter;
 import io.vertx.openapi.validation.ValidatableResponse;
-
 import java.util.Map;
 
 public class ValidatableResponseImpl extends ValidatedResponseImpl implements ValidatableResponse {
@@ -28,7 +27,7 @@ public class ValidatableResponseImpl extends ValidatedResponseImpl implements Va
   }
 
   public ValidatableResponseImpl(int statusCode, Map<String, ResponseParameter> headers, ResponseParameter body,
-    String contentType) {
+      String contentType) {
     super(headers, body, null);
     this.statusCode = statusCode;
     this.contentType = contentType;

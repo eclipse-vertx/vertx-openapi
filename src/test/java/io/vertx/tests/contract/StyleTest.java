@@ -12,14 +12,6 @@
 
 package io.vertx.tests.contract;
 
-import io.vertx.openapi.contract.Location;
-import io.vertx.openapi.contract.Style;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
-
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.Location.COOKIE;
 import static io.vertx.openapi.contract.Location.HEADER;
@@ -33,26 +25,31 @@ import static io.vertx.openapi.contract.Style.PIPE_DELIMITED;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.contract.Style.SPACE_DELIMITED;
 
+import io.vertx.openapi.contract.Location;
+import io.vertx.openapi.contract.Style;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 class StyleTest {
   private static Stream<Arguments> provideStyles() {
     return Stream.of(
-      Arguments.of(MATRIX, "matrix"),
-      Arguments.of(LABEL, "label"),
-      Arguments.of(FORM, "form"),
-      Arguments.of(SIMPLE, "simple"),
-      Arguments.of(SPACE_DELIMITED, "spaceDelimited"),
-      Arguments.of(PIPE_DELIMITED, "pipeDelimited"),
-      Arguments.of(DEEP_OBJECT, "deepObject")
-    );
+        Arguments.of(MATRIX, "matrix"),
+        Arguments.of(LABEL, "label"),
+        Arguments.of(FORM, "form"),
+        Arguments.of(SIMPLE, "simple"),
+        Arguments.of(SPACE_DELIMITED, "spaceDelimited"),
+        Arguments.of(PIPE_DELIMITED, "pipeDelimited"),
+        Arguments.of(DEEP_OBJECT, "deepObject"));
   }
 
   private static Stream<Arguments> defaultStylesByLocation() {
     return Stream.of(
-      Arguments.of(QUERY, FORM),
-      Arguments.of(HEADER, SIMPLE),
-      Arguments.of(PATH, SIMPLE),
-      Arguments.of(COOKIE, FORM)
-    );
+        Arguments.of(QUERY, FORM),
+        Arguments.of(HEADER, SIMPLE),
+        Arguments.of(PATH, SIMPLE),
+        Arguments.of(COOKIE, FORM));
   }
 
   @ParameterizedTest(name = "{index} defaultByLocation should return the correct Style for Location Style {0}")

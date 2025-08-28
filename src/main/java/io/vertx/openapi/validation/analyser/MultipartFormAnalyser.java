@@ -12,18 +12,17 @@
 
 package io.vertx.openapi.validation.analyser;
 
+import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
+import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
+import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
-
 import java.util.List;
-
-import static io.netty.handler.codec.http.HttpHeaderValues.MULTIPART_FORM_DATA;
-import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
-import static io.vertx.openapi.validation.ValidatorErrorType.UNSUPPORTED_VALUE_FORMAT;
 
 public class MultipartFormAnalyser extends ContentAnalyser {
   private static final String BOUNDARY = "boundary=";
@@ -54,14 +53,14 @@ public class MultipartFormAnalyser extends ContentAnalyser {
   public void checkSyntacticalCorrectness() {
     if (contentType == null || contentType.isEmpty() || !contentType.startsWith(MULTIPART_FORM_DATA.toString())) {
       String msg = "The expected multipart/form-data " + requestOrResponse + " doesn't contain the required " +
-        "content-type header.";
+          "content-type header.";
       throw new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
     }
 
     String boundary = extractBoundary(contentType);
     if (boundary == null) {
       String msg = "The expected multipart/form-data " + requestOrResponse + " doesn't contain the required boundary " +
-        "information.";
+          "information.";
       throw new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
     }
 
@@ -91,7 +90,7 @@ public class MultipartFormAnalyser extends ContentAnalyser {
         formData.put(part.getName(), part.getBody());
       } else {
         String msg = String.format("The content type %s of property %s is not yet supported.",
-          part.getContentType(), part.getName());
+            part.getContentType(), part.getName());
         throw new ValidatorException(msg, UNSUPPORTED_VALUE_FORMAT);
       }
     }

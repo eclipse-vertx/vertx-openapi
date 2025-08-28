@@ -12,23 +12,23 @@
 
 package io.vertx.tests.validation;
 
+import static com.google.common.truth.Truth.assertThat;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
+import static io.vertx.openapi.contract.Location.PATH;
+import static io.vertx.openapi.contract.Style.LABEL;
+import static io.vertx.tests.MockHelper.mockParameter;
+
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.validation.ValidatorErrorType;
 import io.vertx.openapi.validation.ValidatorException;
 import org.junit.jupiter.api.Test;
 
-import static com.google.common.truth.Truth.assertThat;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
-import static io.vertx.tests.MockHelper.mockParameter;
-import static io.vertx.openapi.contract.Location.PATH;
-import static io.vertx.openapi.contract.Style.LABEL;
-
 class ValidatorExceptionTest {
 
   private static final Parameter DUMMY_PARAMETER =
-    mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
+      mockParameter("dummy", PATH, LABEL, false, JsonSchema.of(intSchema().toJson()));
 
   @Test
   void testCreateMissingRequiredParameter() {
@@ -84,5 +84,14 @@ class ValidatorExceptionTest {
     String expectedMsg = "No response defined for status code 1337 in Operation getPets";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
     assertThat(exception.type()).isEqualTo(ValidatorErrorType.MISSING_RESPONSE);
+  }
+
+  @Test
+  void testCreateUnsupportedTransformationFormat() {
+    ValidatorException exception = ValidatorException.createUnsupportedTransformation(DUMMY_PARAMETER.getStyle(),
+        DUMMY_PARAMETER.getSchemaType());
+    String expectedMsg = "Transformation in style label to schema type INTEGER is not supported.";
+    assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+    assertThat(exception.type()).isEqualTo(ValidatorErrorType.UNSUPPORTED_TRANSFORMATION);
   }
 }

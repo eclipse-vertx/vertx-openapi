@@ -78,6 +78,25 @@ The {@link io.vertx.openapi.contract.OpenAPIContract} interface offers methods t
 {@link examples.ContractExamples#pathParameterOperationExample}
 ----
 
+=== Extensions
+
+Vert.x OpenAPI supports the extension `x-vertx-openapi-urldecode` to specify if a `cookie` or `header` parameter should
+be URL decoded. The default is `false`. `Query` parameters and `path` parameters gets always URL decoded.
+
+[source,yaml]
+----
+paths:
+  /forceEncoding:
+    get:
+      operationId: forceEncoding
+      parameters:
+        - in: header
+          name: headerWithEncodedContent
+          x-vertx-openapi-urldecode: true
+          schema:
+            type: string
+----
+
 == Validation
 
 Vert.x OpenAPI checks both whether the content is syntactically correct and whether it corresponds to the schema.

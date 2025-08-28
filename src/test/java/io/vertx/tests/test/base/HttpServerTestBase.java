@@ -19,11 +19,11 @@ import io.vertx.core.http.*;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("NewClassNamingConvention")
 @ExtendWith(VertxExtension.class)
@@ -39,11 +39,12 @@ public class HttpServerTestBase {
    * <b>Note:</b> This method should only be called once during a test.
    *
    * @param requestHandler The related requestHandler
+   * @param exceptionHandler The related exceptionHandler
    * @return a succeeded {@link Future} if the server is running, otherwise a failed {@link Future}.
    */
-  protected Future<Void> createServer(Handler<HttpServerRequest> requestHandler) {
-    return vertx.createHttpServer().requestHandler(requestHandler).listen(0).
-      onSuccess(server -> port = server.actualPort()).mapEmpty();
+  protected Future<Void> createServer(Handler<HttpServerRequest> requestHandler, Handler<Throwable> exceptionHandler) {
+    return vertx.createHttpServer().requestHandler(requestHandler).exceptionHandler(exceptionHandler).listen(0)
+        .onSuccess(server -> port = server.actualPort()).mapEmpty();
   }
 
   @BeforeEach
@@ -71,5 +72,20 @@ public class HttpServerTestBase {
    */
   protected Future<HttpClientRequest> createRequest(HttpMethod method, String path) {
     return client.request(new RequestOptions().setPort(port).setHost("localhost").setMethod(method).setURI(path));
+  }
+
+  /**
+   * Returns a pre-configured HTTP request.
+   *
+   * @param method The HTTP method of the request
+   * @param path   The path of the request
+   * @param modifyRequestOptions A consumer that allows to modify the request options
+   * @return a pre-configured HTTP request.
+   */
+  protected Future<HttpClientRequest> createRequest(HttpMethod method, String path,
+      Consumer<RequestOptions> modifyRequestOptions) {
+    RequestOptions options = new RequestOptions().setPort(port).setHost("localhost").setMethod(method).setURI(path);
+    modifyRequestOptions.accept(options);
+    return client.request(options);
   }
 }
