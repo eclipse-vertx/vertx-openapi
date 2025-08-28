@@ -1,10 +1,13 @@
 package io.vertx.tests.validation.transformer;
 
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.openapi.contract.Parameter;
+import io.vertx.openapi.contract.impl.ParameterImpl;
 import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.transformer.FormTransformer;
 import io.vertx.openapi.validation.transformer.ParameterTransformer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,4 +87,14 @@ class ParameterTransformerTest {
     assertThat(TRANSFORMER.transform(buildSimplePathParameter(arraySchema()), value)).isEqualTo("array");
     assertThat(TRANSFORMER.transform(buildSimplePathParameter(objectSchema()), value)).isEqualTo("object");
   }
+
+  @Test
+  void testFormTransformer() {
+    String path = "/path";
+    JsonObject parameterModel = new JsonObject().put("in", "query").put("schema", new JsonObject().put("type", "string"));
+    Parameter parameter = new ParameterImpl(path, parameterModel);
+    ParameterTransformer formTransformer = new FormTransformer();
+    assertThat(formTransformer.transform(parameter, "3.0").getClass()).isEqualTo(String.class);
+  }
+
 }
