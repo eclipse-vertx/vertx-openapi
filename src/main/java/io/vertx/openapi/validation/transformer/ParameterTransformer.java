@@ -58,7 +58,7 @@ public abstract class ParameterTransformer {
    */
   public Object transformPrimitive(Parameter parameter, String rawValue) {
     boolean isString = STRING.equals(parameter.getSchemaType());
-    if (isString) {
+    if (isString && !rawValue.equals("\"")) {
       return rawValue;
     }
 
