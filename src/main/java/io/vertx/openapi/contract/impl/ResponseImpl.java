@@ -29,6 +29,7 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -45,7 +46,7 @@ public class ResponseImpl implements Response {
 
   private final JsonObject responseModel;
 
-  public ResponseImpl(JsonObject responseModel, String operationId) {
+  public ResponseImpl(JsonObject responseModel, String operationId, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
     this.responseModel = responseModel;
 
     JsonObject headersObject = responseModel.getJsonObject(KEY_HEADERS, EMPTY_JSON_OBJECT);
@@ -66,9 +67,9 @@ public class ResponseImpl implements Response {
             .fieldNames()
             .stream()
             .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
-            .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+            .collect(toMap(identity(), key -> new MediaTypeImpl(key, contentObject.getJsonObject(key), additionalMediaTypes))));
 
-    if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type))) {
+    if (content.keySet().stream().anyMatch(type -> !isMediaTypeSupported(type, additionalMediaTypes))) {
       String msgTemplate = "Operation %s defines a response with an unsupported media type. Supported: %s";
       throw createUnsupportedFeature(String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
     }

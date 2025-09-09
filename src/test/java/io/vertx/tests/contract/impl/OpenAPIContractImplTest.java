@@ -19,6 +19,7 @@ import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.openapi.contract.OpenAPIVersion.V3_1;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.vertx.core.buffer.Buffer;
@@ -29,6 +30,7 @@ import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 import io.vertx.openapi.contract.impl.PathImpl;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import io.vertx.tests.ResourceHelper;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -53,32 +56,32 @@ class OpenAPIContractImplTest {
   private static final Path VALID_CONTRACTS_JSON = RESOURCE_PATH.resolve("contract_valid.json");
 
   private static final List<PathImpl> PATHS_UNSORTED = Arrays.asList(
-      new PathImpl(BASE_PATH, "/v2", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/{abc}/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/{abc}/{foo}/bar", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/v1/docs/docId", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/pets/petId", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/v1/docs/{docId}", EMPTY_JSON_OBJECT, emptyList()));
+      new PathImpl(BASE_PATH, "/v2", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/{abc}/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/{abc}/{foo}/bar", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/v1/docs/docId", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/pets/petId", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/v1/docs/{docId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()));
 
   private static final List<PathImpl> PATHS_SORTED = Arrays.asList(
-      new PathImpl(BASE_PATH, "/pets/petId", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/v1/docs/docId", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/v2", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/v1/docs/{docId}", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/{abc}/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-      new PathImpl(BASE_PATH, "/{abc}/{foo}/bar", EMPTY_JSON_OBJECT, emptyList()));
+      new PathImpl(BASE_PATH, "/pets/petId", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/v1/docs/docId", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/v2", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/v1/docs/{docId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/{abc}/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+      new PathImpl(BASE_PATH, "/{abc}/{foo}/bar", EMPTY_JSON_OBJECT, emptyList(), emptyMap()));
 
   private static Stream<Arguments> testApplyMountOrderThrows() {
     return Stream.of(
         Arguments.of("a duplicate has been found", Arrays.asList(
-            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList())),
+            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap())),
             "Found Path duplicate: /pets/{petId}"),
         Arguments.of("paths with same hierarchy but different templated names has been found", Arrays.asList(
-            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList()),
-            new PathImpl(BASE_PATH, "/pets/{foo}", EMPTY_JSON_OBJECT, emptyList())),
+            new PathImpl(BASE_PATH, "/pets/{petId}", EMPTY_JSON_OBJECT, emptyList(), emptyMap()),
+            new PathImpl(BASE_PATH, "/pets/{foo}", EMPTY_JSON_OBJECT, emptyList(), emptyMap())),
             "Found Paths with same hierarchy but different templated names: /pets/{}"));
   }
 
@@ -108,7 +111,7 @@ class OpenAPIContractImplTest {
     JsonObject contract = new JsonObject().put("servers", new JsonArray().add(server1).add(server2));
 
     OpenAPIContractException exception =
-        assertThrows(OpenAPIContractException.class, () -> new OpenAPIContractImpl(contract, null, null));
+        assertThrows(OpenAPIContractException.class, () -> new OpenAPIContractImpl(contract, null, null, null));
     String expectedMsg =
         "The passed OpenAPI contract contains a feature that is not supported: Different base paths in server urls";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
@@ -120,10 +123,10 @@ class OpenAPIContractImplTest {
     JsonObject server1 = new JsonObject().put("url", "http://foo.bar/foo");
     JsonObject contractJson = new JsonObject().put("servers", new JsonArray().add(server1));
 
-    OpenAPIContractImpl contract = new OpenAPIContractImpl(contractJson, null, null);
+    OpenAPIContractImpl contract = new OpenAPIContractImpl(contractJson, null, null, null);
     assertThat(contract.basePath()).isEqualTo("/foo");
 
-    OpenAPIContractImpl contractEmpty = new OpenAPIContractImpl(new JsonObject(), null, null);
+    OpenAPIContractImpl contractEmpty = new OpenAPIContractImpl(new JsonObject(), null, null, null);
     assertThat(contractEmpty.basePath()).isEqualTo("");
   }
 
@@ -133,7 +136,7 @@ class OpenAPIContractImplTest {
         Buffer.buffer(Files.readAllBytes(VALID_CONTRACTS_JSON)).toJsonObject().getJsonObject("0000_Test_Getters");
     JsonObject resolvedSpec = testDataObject.getJsonObject("contractModel");
     SchemaRepository schemaRepository = Mockito.mock(SchemaRepository.class);
-    OpenAPIContractImpl contract = new OpenAPIContractImpl(resolvedSpec, V3_1, schemaRepository);
+    OpenAPIContractImpl contract = new OpenAPIContractImpl(resolvedSpec, V3_1, schemaRepository, null);
 
     assertThat(contract.getServers()).hasSize(1);
     assertThat(contract.getServers().get(0).getURL()).isEqualTo("https://petstore.swagger.io/v1");
@@ -168,11 +171,35 @@ class OpenAPIContractImplTest {
     assertThat(showPetById.getSecurityRequirements()).isEmpty();
   }
 
+  @Test
+  void testCustomMediaTypes() throws IOException {
+    OpenAPIContractImpl contract = fromTestData(
+      "0002_Test_Custom_Media_Types",
+      Map.of("application/xml", ContentAnalyserFactory.NO_OP, "application/yml", ContentAnalyserFactory.NO_OP)
+    );
+
+    Operation listPets = contract.operation("listPets");
+    assertThat(listPets).isNotNull();
+    assertThat(listPets.getResponse(200).getContent()).hasSize(2);
+    assertThat(listPets.getResponse(200).getContent()).containsKey("application/json");
+    assertThat(listPets.getResponse(200).getContent()).containsKey("application/xml");
+
+    Operation createPets = contract.operation("createPets");
+    assertThat(createPets).isNotNull();
+    assertThat(createPets.getRequestBody().getContent()).hasSize(2);
+    assertThat(createPets.getRequestBody().getContent()).containsKey("application/json");
+    assertThat(createPets.getRequestBody().getContent()).containsKey("application/yml");
+  }
+
   private static OpenAPIContractImpl fromTestData(String testId) throws IOException {
+    return fromTestData(testId, null);
+  }
+
+  private static OpenAPIContractImpl fromTestData(String testId, Map<String, ContentAnalyserFactory> additionalMediaTypes) throws IOException {
     JsonObject testDataObject =
         Buffer.buffer(Files.readAllBytes(VALID_CONTRACTS_JSON)).toJsonObject().getJsonObject(testId);
     JsonObject resolvedSpec = testDataObject.getJsonObject("contractModel");
     SchemaRepository schemaRepository = Mockito.mock(SchemaRepository.class);
-    return new OpenAPIContractImpl(resolvedSpec, V3_1, schemaRepository);
+    return new OpenAPIContractImpl(resolvedSpec, V3_1, schemaRepository, additionalMediaTypes);
   }
 }

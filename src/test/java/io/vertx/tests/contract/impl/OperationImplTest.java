@@ -21,7 +21,9 @@ import static io.vertx.openapi.impl.Utils.EMPTY_JSON_ARRAY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import io.vertx.core.Vertx;
@@ -31,17 +33,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.impl.OperationImpl;
 import io.vertx.openapi.contract.impl.SecurityRequirementImpl;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -85,7 +90,7 @@ class OperationImplTest {
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
     List<Parameter> pathParams = parseParameters(path, testDataObject.getJsonArray("pathParams", EMPTY_JSON_ARRAY));
     return new OperationImpl("/absolute" + path, path, method, operationModel, pathParams, emptyMap(),
-        Arrays.asList(secReqs));
+        Arrays.asList(secReqs), emptyMap());
   }
 
   @ParameterizedTest(name = "{index} should throw an exception for scenario: {0}")
@@ -175,8 +180,51 @@ class OperationImplTest {
   void testMergeExtensions(String scenario, Map<String, Object> pathExtensions, Map<String, Object> expected) {
     JsonObject testDataObject = validTestData.getJsonObject("0005_Test_Merge_Extensions");
     JsonObject operationModel = testDataObject.getJsonObject("operationModel");
-    Operation op = new OperationImpl("/", "path", GET, operationModel, emptyList(), pathExtensions, emptyList());
+    Operation op = new OperationImpl("/", "path", GET, operationModel, emptyList(), pathExtensions, emptyList(), emptyMap());
 
     assertThat(op.getExtensions()).containsExactlyEntriesIn(expected);
+  }
+
+  @Test
+  void testCustomMediaType() {
+    JsonObject operationModel = validTestData.getJsonObject("0006_Test_RequestBody_Custom_Media_type")
+                                             .getJsonObject("operationModel");
+    OperationImpl operation =
+        new OperationImpl("/", "path", GET, operationModel, emptyList(), emptyMap(), emptyList(),
+            Map.of("text/event-stream", ContentAnalyserFactory.NO_OP));
+    Map<String, MediaType> mediaTypes = operation.getRequestBody().getContent();
+
+    assertEquals(2, mediaTypes.size());
+    assertEquals(Set.of("application/json", "text/event-stream"), mediaTypes.keySet());
+
+    mediaTypes = operation.getDefaultResponse().getContent();
+
+    assertEquals(2, mediaTypes.size());
+    assertEquals(Set.of("application/json", "text/event-stream"), mediaTypes.keySet());
+  }
+
+  @Test
+  void testUnsupportedCustomMediaType() {
+    JsonObject operationModel = validTestData.getJsonObject("0006_Test_RequestBody_Custom_Media_type")
+                                             .getJsonObject("operationModel");
+    String id = operationModel.getString("operationId");
+
+    OpenAPIContractException ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new OperationImpl("/", "path", GET, operationModel, emptyList(), emptyMap(), emptyList(),null)
+    );
+    assertTrue(ex.getMessage().contains("Operation " + id + " defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new OperationImpl("/", "path", GET, operationModel, emptyList(), emptyMap(), emptyList(), emptyMap())
+    );
+    assertTrue(ex.getMessage().contains("Operation " + id + " defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new OperationImpl("/", "path", GET, operationModel, emptyList(), emptyMap(), emptyList(), Map.of("application/xml", ContentAnalyserFactory.NO_OP))
+    );
+    assertTrue(ex.getMessage().contains("Operation " + id + " defines a request body with an unsupported media type"));
   }
 }

@@ -15,6 +15,7 @@ package io.vertx.tests.validation.impl;
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static io.vertx.tests.ResourceHelper.TEST_RESOURCE_PATH;
+import static java.util.Collections.emptyMap;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -83,14 +84,14 @@ class BaseValidatorTest {
     JsonObject binaryStringSchema = stringSchema.copy().put("format", "binary");
     Function<JsonObject, JsonObject> buildMediaModel = schema -> new JsonObject().put("schema", schema);
 
-    MediaType noMediaModel = new MediaTypeImpl("", EMPTY_JSON_OBJECT);
-    MediaType typeNumber = new MediaTypeImpl("", buildMediaModel.apply(new JsonObject().put("type", "number")));
-    MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema));
-    MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema));
+    MediaType noMediaModel = new MediaTypeImpl("", EMPTY_JSON_OBJECT, emptyMap());
+    MediaType typeNumber = new MediaTypeImpl("", buildMediaModel.apply(new JsonObject().put("type", "number")), emptyMap());
+    MediaType typeStringNoFormat = new MediaTypeImpl("", buildMediaModel.apply(stringSchema), emptyMap());
+    MediaType typeStringFormatBinary = new MediaTypeImpl("", buildMediaModel.apply(binaryStringSchema), emptyMap());
     MediaType typeStringFormatTime = new MediaTypeImpl("", buildMediaModel.apply(stringSchema.copy().put("format",
-        "time")));
+        "time")), emptyMap());
     MediaType typeStringFormatBinaryMinLength = new MediaTypeImpl("",
-        buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)));
+        buildMediaModel.apply(binaryStringSchema.copy().put("minLength", 1)), emptyMap());
 
     return Stream.of(
         Arguments.of("No media model is defined", noMediaModel, false),

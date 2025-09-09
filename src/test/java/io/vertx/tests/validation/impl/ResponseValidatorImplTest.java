@@ -18,6 +18,7 @@ import static io.vertx.json.schema.common.dsl.Schemas.booleanSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.intSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.numberSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
+import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.contract.Location.HEADER;
 import static io.vertx.openapi.contract.Style.SIMPLE;
 import static io.vertx.openapi.validation.ValidatorErrorType.INVALID_VALUE;
@@ -37,6 +38,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.Keywords;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
@@ -47,6 +49,7 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Response;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
 import io.vertx.openapi.validation.ResponseParameter;
 import io.vertx.openapi.validation.ValidatableResponse;
 import io.vertx.openapi.validation.ValidatorException;
@@ -268,6 +271,33 @@ class ResponseValidatorImplTest {
     String reason = "Instance type number is invalid. Expected object";
     String expectedMsg = "The value of the response body is invalid. Reason: " + reason;
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
+  }
+
+  @Test
+  public void testValidCustomMediaTypeBody() {
+    JsonObject schema =
+      new JsonObject()
+        .put(
+          "schema",
+          objectSchema()
+            .property("a", intSchema())
+            .property("b", stringSchema().with(Keywords.minLength(1)))
+            .toJson());
+    var additionalMediaTypes = Map.of("application/yml", new RequestValidatorImplTest.YamlContentAnalyzerFactory());
+
+    MediaType json = new MediaTypeImpl("application/json", schema, additionalMediaTypes);
+    MediaType yml = new MediaTypeImpl("application/yml", schema, additionalMediaTypes);
+
+    Response mockedResponse = mockResponse();
+    when(mockedResponse.getContent()).thenReturn(Map.of("application/json", json, "application/yml", yml));
+
+    String validYaml = "a: 1\nb: abc";
+    ValidatableResponse mockedValidatableResponse = mock(ValidatableResponse.class);
+    when(mockedValidatableResponse.getBody()).thenReturn(new RequestParameterImpl(Buffer.buffer(validYaml)));
+    when(mockedValidatableResponse.getContentType()).thenReturn("application/yml");
+
+    ResponseParameter param = validator.validateBody(mockedResponse, mockedValidatableResponse);
+    assertThat(param.getJsonObject()).isEqualTo(new JsonObject().put("a", 1).put("b", "abc"));
   }
 
   @Test

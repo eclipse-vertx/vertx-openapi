@@ -46,5 +46,19 @@
     }
   },
   "0003_Test_Getters_No_Headers_No_Content": {
+  },
+  "0004_Test_Custom_MediaType": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "string"
+        }
+      },
+      "text/event-stream": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

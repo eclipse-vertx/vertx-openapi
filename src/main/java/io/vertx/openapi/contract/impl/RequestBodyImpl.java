@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.Map;
 
 public class RequestBodyImpl implements RequestBody {
@@ -37,7 +38,7 @@ public class RequestBodyImpl implements RequestBody {
 
   private final Map<String, MediaType> content;
 
-  public RequestBodyImpl(JsonObject requestBodyModel, String operationId) {
+  public RequestBodyImpl(JsonObject requestBodyModel, String operationId, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
     this.requestBodyModel = requestBodyModel;
     this.required = requestBodyModel.getBoolean(KEY_REQUIRED, false);
     JsonObject contentObject = requestBodyModel.getJsonObject(KEY_CONTENT, EMPTY_JSON_OBJECT);
@@ -48,14 +49,14 @@ public class RequestBodyImpl implements RequestBody {
             .stream()
             .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
             .filter(mediaTypeIdentifier -> {
-              if (isMediaTypeSupported(mediaTypeIdentifier)) {
+              if (isMediaTypeSupported(mediaTypeIdentifier, additionalMediaTypes)) {
                 return true;
               }
               String msgTemplate = "Operation %s defines a request body with an unsupported media type. Supported: %s";
               throw createUnsupportedFeature(
                   String.format(msgTemplate, operationId, join(", ", SUPPORTED_MEDIA_TYPES)));
             })
-            .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key)))));
+            .collect(toMap(this::removeWhiteSpaces, key -> new MediaTypeImpl(key, contentObject.getJsonObject(key), additionalMediaTypes))));
 
     if (content.isEmpty()) {
       String msg =

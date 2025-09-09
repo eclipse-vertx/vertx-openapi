@@ -25,6 +25,8 @@ import io.vertx.json.schema.JsonSchema;
 import io.vertx.json.schema.JsonSchemaValidationException;
 import io.vertx.openapi.contract.impl.OpenAPIContractImpl;
 import io.vertx.openapi.impl.Utils;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +59,7 @@ public class OpenAPIContractBuilder {
   private JsonObject contract;
   private final Map<String, String> additionalContractPartPaths = new HashMap<>();
   private final Map<String, JsonObject> additionalContractParts = new HashMap<>();
+  private final Map<String, ContentAnalyserFactory> additionalMediaTypes = new HashMap<>();
 
   public OpenAPIContractBuilder(Vertx vertx) {
     this.vertx = vertx;
@@ -154,6 +157,41 @@ public class OpenAPIContractBuilder {
   }
 
   /**
+   * Registers a custom supported media type. By default, the OpenAPI contract only supports variants of JSON,
+   * multipart/form, text/plain and application/octet-stream. Custom media types can be supported by providing a
+   * mapping to JSON. This is done by implementing a ContentAnalyser and a ContentAnalyserFactory. See their Javadoc
+   * for details.
+   *
+   * @param contentAnalyserFactory the custom JSON mapping for the registered media type
+   * @param mediaType the media type to register
+   * @param aliases alternative names for the same media type (e.g. including a charset parameter)
+   * @return a reference to this for chaining
+   */
+  public OpenAPIContractBuilder registerSupportedMediaType(
+    ContentAnalyserFactory contentAnalyserFactory, String mediaType, String... aliases
+  ) {
+    additionalMediaTypes.put(mediaType, contentAnalyserFactory);
+    Arrays.stream(aliases).forEach(alias -> additionalMediaTypes.put(alias, contentAnalyserFactory));
+    return this;
+  }
+
+  /**
+   * Registers support for a media type that is unchecked. Values of this media type are treated as opaque binary
+   * content.
+   * Note that validator instances built from this contract might still attempt schema validation if the
+   * contract specifies a schema for this media type, which will likely fail. This can only be addressed by designating
+   * the schema as a binary string (type=string, format=binary, no other properties) or by omitting the schema entirely
+   * (only OpenAPI 3.1+).
+   *
+   * @param mediaType the media type to register
+   * @param aliases alternative names for the same media type (e.g. including a charset parameter)
+   * @return a reference to this for chaining
+   */
+  public OpenAPIContractBuilder registerUncheckedMediaType(String mediaType, String... aliases) {
+    return registerSupportedMediaType(ContentAnalyserFactory.NO_OP, mediaType, aliases);
+  }
+
+  /**
    * Builds the contract.
    *
    * @return The contract.
@@ -192,7 +230,7 @@ public class OpenAPIContractBuilder {
             return failedFuture(createInvalidContract(null, e));
           }
         })
-            .map(resolvedSpec -> new OpenAPIContractImpl(resolvedSpec, version, repository)))
+            .map(resolvedSpec -> new OpenAPIContractImpl(resolvedSpec, version, repository, additionalMediaTypes)))
         .recover(e -> {
           // Convert any non-openapi exceptions into an OpenAPIContractException
           if (e instanceof OpenAPIContractException) {

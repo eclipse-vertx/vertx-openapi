@@ -16,16 +16,24 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.contract.impl.PathImpl.INVALID_CURLY_BRACES;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.impl.PathImpl;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import io.vertx.tests.ResourceHelper;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +57,7 @@ class PathImplTest {
     JsonObject testDataObject = testData.getJsonObject(id);
     String name = testDataObject.getString("name");
     JsonObject pathModel = testDataObject.getJsonObject("pathModel");
-    return new PathImpl(BASE_PATH, name, pathModel, emptyList());
+    return new PathImpl(BASE_PATH, name, pathModel, emptyList(), emptyMap());
   }
 
   @Test
@@ -74,18 +82,18 @@ class PathImplTest {
   void testWildcardInPath() {
     OpenAPIContractException exception =
         assertThrows(OpenAPIContractException.class, () -> new PathImpl(BASE_PATH, "/pets/*", EMPTY_JSON_OBJECT,
-            emptyList()));
+            emptyList(), emptyMap()));
     String expectedMsg = "The passed OpenAPI contract is invalid: Paths must not have a wildcard (asterisk): /pets/*";
     assertThat(exception).hasMessageThat().isEqualTo(expectedMsg);
   }
 
   @ParameterizedTest(name = "{index} wrong position of curley braces in path: {0}")
-  @ValueSource(strings = { "/foo{param}/", "/foo{param}", "/{param}bar/", "/{param}bar", "/foo{param}bar/",
-      "/foo{param}bar" })
+  @ValueSource(strings = {"/foo{param}/", "/foo{param}", "/{param}bar/", "/{param}bar", "/foo{param}bar/",
+      "/foo{param}bar"})
   void testWrongCurlyBracesInPath(String path) {
     OpenAPIContractException exception =
         assertThrows(OpenAPIContractException.class,
-            () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList()));
+            () -> new PathImpl(BASE_PATH, path, EMPTY_JSON_OBJECT, emptyList(), emptyMap()));
     String expectedMsg =
         "The passed OpenAPI contract is invalid: Curly brace MUST be the first/last character in a path segment " +
             "(/{parameterName}/): " + path;
@@ -101,19 +109,78 @@ class PathImplTest {
   @Test
   void testCutTrailingSlash() {
     String expected = "/pets";
-    assertThat(new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT, emptyList()).getName()).isEqualTo(expected);
+    assertThat(new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT, emptyList(), emptyMap()).getName()).isEqualTo(expected);
   }
 
   @Test
   void testRootPath() {
     String expected = "/";
-    assertThat(new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList()).getName()).isEqualTo(expected);
+    assertThat(new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList(), emptyMap()).getName()).isEqualTo(expected);
   }
 
   @Test
   void testGetAbsolutePath() {
     String expected = "/base/foo";
-    assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT, emptyList()).getAbsolutePath()).isEqualTo(expected);
-    assertThat(new PathImpl("/base/", "/foo", EMPTY_JSON_OBJECT, emptyList()).getAbsolutePath()).isEqualTo(expected);
+    assertThat(new PathImpl("/base", "/foo", EMPTY_JSON_OBJECT, emptyList(), emptyMap()).getAbsolutePath()).isEqualTo(expected);
+    assertThat(new PathImpl("/base/", "/foo", EMPTY_JSON_OBJECT, emptyList(), emptyMap()).getAbsolutePath()).isEqualTo(expected);
+  }
+
+  @Test
+  void testCustomMediaType() {
+    JsonObject testObject = validTestData.getJsonObject("0001_Test_Custom_Media_Type");
+    String path = testObject.getString("name");
+    JsonObject pathModel = testObject.getJsonObject("pathModel");
+
+    PathImpl pathImpl = new PathImpl("/", path, pathModel, emptyList(),
+        Map.of("text/event-stream", ContentAnalyserFactory.NO_OP, "application/xml", ContentAnalyserFactory.NO_OP));
+
+    pathImpl.getOperations().forEach(op -> {
+      Map<String, MediaType> mediaTypes;
+
+      if (op.getHttpMethod() == HttpMethod.GET) {
+        mediaTypes = op.getDefaultResponse().getContent();
+
+        assertEquals(2, mediaTypes.size());
+        assertEquals(Set.of("application/json", "text/event-stream"), mediaTypes.keySet());
+      } else {
+        mediaTypes = op.getRequestBody().getContent();
+
+        assertEquals(1, mediaTypes.size());
+        assertEquals(Set.of("application/xml"), mediaTypes.keySet());
+      }
+    });
+  }
+
+  @Test
+  void testUnsupportedCustomMediaType() {
+    JsonObject testObject = validTestData.getJsonObject("0001_Test_Custom_Media_Type");
+    String path = testObject.getString("name");
+    JsonObject pathModel = testObject.getJsonObject("pathModel");
+
+    OpenAPIContractException ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new PathImpl("/", path, pathModel, emptyList(), null)
+    );
+    assertTrue(ex.getMessage().contains("Operation updatePet defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new PathImpl("/", path, pathModel, emptyList(), emptyMap())
+    );
+    assertTrue(ex.getMessage().contains("Operation updatePet defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new PathImpl("/", path, pathModel, emptyList(),
+      Map.of("text/event-stream", ContentAnalyserFactory.NO_OP))
+    );
+    assertTrue(ex.getMessage().contains("Operation updatePet defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new PathImpl("/", path, pathModel, emptyList(),
+      Map.of("application/xml", ContentAnalyserFactory.NO_OP))
+    );
+    assertTrue(ex.getMessage().contains("Operation showPetById defines a response with an unsupported media type"));
   }
 }

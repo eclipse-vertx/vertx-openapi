@@ -215,5 +215,49 @@
         }
       }
     }
+  },
+  "0006_Test_RequestBody_Custom_Media_type": {
+    "path": "/pets",
+    "method": "post",
+    "operationModel": {
+      "operationId": "createPet",
+      "tags": [
+        "pets",
+        "foo"
+      ],
+      "requestBody": {
+        "description": "Create a new pet in the store",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          },
+          "text/event-stream": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "responses": {
+        "default": {
+          "description": "unexpected error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            },
+            "text/event-stream": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

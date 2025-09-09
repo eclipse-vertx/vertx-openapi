@@ -15,7 +15,9 @@ package io.vertx.openapi.contract;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.impl.VendorSpecificJson;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface represents the most important attributes of an OpenAPI Operation.
@@ -37,8 +39,9 @@ public interface MediaType extends OpenAPIObject {
   List<String> SUPPORTED_MEDIA_TYPES = List.of(APPLICATION_JSON, APPLICATION_JSON_UTF8, MULTIPART_FORM_DATA,
       APPLICATION_HAL_JSON, APPLICATION_OCTET_STREAM, TEXT_PLAIN, TEXT_PLAIN_UTF8);
 
-  static boolean isMediaTypeSupported(String type) {
-    return SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase()) || isVendorSpecificJson(type);
+  static boolean isMediaTypeSupported(String type, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
+    return (additionalMediaTypes != null && additionalMediaTypes.containsKey(type.toLowerCase())) ||
+        SUPPORTED_MEDIA_TYPES.contains(type.toLowerCase()) || isVendorSpecificJson(type);
   }
 
   static boolean isVendorSpecificJson(String type) {

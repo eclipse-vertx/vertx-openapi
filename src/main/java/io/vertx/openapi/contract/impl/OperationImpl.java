@@ -34,6 +34,7 @@ import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Response;
 import io.vertx.openapi.contract.SecurityRequirement;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class OperationImpl implements Operation {
 
   public OperationImpl(String absolutePath, String path, HttpMethod method, JsonObject operationModel,
       List<Parameter> pathParameters, Map<String, Object> pathExtensions,
-      List<SecurityRequirement> globalSecReq) {
+      List<SecurityRequirement> globalSecReq, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
     this.absolutePath = absolutePath;
     this.operationId = operationModel.getString(KEY_OPERATION_ID);
     this.method = method;
@@ -119,7 +120,7 @@ public class OperationImpl implements Operation {
     if (requestBodyJson == null || requestBodyJson.isEmpty()) {
       this.requestBody = null;
     } else {
-      this.requestBody = new RequestBodyImpl(requestBodyJson, operationId);
+      this.requestBody = new RequestBodyImpl(requestBodyJson, operationId, additionalMediaTypes);
     }
 
     JsonObject responsesJson = operationModel.getJsonObject(KEY_RESPONSES, EMPTY_JSON_OBJECT);
@@ -128,7 +129,8 @@ public class OperationImpl implements Operation {
       throw createInvalidContract(msg);
     }
     defaultResponse = responsesJson.stream().filter(entry -> "default".equalsIgnoreCase(entry.getKey())).findFirst()
-        .map(entry -> new ResponseImpl((JsonObject) entry.getValue(), operationId)).orElse(null);
+        .map(entry ->
+            new ResponseImpl((JsonObject) entry.getValue(), operationId, additionalMediaTypes)).orElse(null);
     responses =
         unmodifiableMap(
             responsesJson
@@ -137,7 +139,9 @@ public class OperationImpl implements Operation {
                 .filter(JsonSchema.EXCLUDE_ANNOTATIONS)
                 .filter(RESPONSE_CODE_PATTERN.asPredicate())
                 .collect(
-                    toMap(Integer::parseInt, key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId))));
+                    toMap(
+                        Integer::parseInt,
+                        key -> new ResponseImpl(responsesJson.getJsonObject(key), operationId, additionalMediaTypes))));
   }
 
   @Override

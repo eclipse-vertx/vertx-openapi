@@ -47,6 +47,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
+import io.vertx.json.schema.common.dsl.Keywords;
 import io.vertx.json.schema.common.dsl.SchemaBuilder;
 import io.vertx.junit5.Checkpoint;
 import io.vertx.junit5.Timeout;
@@ -59,11 +60,16 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.Style;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.impl.Utils;
 import io.vertx.openapi.validation.RequestParameter;
 import io.vertx.openapi.validation.RequestValidator;
 import io.vertx.openapi.validation.ValidatableRequest;
 import io.vertx.openapi.validation.ValidatedRequest;
+import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
+import io.vertx.openapi.validation.analyser.ContentAnalyser;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import io.vertx.openapi.validation.impl.RequestParameterImpl;
 import io.vertx.openapi.validation.impl.RequestValidatorImpl;
 import io.vertx.openapi.validation.impl.ValidatableRequestImpl;
@@ -84,7 +90,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @ExtendWith(VertxExtension.class)
-class RequestValidatorImplTest {
+public class RequestValidatorImplTest {
 
   private RequestValidatorImpl validator;
 
@@ -472,4 +478,50 @@ class RequestValidatorImplTest {
     validator.validateParameter(param, new RequestParameterImpl(value));
   }
 
+  @Test
+  public void testValidCustomMediaTypeBody() {
+    JsonObject schema =
+      new JsonObject()
+        .put(
+          "schema",
+          objectSchema()
+            .property("a", intSchema())
+            .property("b", stringSchema().with(Keywords.minLength(1)))
+            .toJson());
+    var additionalMediaTypes = Map.of("application/yml", new YamlContentAnalyzerFactory());
+
+    MediaType json = new MediaTypeImpl("application/json", schema, additionalMediaTypes);
+    MediaType yml = new MediaTypeImpl("application/yml", schema, additionalMediaTypes);
+
+    RequestBody mockedRequestBody = mockRequestBody(true);
+    when(mockedRequestBody.getContent()).thenReturn(Map.of("application/json", json, "application/yml", yml));
+    when(mockedRequestBody.determineContentType("application/yml")).thenReturn(yml);
+
+    String validYaml = "a: 1\nb: abc";
+    ValidatableRequest mockedValidatableRequest = mock(ValidatableRequest.class);
+    when(mockedValidatableRequest.getBody()).thenReturn(new RequestParameterImpl(Buffer.buffer(validYaml)));
+    when(mockedValidatableRequest.getContentType()).thenReturn("application/yml");
+
+    RequestParameter param = validator.validateBody(mockedRequestBody, mockedValidatableRequest);
+    assertThat(param.getJsonObject()).isEqualTo(new JsonObject().put("a", 1).put("b", "abc"));
+  }
+
+  public static class YamlContentAnalyzerFactory implements ContentAnalyserFactory {
+    @Override
+    public ContentAnalyser getContentAnalyser(String contentType, Buffer content, ValidationContext context) {
+      return new ContentAnalyser(contentType, content, context) {
+        private JsonObject decoded;
+
+        @Override
+        public void checkSyntacticalCorrectness() {
+          decoded = Utils.yamlStringToJson(content.toString()).result();
+        }
+
+        @Override
+        public Object transform() {
+          return decoded;
+        }
+      };
+    }
+  }
 }

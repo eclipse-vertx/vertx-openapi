@@ -18,6 +18,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
 
@@ -34,7 +35,7 @@ import io.vertx.openapi.validation.ValidatorException;
  * before.
  */
 public abstract class ContentAnalyser {
-  private static class NoOpAnalyser extends ContentAnalyser {
+  static class NoOpAnalyser extends ContentAnalyser {
     public NoOpAnalyser(String contentType, Buffer content, ValidationContext context) {
       super(contentType, content, context);
     }
@@ -51,15 +52,23 @@ public abstract class ContentAnalyser {
   }
 
   /**
-   * Returns the content analyser for the given content type.
+   * Returns the content analyser for the given content type. If the media type has a custom content analyser factory,
+   * it will be used to create the content analyser.
    *
    * @param mediaType   the media type to determine the content analyser.
    * @param contentType the raw content type value from the HTTP header field.
    * @param content     the content to be analysed.
    * @return the content analyser for the given content type.
    */
-  public static ContentAnalyser getContentAnalyser(MediaType mediaType, String contentType, Buffer content,
-      ValidationContext context) {
+  public static ContentAnalyser getContentAnalyser(MediaType mediaType, String contentType, Buffer content, ValidationContext context) {
+    if (mediaType instanceof MediaTypeImpl) {
+      ContentAnalyserFactory factory = ((MediaTypeImpl) mediaType).getContentAnalyserFactory();
+
+      if (factory != null) {
+        return factory.getContentAnalyser(contentType, content, context);
+      }
+    }
+
     switch (mediaType.getIdentifier()) {
       case MediaType.APPLICATION_JSON:
       case MediaType.APPLICATION_JSON_UTF8:

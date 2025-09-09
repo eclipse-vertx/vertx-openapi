@@ -31,6 +31,7 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.SecurityRequirement;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +63,7 @@ public class PathImpl implements Path {
   private final JsonObject pathModel;
   private final String absolutePath;
 
-  public PathImpl(String basePath, String name, JsonObject pathModel, List<SecurityRequirement> globalSecReq) {
+  public PathImpl(String basePath, String name, JsonObject pathModel, List<SecurityRequirement> globalSecReq, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
     this.absolutePath = (basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath) + name;
     this.pathModel = pathModel;
     if (name.contains("*")) {
@@ -82,7 +83,7 @@ public class PathImpl implements Path {
     List<Operation> ops = new ArrayList<>();
     SUPPORTED_METHODS.forEach((methodName, method) -> Optional.ofNullable(pathModel.getJsonObject(methodName))
         .map(operationModel -> new OperationImpl(absolutePath, name, method, operationModel, parameters,
-            getExtensions(), globalSecReq))
+            getExtensions(), globalSecReq, additionalMediaTypes))
         .ifPresent(ops::add));
     this.operations = unmodifiableList(ops);
   }

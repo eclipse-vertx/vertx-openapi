@@ -21,8 +21,11 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.OpenAPIContractBuilder;
 import io.vertx.openapi.contract.OpenAPIContractException;
+import io.vertx.openapi.contract.impl.MediaTypeImpl;
 import io.vertx.openapi.impl.Utils;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import io.vertx.tests.ResourceHelper;
+import io.vertx.tests.validation.impl.RequestValidatorImplTest;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -235,4 +238,124 @@ public class OpenAPIContractBuilderTest {
     }
   }
 
+  @Nested
+  @ExtendWith(VertxExtension.class)
+  class TestAdditionalMediaTypes {
+    private final JsonObject CONTRACT =
+      new JsonObject(
+        "{\n" +
+          "  \"openapi\": \"3.1.0\",\n" +
+          "  \"info\": {\"version\": \"1.0.0\", \"title\": \"Swagger Petstore\", \"license\": {\"identifier\": \"MIT\", \"name\": \"MIT License\"}},\n" +
+          "  \"paths\": {\n" +
+          "    \"/pets\": {\n" +
+          "      \"get\": {\n" +
+          "        \"summary\": \"List Pets\"," +
+          "        \"operationId\": \"listPets\"," +
+          "        \"responses\": {\n" +
+          "          \"default\": {\n" +
+          "            \"description\": \"Default Response\",\n" +
+          "            \"content\": {\n" +
+          "              \"application/yml\": {\n" +
+          "                \"schema\": {\n" +
+          "                  \"type\": \"object\"\n" +
+          "                }\n" +
+          "              }\n" +
+          "            }\n" +
+          "          }\n" +
+          "        }\n" +
+          "      },\n" +
+          "      \"post\": {\n" +
+          "        \"summary\": \"Create Pets\"," +
+          "        \"operationId\": \"createPets\"," +
+          "        \"requestBody\": {\n" +
+          "          \"required\": true,\n" +
+          "          \"content\": {\n" +
+          "            \"application/yaml\": {\n" +
+          "              \"schema\": {\n" +
+          "                \"type\": \"object\"\n" +
+          "              }\n" +
+          "            }\n" +
+          "          }\n" +
+          "        },\n" +
+          "        \"responses\": {\n" +
+          "          \"default\": {\n" +
+          "            \"description\": \"Default Response\",\n" +
+          "            \"content\": {\n" +
+          "              \"application/json\": {\n" +
+          "                \"schema\": {\n" +
+          "                  \"type\": \"object\"\n" +
+          "                }\n" +
+          "              }\n" +
+          "            }\n" +
+          "          }\n" +
+          "        }\n" +
+          "      }\n" +
+          "    },\n" +
+          "    \"/pets/updates\": {\n" +
+          "      \"get\": {\n" +
+          "        \"summary\": \"Listen to pet update events\"," +
+          "        \"operationId\": \"petEvents\"," +
+          "        \"responses\": {\n" +
+          "          \"default\": {\n" +
+          "            \"description\": \"Stream of Pet Events\",\n" +
+          "            \"content\": {\n" +
+          "              \"text/event-stream\": {}\n" +
+          "            }\n" +
+          "          }\n" +
+          "        }\n" +
+          "      }\n" +
+          "    }\n" +
+          "  }\n" +
+          "}"
+      );
+    @Test
+    void should_accept_additional_media_types(Vertx vertx, VertxTestContext ctx) {
+      OpenAPIContract.builder(vertx)
+          .setContract(CONTRACT)
+          .registerSupportedMediaType(
+              new RequestValidatorImplTest.YamlContentAnalyzerFactory(),
+              "application/yml", "application/yaml"
+          )
+          .registerUncheckedMediaType("text/event-stream")
+          .build()
+          .onComplete(ctx.succeeding(c -> ctx.verify(() -> {
+            var listPets = c.operation("listPets");
+
+            assertThat(listPets.getDefaultResponse().getContent()).containsKey("application/yml");
+            assertThat(listPets.getDefaultResponse().getContent().get("application/yml"))
+                .isInstanceOf(MediaTypeImpl.class);
+            assertThat(
+                ((MediaTypeImpl) listPets.getDefaultResponse().getContent().get("application/yml"))
+                    .getContentAnalyserFactory()).isNotNull();
+            assertThat(
+                ((MediaTypeImpl) listPets.getDefaultResponse().getContent().get("application/yml"))
+                    .getContentAnalyserFactory()).isInstanceOf(RequestValidatorImplTest.YamlContentAnalyzerFactory.class);
+
+            var createPets = c.operation("createPets");
+
+            assertThat(createPets.getRequestBody().getContent()).containsKey("application/yaml");
+            assertThat(createPets.getRequestBody().getContent().get("application/yaml"))
+                .isInstanceOf(MediaTypeImpl.class);
+            assertThat(
+                ((MediaTypeImpl) createPets.getRequestBody().getContent().get("application/yaml"))
+                    .getContentAnalyserFactory()).isNotNull();
+            assertThat(
+                ((MediaTypeImpl) createPets.getRequestBody().getContent().get("application/yaml"))
+                    .getContentAnalyserFactory()).isInstanceOf(RequestValidatorImplTest.YamlContentAnalyzerFactory.class);
+            ctx.completeNow();
+
+            var petEvents = c.operation("petEvents");
+
+            assertThat(petEvents.getDefaultResponse().getContent()).containsKey("text/event-stream");
+            assertThat(petEvents.getDefaultResponse().getContent().get("text/event-stream"))
+              .isInstanceOf(MediaTypeImpl.class);
+            assertThat(
+              ((MediaTypeImpl) petEvents.getDefaultResponse().getContent().get("text/event-stream"))
+                .getContentAnalyserFactory()).isNotNull();
+            assertThat(
+              ((MediaTypeImpl) petEvents.getDefaultResponse().getContent().get("text/event-stream"))
+                .getContentAnalyserFactory()).isEqualTo(ContentAnalyserFactory.NO_OP);
+          })));
+    }
+  }
 }

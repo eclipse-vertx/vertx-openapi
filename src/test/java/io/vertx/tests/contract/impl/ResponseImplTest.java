@@ -18,18 +18,26 @@ import static io.vertx.json.schema.common.dsl.SchemaType.INTEGER;
 import static io.vertx.json.schema.common.dsl.SchemaType.STRING;
 import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static java.util.Collections.emptyMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.common.dsl.SchemaType;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.ResponseImpl;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -74,7 +82,7 @@ class ResponseImplTest {
   @MethodSource
   void testGetters(String testId, int contentSize, String contentKey, int headerSize, SchemaType type) {
     JsonObject responseModel = validTestData.getJsonObject(testId);
-    ResponseImpl response = new ResponseImpl(responseModel, DUMMY_OPERATION_ID);
+    ResponseImpl response = new ResponseImpl(responseModel, DUMMY_OPERATION_ID, emptyMap());
 
     assertThat(response.getHeaders()).hasSize(headerSize);
     if (headerSize > 0) {
@@ -94,8 +102,41 @@ class ResponseImplTest {
   void testExceptions(String testId, ContractErrorType type, String msg) {
     JsonObject response = invalidTestData.getJsonObject(testId);
     OpenAPIContractException exception =
-        assertThrows(OpenAPIContractException.class, () -> new ResponseImpl(response, DUMMY_OPERATION_ID));
+        assertThrows(OpenAPIContractException.class, () -> new ResponseImpl(response, DUMMY_OPERATION_ID, emptyMap()));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
+  }
+
+  @Test
+  void testCustomMediaType() {
+    JsonObject responseJson = validTestData.getJsonObject("0004_Test_Custom_MediaType");
+    ResponseImpl response = new ResponseImpl(responseJson, DUMMY_OPERATION_ID, Map.of("text/event-stream", ContentAnalyserFactory.NO_OP));
+    Map<String, MediaType> mediaTypes = response.getContent();
+
+    assertEquals(2, mediaTypes.size());
+    assertEquals(Set.of("application/json", "text/event-stream"), mediaTypes.keySet());
+  }
+
+  @Test
+  void testUnsupportedCustomMediaType() {
+    JsonObject responseJson = validTestData.getJsonObject("0004_Test_Custom_MediaType");
+
+    OpenAPIContractException ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new ResponseImpl(responseJson, DUMMY_OPERATION_ID, null)
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a response with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new ResponseImpl(responseJson, DUMMY_OPERATION_ID, emptyMap())
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a response with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new ResponseImpl(responseJson, DUMMY_OPERATION_ID, Map.of("application/xml", ContentAnalyserFactory.NO_OP))
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a response with an unsupported media type"));
   }
 }

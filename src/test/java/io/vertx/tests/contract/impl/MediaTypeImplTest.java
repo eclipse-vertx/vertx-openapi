@@ -16,14 +16,24 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 import static io.vertx.openapi.impl.Utils.EMPTY_JSON_OBJECT;
+import static java.util.Collections.emptyMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.impl.MediaTypeImpl;
+import io.vertx.openapi.validation.ValidationContext;
+import io.vertx.openapi.validation.analyser.ContentAnalyser;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,7 +81,7 @@ class MediaTypeImplTest {
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")
   @MethodSource
   void testGetters(String scenario, JsonObject mediaTypeModel, List<String> fieldNames) {
-    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, mediaTypeModel);
+    MediaType mediaType = new MediaTypeImpl(DUMMY_IDENTIFIER, mediaTypeModel, emptyMap());
     assertThat(mediaType.getOpenAPIModel()).isEqualTo(mediaTypeModel);
     if (fieldNames.isEmpty()) {
       assertThat(mediaType.getSchema()).isNull();
@@ -86,20 +96,68 @@ class MediaTypeImplTest {
     String msg = "The passed OpenAPI contract contains a feature that is not supported: Media Type without a schema";
 
     OpenAPIContractException exceptionNoModel =
-        assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER, null));
+        assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER, null, emptyMap()));
     assertThat(exceptionNoModel.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionNoModel).hasMessageThat().isEqualTo(msg);
 
     OpenAPIContractException exceptionSchemaNull =
         assertThrows(OpenAPIContractException.class, () -> new MediaTypeImpl(DUMMY_IDENTIFIER,
-            new JsonObject().putNull("schema")));
+            new JsonObject().putNull("schema"), emptyMap()));
     assertThat(exceptionSchemaNull.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionSchemaNull).hasMessageThat().isEqualTo(msg);
 
     OpenAPIContractException exceptionSchemaEmpty =
         assertThrows(OpenAPIContractException.class,
-            () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT)));
+            () -> new MediaTypeImpl(DUMMY_IDENTIFIER, new JsonObject().put("schema", EMPTY_JSON_OBJECT), emptyMap()));
     assertThat(exceptionSchemaEmpty.type()).isEqualTo(ContractErrorType.UNSUPPORTED_FEATURE);
     assertThat(exceptionSchemaEmpty).hasMessageThat().isEqualTo(msg);
+  }
+
+  @Test
+  void testCustomMediaTypes() {
+    var mt1 = new MediaTypeImpl(
+        "text/event-stream",
+        JsonObject.of("schema", stringSchema().toJson()),
+        Map.of("text/event-stream", DummyContentAnalyzer.FACTORY, "application/xml", ContentAnalyserFactory.NO_OP)
+    );
+
+    ContentAnalyserFactory factory = mt1.getContentAnalyserFactory();
+    assertNotNull(factory);
+    ContentAnalyser analyser = factory.getContentAnalyser("text/event-stream", Buffer.buffer("Hello world!"), null);
+    assertInstanceOf(DummyContentAnalyzer.class, analyser);
+    assertEquals(Buffer.buffer("Hello world!"), analyser.transform());
+
+    var mt2 = new MediaTypeImpl(
+        "application/xml",
+        JsonObject.of("schema", stringSchema().toJson()),
+        Map.of("text/event-stream", ContentAnalyserFactory.NO_OP)
+    );
+
+    assertNull(mt2.getContentAnalyserFactory());
+  }
+
+  public static class DummyContentAnalyzer extends ContentAnalyser {
+    public static final ContentAnalyserFactory FACTORY = DummyContentAnalyzer::new;
+
+    /**
+     * Creates a new content analyser.
+     *
+     * @param contentType the content type.
+     * @param content     the content to be analysed.
+     * @param context     the context in which the content is used.
+     */
+    public DummyContentAnalyzer(String contentType, Buffer content, ValidationContext context) {
+      super(contentType, content, context);
+    }
+
+    @Override
+    public void checkSyntacticalCorrectness() {
+      // For testing purposes, this is a no-op
+    }
+
+    @Override
+    public Object transform() {
+      return content;
+    }
   }
 }

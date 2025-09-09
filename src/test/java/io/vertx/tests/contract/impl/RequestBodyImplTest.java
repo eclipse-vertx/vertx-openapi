@@ -18,16 +18,23 @@ import static io.vertx.openapi.contract.ContractErrorType.UNSUPPORTED_FEATURE;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON;
 import static io.vertx.openapi.contract.MediaType.APPLICATION_JSON_UTF8;
 import static io.vertx.tests.ResourceHelper.getRelatedTestResourcePath;
+import static java.util.Collections.emptyMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.openapi.contract.ContractErrorType;
+import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.impl.RequestBodyImpl;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -82,7 +89,7 @@ class RequestBodyImplTest {
   @MethodSource
   void testGetters(String testId, boolean required) {
     JsonObject requestBodyModel = validTestData.getJsonObject(testId);
-    RequestBodyImpl requestBody = new RequestBodyImpl(requestBodyModel, DUMMY_OPERATION_ID);
+    RequestBodyImpl requestBody = new RequestBodyImpl(requestBodyModel, DUMMY_OPERATION_ID, emptyMap());
 
     assertThat(requestBody.isRequired()).isEqualTo(required);
     assertThat(requestBody.getOpenAPIModel()).isEqualTo(requestBodyModel);
@@ -95,7 +102,7 @@ class RequestBodyImplTest {
   void testExceptions(String testId, ContractErrorType type, String msg) {
     JsonObject requestBody = invalidTestData.getJsonObject(testId);
     OpenAPIContractException exception =
-        assertThrows(OpenAPIContractException.class, () -> new RequestBodyImpl(requestBody, DUMMY_OPERATION_ID));
+        assertThrows(OpenAPIContractException.class, () -> new RequestBodyImpl(requestBody, DUMMY_OPERATION_ID, emptyMap()));
     assertThat(exception.type()).isEqualTo(type);
     assertThat(exception).hasMessageThat().isEqualTo(msg);
   }
@@ -106,7 +113,7 @@ class RequestBodyImplTest {
     for (String type : contentTypes) {
       content.put(type, dummySchema);
     }
-    return new RequestBodyImpl(new JsonObject().put("content", content), DUMMY_OPERATION_ID);
+    return new RequestBodyImpl(new JsonObject().put("content", content), DUMMY_OPERATION_ID, emptyMap());
   }
 
   @Test
@@ -129,5 +136,38 @@ class RequestBodyImplTest {
         .isEqualTo(APPLICATION_JSON_UTF8);
 
     assertThat(bodyBoth.determineContentType("application/text")).isNull();
+  }
+
+  @Test
+  void testCustomMediaType() {
+    JsonObject requestJson = validTestData.getJsonObject("0003_Test_Custom_MediaType");
+    RequestBodyImpl requestBody = new RequestBodyImpl(requestJson, DUMMY_OPERATION_ID, Map.of("text/event-stream", ContentAnalyserFactory.NO_OP));
+    Map<String, MediaType> mediaTypes = requestBody.getContent();
+
+    assertEquals(2, mediaTypes.size());
+    assertEquals(Set.of("application/json", "text/event-stream"), mediaTypes.keySet());
+  }
+
+  @Test
+  void testUnsupportedCustomMediaType() {
+    JsonObject requestJson = validTestData.getJsonObject("0003_Test_Custom_MediaType");
+
+    OpenAPIContractException ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new RequestBodyImpl(requestJson, DUMMY_OPERATION_ID, null)
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new RequestBodyImpl(requestJson, DUMMY_OPERATION_ID, emptyMap())
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a request body with an unsupported media type"));
+
+    ex = assertThrows(
+      OpenAPIContractException.class,
+      () -> new RequestBodyImpl(requestJson, DUMMY_OPERATION_ID, Map.of("application/xml", ContentAnalyserFactory.NO_OP))
+    );
+    assertTrue(ex.getMessage().contains("Operation " + DUMMY_OPERATION_ID + " defines a request body with an unsupported media type"));
   }
 }

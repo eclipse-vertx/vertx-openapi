@@ -27,5 +27,19 @@
         }
       }
     }
+  },
+  "0003_Test_Custom_MediaType": {
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "string"
+        }
+      },
+      "text/event-stream": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

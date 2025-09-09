@@ -35,6 +35,7 @@ import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.contract.SecurityRequirement;
 import io.vertx.openapi.contract.SecurityScheme;
 import io.vertx.openapi.contract.Server;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   private static final String KEY_SECURITY = "security";
   private static final String PATH_PARAM_PLACEHOLDER_REGEX = "\\{(.*?)}";
   private static final UnaryOperator<String> ELIMINATE_PATH_PARAM_PLACEHOLDER =
-      path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
+    path -> path.replaceAll(PATH_PARAM_PLACEHOLDER_REGEX, "{}");
 
   private final List<Server> servers;
 
@@ -68,7 +69,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   // VisibleForTesting
   final String basePath;
 
-  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository, Map<String, ContentAnalyserFactory> additionalMediaTypes) {
     this.rawContract = resolvedSpec;
     this.version = version;
     this.schemaRepository = schemaRepository;
@@ -95,7 +96,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
         .stream()
         .filter(JsonSchema.EXCLUDE_ANNOTATION_ENTRIES)
         .map(pathEntry -> new PathImpl(basePath, pathEntry.getKey(), (JsonObject) pathEntry.getValue(),
-            securityRequirements))
+            securityRequirements, additionalMediaTypes))
         .collect(toList());
 
     List<PathImpl> sortedPaths = applyMountOrder(unsortedPaths);
@@ -142,7 +143,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
     }
 
     withTemplating.sort(comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
-    withoutTemplating.sort(comparing(p -> ELIMINATE_PATH_PARAM_PLACEHOLDER.apply(p.getName())));
+    withoutTemplating.sort(comparing(Path::getName));
 
     // Check for Paths with same hierarchy but different templated names
     for (int x = 1; x < withTemplating.size(); x++) {
@@ -156,7 +157,7 @@ public class OpenAPIContractImpl implements OpenAPIContract {
           throw createInvalidContract("Found Path duplicate: " + first);
         } else {
           throw createInvalidContract(
-              "Found Paths with same hierarchy but different templated names: " + firstWithoutPlaceHolder);
+            "Found Paths with same hierarchy but different templated names: " + firstWithoutPlaceHolder);
         }
       }
     }

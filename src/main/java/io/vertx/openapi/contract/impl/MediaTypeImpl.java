@@ -17,6 +17,8 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
+import java.util.Map;
 
 public class MediaTypeImpl implements MediaType {
   private static final String KEY_SCHEMA = "schema";
@@ -25,7 +27,9 @@ public class MediaTypeImpl implements MediaType {
 
   private final JsonSchema schema;
 
-  public MediaTypeImpl(String identifier, JsonObject mediaTypeModel) {
+  private final ContentAnalyserFactory contentAnalyserFactory;
+
+  public MediaTypeImpl(String identifier, JsonObject mediaTypeModel, Map<String, ? extends ContentAnalyserFactory> additionalMediaTypes) {
     this.identifier = identifier;
     this.mediaTypeModel = mediaTypeModel;
 
@@ -47,7 +51,12 @@ public class MediaTypeImpl implements MediaType {
         throw createUnsupportedFeature("Media Type without a schema");
       }
       schema = JsonSchema.of(schemaJson);
+    }
 
+    if (additionalMediaTypes != null) {
+      contentAnalyserFactory = additionalMediaTypes.get(identifier.toLowerCase());
+    } else {
+      contentAnalyserFactory = null;
     }
   }
 
@@ -64,5 +73,9 @@ public class MediaTypeImpl implements MediaType {
   @Override
   public JsonObject getOpenAPIModel() {
     return mediaTypeModel;
+  }
+
+  public ContentAnalyserFactory getContentAnalyserFactory() {
+    return contentAnalyserFactory;
   }
 }
