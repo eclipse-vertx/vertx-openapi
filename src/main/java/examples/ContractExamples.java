@@ -18,6 +18,7 @@ import io.vertx.openapi.contract.OpenAPIContract;
 import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Path;
+import io.vertx.openapi.validation.analyser.ContentAnalyserFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,30 @@ public class ContractExamples {
     }
   }
 
+  public void customMediaTypes(Vertx vertx) {
+    ContentAnalyserFactory yamlFactory = getYamlFactory();
+
+    OpenAPIContract.builder(vertx)
+        .registerSupportedMediaType(
+            "application/yaml",
+              yamlFactory,
+              // Can specify more aliases for the same media type
+              "application/yml");
+  }
+
+  public void uncheckedMediaTypes(Vertx vertx) {
+    OpenAPIContract.builder(vertx)
+        .registerUncheckedMediaType(
+            "text/event-stream",
+              // Can specify more aliases for the same media type
+              "text/event-stream; charset=utf-8");
+  }
+
   private OpenAPIContract getContract() {
+    return null;
+  }
+
+  private ContentAnalyserFactory getYamlFactory() {
     return null;
   }
 }

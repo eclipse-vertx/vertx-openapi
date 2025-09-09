@@ -162,13 +162,13 @@ public class OpenAPIContractBuilder {
    * mapping to JSON. This is done by implementing a ContentAnalyser and a ContentAnalyserFactory. See their Javadoc
    * for details.
    *
-   * @param contentAnalyserFactory the custom JSON mapping for the registered media type
    * @param mediaType the media type to register
+   * @param contentAnalyserFactory the custom JSON mapping for the registered media type
    * @param aliases alternative names for the same media type (e.g. including a charset parameter)
    * @return a reference to this for chaining
    */
   public OpenAPIContractBuilder registerSupportedMediaType(
-    ContentAnalyserFactory contentAnalyserFactory, String mediaType, String... aliases
+    String mediaType, ContentAnalyserFactory contentAnalyserFactory, String... aliases
   ) {
     additionalMediaTypes.put(mediaType, contentAnalyserFactory);
     Arrays.stream(aliases).forEach(alias -> additionalMediaTypes.put(alias, contentAnalyserFactory));
@@ -188,7 +188,7 @@ public class OpenAPIContractBuilder {
    * @return a reference to this for chaining
    */
   public OpenAPIContractBuilder registerUncheckedMediaType(String mediaType, String... aliases) {
-    return registerSupportedMediaType(ContentAnalyserFactory.NO_OP, mediaType, aliases);
+    return registerSupportedMediaType(mediaType, ContentAnalyserFactory.NO_OP, aliases);
   }
 
   /**

@@ -313,8 +313,9 @@ public class OpenAPIContractBuilderTest {
       OpenAPIContract.builder(vertx)
           .setContract(CONTRACT)
           .registerSupportedMediaType(
+              "application/yml",
               new RequestValidatorImplTest.YamlContentAnalyzerFactory(),
-              "application/yml", "application/yaml"
+              "application/yaml"
           )
           .registerUncheckedMediaType("text/event-stream")
           .build()

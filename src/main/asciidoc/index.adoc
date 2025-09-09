@@ -151,3 +151,51 @@ The validation can fail for formal reasons, such as the wrong format for a param
 However, validation can of course also fail because the content does not match the defined schema.
 In this case a {@link io.vertx.openapi.validation.SchemaValidationException} is thrown.
 It is a subclass of _ValidatorException_ and provides access to the related {@link io.vertx.json.schema.OutputUnit} to allow further analysis of the error.
+
+=== Support Custom Media Types
+
+Custom media types that are currently not supported out of the box can be used by implementing a custom mapping of those
+media type to JSON. This is done by creating a custom instance of a {@link io.vertx.openapi.validation.analyser.ContentAnalyserFactory}
+and a corresponding {@link io.vertx.openapi.validation.analyser.ContentAnalyser} implementation.
+
+In order to use those custom media types, they can be specified through
+{@link io.vertx.openapi.contract.OpenAPIContractBuilder#registerSupportedMediaType}:
+
+[source,$lang]
+----
+{@link examples.ContractExamples#customMediaTypes}
+----
+
+==== Unchecked (Opaque) Media Types
+
+It is also possible to register a media type that will be handled as an opaque string instead of transforming them into
+JSON by calling{@link io.vertx.openapi.contract.OpenAPIContractBuilder#registerUncheckedMediaType}:
+
+[source,$lang]
+----
+{@link examples.ContractExamples#uncheckedMediaTypes}
+----
+
+NOTE: If you specify a schema for any unchecked media type in your OpenAPI contract, the request or response validator
+built from that contract might still attempt schema validation, which will likely fail. To disable schema validation,
+you can set the schema to be an unrestricted binary string (see below) or by omitting the schema altogether (only
+allowed in OpenAPI 3.1)
+
+[source,yaml]
+----
+paths:
+  /sse:
+    get:
+      operationId: uncheckedMediaType
+      responses:
+        default:
+          description: An SSE stream
+          content:
+            # OpenAPI 3.0 and 3.1: Unrestricted binary schema
+            text/event-stream:
+              schema:
+                type: string
+                format: binary
+            # Only OpenAPI 3.1:
+            # text/event-stream: {}
+----
