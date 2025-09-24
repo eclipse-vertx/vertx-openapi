@@ -71,6 +71,11 @@ public class OpenAPIContractImpl implements OpenAPIContract {
   // VisibleForTesting
   final String basePath;
 
+  // Used by vertx-web-openapi-router tests
+  public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository) {
+    this(resolvedSpec, version, schemaRepository, MediaTypeRegistry.createDefault());
+  }
+
   public OpenAPIContractImpl(JsonObject resolvedSpec, OpenAPIVersion version, SchemaRepository schemaRepository,
       MediaTypeRegistry mediaTypeRegistry) {
     this.rawContract = resolvedSpec;

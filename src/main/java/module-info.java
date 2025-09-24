@@ -17,9 +17,7 @@ module io.vertx.openapi {
 
   exports io.vertx.openapi.impl to io.vertx.tests;
   exports io.vertx.openapi.validation.impl to io.vertx.tests;
-  exports io.vertx.openapi.contract.impl to io.vertx.tests;
-
-  opens io.vertx.openapi.validation.impl to io.vertx.tests;
-    exports io.vertx.openapi.mediatype.impl;
+  exports io.vertx.openapi.contract.impl to io.vertx.tests, io.vertx.web.openapi.router.tests;
+  exports io.vertx.openapi.mediatype.impl to io.vertx.tests;
 
 }
