@@ -19,7 +19,6 @@ import io.vertx.openapi.contract.Operation;
 import io.vertx.openapi.contract.Parameter;
 import io.vertx.openapi.contract.Path;
 import io.vertx.openapi.mediatype.ContentAnalyserFactory;
-import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.mediatype.MediaTypePredicate;
 import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistration;
@@ -30,13 +29,13 @@ import java.util.Map;
 public class ContractExamples {
 
   public void createContract(Vertx vertx) {
-    String pathToContract = ".../.../myContract.json"; // json or yaml
+    String pathToContract = "../../myContract.json"; // json or yaml
     Future<OpenAPIContract> contract = OpenAPIContract.from(vertx, pathToContract);
   }
 
   public void createContractAdditionalFiles(Vertx vertx) {
-    String pathToContract = ".../.../myContract.json"; // json or yaml
-    String pathToComponents = ".../.../myComponents.json"; // json or yaml
+    String pathToContract = "../../myContract.json"; // json or yaml
+    String pathToComponents = "../../myComponents.json"; // json or yaml
     Map<String, String> additionalContractFiles = new HashMap<>();
     additionalContractFiles.put("https://example.com/pet-components",
       pathToComponents);
@@ -68,8 +67,8 @@ public class ContractExamples {
   }
 
   public void createContractWithCustomMediaTypes(Vertx vertx) {
-    String pathToContract = ".../.../myContract.json"; // json or yaml
-    String pathToComponents = ".../.../myComponents.json"; // json or yaml
+    String pathToContract = "../../myContract.json"; // json or yaml
+    String pathToComponents = "../../myComponents.json"; // json or yaml
 
     Future<OpenAPIContract> contract =
       OpenAPIContract.builder(vertx)
