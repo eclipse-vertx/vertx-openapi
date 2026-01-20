@@ -195,9 +195,11 @@ class RequestValidatorImplTest {
         Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
         Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
         Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
+        Arguments.of("Double without decimal part", numberSchema().toJson().put("format", "double"), 10),
         Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
         Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
-        Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456));
+        Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456),
+        Arguments.of("Float without decimal part", numberSchema().toJson().put("format", "float"), 10));
   }
 
   @BeforeEach
