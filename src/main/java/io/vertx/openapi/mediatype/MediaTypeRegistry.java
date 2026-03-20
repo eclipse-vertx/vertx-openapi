@@ -12,10 +12,9 @@
 
 package io.vertx.openapi.mediatype;
 
-import java.util.List;
-
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistry;
+import java.util.List;
 
 /**
  * The MediaTypeRegistry contains all supported MediaTypes and Validators for

@@ -15,12 +15,6 @@ package io.vertx.openapi.mediatype.impl;
 import static io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED;
 import static io.vertx.openapi.validation.ValidatorErrorType.MISSING_REQUIRED_PARAMETER;
 
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
@@ -29,6 +23,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.mediatype.MediaTypeInfo;
 import io.vertx.openapi.validation.ValidationContext;
 import io.vertx.openapi.validation.ValidatorException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 
 public class XWwwFormUrlencodedAnalyser extends AbstractContentAnalyser {
 

@@ -12,13 +12,12 @@
 
 package io.vertx.openapi.mediatype;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistration;
 import io.vertx.openapi.validation.ValidationContext;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A MediaTypeRegistration is used to register mediatypes to the openapi mediatype registry. It consists of a predicate
@@ -47,7 +46,7 @@ public interface MediaTypeRegistration {
   MediaTypeRegistration APPLICATION_OCTET_STREAM = new DefaultMediaTypeRegistration(
       MediaTypePredicate.ofExactTypes(DefaultMediaTypeRegistration.APPLICATION_OCTET_STREAM),
       ContentAnalyserFactory.noop());
-      
+
   MediaTypeRegistration APPLICATION_X_WWW_FORM_URL_ENCODED = new DefaultMediaTypeRegistration(
       MediaTypePredicate.ofExactTypes(DefaultMediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED),
       ContentAnalyserFactory.xWwwFormUrlencoded());

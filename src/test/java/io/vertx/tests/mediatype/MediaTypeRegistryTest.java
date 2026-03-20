@@ -15,12 +15,11 @@ package io.vertx.tests.mediatype;
 import static com.google.common.truth.Truth.assertThat;
 import static io.vertx.openapi.mediatype.MediaTypePredicate.ofExactTypes;
 
-import org.junit.jupiter.api.Test;
-
 import io.vertx.openapi.mediatype.ContentAnalyserFactory;
 import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistration;
+import org.junit.jupiter.api.Test;
 
 public class MediaTypeRegistryTest {
 
