@@ -47,6 +47,10 @@ public interface MediaTypeRegistration {
       MediaTypePredicate.ofExactTypes(DefaultMediaTypeRegistration.APPLICATION_OCTET_STREAM),
       ContentAnalyserFactory.noop());
 
+  MediaTypeRegistration APPLICATION_X_WWW_FORM_URL_ENCODED = new DefaultMediaTypeRegistration(
+      MediaTypePredicate.ofExactTypes(DefaultMediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED),
+      ContentAnalyserFactory.xWwwFormUrlencoded());
+
   MediaTypeRegistration VENDOR_SPECIFIC_JSON = new DefaultMediaTypeRegistration(
       MediaTypePredicate.ofRegexp(Pattern.compile("^[^/]+/vnd\\.[\\w.-]+\\+json$").pattern()),
       ContentAnalyserFactory.json());

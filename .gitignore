@@ -42,3 +42,4 @@ hs_err_pid*
 vertx-json-validator.iml
 .idea/
 *.iml
+.vscode/settings.json

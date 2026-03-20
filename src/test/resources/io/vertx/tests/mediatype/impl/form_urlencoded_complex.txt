@@ -1,0 +1,1 @@
+grant_type=password&scope=read:user write:user&roles[]=admin&roles[]=user&settings=%7B%22theme%22%3A%22dark%22%2C%22notifications%22%3Atrue%7D

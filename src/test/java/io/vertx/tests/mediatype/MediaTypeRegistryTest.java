@@ -33,6 +33,7 @@ public class MediaTypeRegistryTest {
     assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_HAL_JSON)).isFalse();
     assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_OCTET_STREAM)).isFalse();
     assertThat(r.isSupported(DefaultMediaTypeRegistration.MULTIPART_FORM_DATA)).isFalse();
+    assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED)).isFalse();
   }
 
   @Test
@@ -45,6 +46,7 @@ public class MediaTypeRegistryTest {
     assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_HAL_JSON)).isTrue();
     assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_OCTET_STREAM)).isTrue();
     assertThat(r.isSupported(DefaultMediaTypeRegistration.MULTIPART_FORM_DATA)).isTrue();
+    assertThat(r.isSupported(DefaultMediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED)).isTrue();
   }
 
   @Test
