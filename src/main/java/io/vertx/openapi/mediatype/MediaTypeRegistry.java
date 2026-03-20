@@ -12,18 +12,21 @@
 
 package io.vertx.openapi.mediatype;
 
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistry;
 import java.util.List;
 
+import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistry;
+
 /**
- * The MediaTypeRegistry contains all supported MediaTypes and Validators for the mediatypes. New MediaTypes can be registered
+ * The MediaTypeRegistry contains all supported MediaTypes and Validators for
+ * the mediatypes. New MediaTypes can be registered
  * by providing new MediaTypeRegistrations.
  */
 @VertxGen
 public interface MediaTypeRegistry {
   /**
-   * Creates a default registry with application/json, application/multipart and text/plain mediatypes registered.
+   * Creates a default registry with application/json, application/multipart and
+   * text/plain mediatypes registered.
    *
    * @return A registry with default options.
    */
@@ -32,6 +35,7 @@ public interface MediaTypeRegistry {
         .register(MediaTypeRegistration.APPLICATION_JSON)
         .register(MediaTypeRegistration.MULTIPART_FORM_DATA)
         .register(MediaTypeRegistration.APPLICATION_OCTET_STREAM)
+        .register(MediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED)
         .register(MediaTypeRegistration.TEXT_PLAIN)
         .register(MediaTypeRegistration.VENDOR_SPECIFIC_JSON);
   }

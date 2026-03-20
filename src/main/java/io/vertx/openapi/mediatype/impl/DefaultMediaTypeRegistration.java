@@ -12,6 +12,8 @@
 
 package io.vertx.openapi.mediatype.impl;
 
+import java.util.List;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.mediatype.ContentAnalyser;
 import io.vertx.openapi.mediatype.ContentAnalyserFactory;
@@ -19,7 +21,6 @@ import io.vertx.openapi.mediatype.MediaTypeInfo;
 import io.vertx.openapi.mediatype.MediaTypePredicate;
 import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.validation.ValidationContext;
-import java.util.List;
 
 public class DefaultMediaTypeRegistration implements MediaTypeRegistration {
   public static final String APPLICATION_JSON = "application/json";
@@ -29,6 +30,7 @@ public class DefaultMediaTypeRegistration implements MediaTypeRegistration {
   public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
   public static final String TEXT_PLAIN = "text/plain";
   public static final String TEXT_PLAIN_UTF8 = TEXT_PLAIN + "; charset=utf-8";
+  public static final String APPLICATION_X_WWW_FORM_URL_ENCODED = "application/x-www-form-urlencoded";
 
   private final MediaTypePredicate canHandleMediaType;
   private final ContentAnalyserFactory contentAnalyserFactory;
