@@ -68,7 +68,7 @@ class ResponseImplTest {
         Arguments.of("0000_Response_With_Content_Type_Application_Png", UNSUPPORTED_FEATURE,
             "The passed OpenAPI contract contains a feature that is not supported: Operation dummyOperation defines a "
                 + "response with an unsupported media type. Supported: application/json, application/json; charset=utf-8, "
-                + "application/hal+json, multipart/form-data, application/octet-stream, text/plain, text/plain; charset=utf-8, ^[^/]+/vnd\\.[\\w.-]+\\+json$"));
+                + "application/hal+json, multipart/form-data, application/octet-stream, application/x-www-form-urlencoded, text/plain, text/plain; charset=utf-8, ^[^/]+/vnd\\.[\\w.-]+\\+json$"));
   }
 
   @ParameterizedTest(name = "{index} test getters for scenario: {0}")

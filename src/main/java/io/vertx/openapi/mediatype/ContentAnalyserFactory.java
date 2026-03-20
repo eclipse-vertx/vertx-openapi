@@ -17,6 +17,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.openapi.mediatype.impl.ApplicationJsonAnalyser;
 import io.vertx.openapi.mediatype.impl.MultipartFormAnalyser;
 import io.vertx.openapi.mediatype.impl.NoOpAnalyser;
+import io.vertx.openapi.mediatype.impl.XWwwFormUrlencodedAnalyser;
 import io.vertx.openapi.validation.ValidationContext;
 
 @VertxGen
@@ -42,5 +43,9 @@ public interface ContentAnalyserFactory {
 
   static ContentAnalyserFactory multipart() {
     return MultipartFormAnalyser::new;
+  }
+
+  static ContentAnalyserFactory xWwwFormUrlencoded() {
+    return XWwwFormUrlencodedAnalyser::new;
   }
 }

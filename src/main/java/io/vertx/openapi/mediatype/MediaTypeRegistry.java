@@ -32,6 +32,7 @@ public interface MediaTypeRegistry {
         .register(MediaTypeRegistration.APPLICATION_JSON)
         .register(MediaTypeRegistration.MULTIPART_FORM_DATA)
         .register(MediaTypeRegistration.APPLICATION_OCTET_STREAM)
+        .register(MediaTypeRegistration.APPLICATION_X_WWW_FORM_URL_ENCODED)
         .register(MediaTypeRegistration.TEXT_PLAIN)
         .register(MediaTypeRegistration.VENDOR_SPECIFIC_JSON);
   }

@@ -29,6 +29,7 @@ public class DefaultMediaTypeRegistration implements MediaTypeRegistration {
   public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
   public static final String TEXT_PLAIN = "text/plain";
   public static final String TEXT_PLAIN_UTF8 = TEXT_PLAIN + "; charset=utf-8";
+  public static final String APPLICATION_X_WWW_FORM_URL_ENCODED = "application/x-www-form-urlencoded";
 
   private final MediaTypePredicate canHandleMediaType;
   private final ContentAnalyserFactory contentAnalyserFactory;
