@@ -108,7 +108,7 @@ class ExtractReasonTest extends HttpServerTestBase {
     createValidationHandler(
         validatorException -> Truth.assertThat(validatorException).hasMessageThat().endsWith(expected),
         testContext)
-            .compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
+        .compose(v -> sendJson(payload.toBuffer())).onFailure(testContext::failNow);
   }
 
   @Test
