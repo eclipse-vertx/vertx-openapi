@@ -105,7 +105,7 @@ class PathImplTest {
     assertThat(
         new PathImpl(BASE_PATH, expected + "/", EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault())
             .getName())
-        .isEqualTo(expected);
+                .isEqualTo(expected);
   }
 
   @Test
@@ -113,7 +113,7 @@ class PathImplTest {
     String expected = "/";
     assertThat(
         new PathImpl(BASE_PATH, expected, EMPTY_JSON_OBJECT, emptyList(), MediaTypeRegistry.createDefault()).getName())
-        .isEqualTo(expected);
+            .isEqualTo(expected);
   }
 
   @Test
