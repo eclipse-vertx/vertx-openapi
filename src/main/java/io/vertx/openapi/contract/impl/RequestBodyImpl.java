@@ -23,6 +23,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.JsonSchema;
 import io.vertx.openapi.contract.MediaType;
 import io.vertx.openapi.contract.RequestBody;
+import io.vertx.openapi.mediatype.MediaTypeInfo;
 import io.vertx.openapi.mediatype.MediaTypeRegistration;
 import io.vertx.openapi.mediatype.MediaTypeRegistry;
 import java.util.Map;
@@ -95,7 +96,8 @@ public class RequestBodyImpl implements RequestBody {
     }
 
     for (Map.Entry<String, MediaType> declaredType : content.entrySet()) {
-      if (condensedIdentifier.startsWith(removeWhiteSpaces(declaredType.getKey()))) {
+      if (MediaTypeInfo.of(removeWhiteSpaces(declaredType.getKey()))
+          .doesInclude(MediaTypeInfo.of(condensedIdentifier))) {
         return declaredType.getValue();
       }
     }
