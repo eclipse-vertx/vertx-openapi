@@ -27,7 +27,10 @@ import io.vertx.openapi.contract.ContractErrorType;
 import io.vertx.openapi.contract.OpenAPIContractException;
 import io.vertx.openapi.contract.RequestBody;
 import io.vertx.openapi.contract.impl.RequestBodyImpl;
+import io.vertx.openapi.mediatype.ContentAnalyserFactory;
+import io.vertx.openapi.mediatype.MediaTypePredicate;
 import io.vertx.openapi.mediatype.MediaTypeRegistry;
+import io.vertx.openapi.mediatype.impl.DefaultMediaTypeRegistration;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
@@ -104,13 +107,16 @@ class RequestBodyImplTest {
   }
 
   private RequestBodyImpl buildWithContent(String... contentTypes) {
+    return buildWithContentAndRegistry(MediaTypeRegistry.createDefault(), contentTypes);
+  }
+
+  private RequestBodyImpl buildWithContentAndRegistry(MediaTypeRegistry registry, String... contentTypes) {
     JsonObject dummySchema = new JsonObject().put("schema", new JsonObject().put("type", "string"));
     JsonObject content = new JsonObject();
     for (String type : contentTypes) {
       content.put(type, dummySchema);
     }
-    return new RequestBodyImpl(new JsonObject().put("content", content), DUMMY_OPERATION_ID,
-        MediaTypeRegistry.createDefault());
+    return new RequestBodyImpl(new JsonObject().put("content", content), DUMMY_OPERATION_ID, registry);
   }
 
   @Test
@@ -133,5 +139,18 @@ class RequestBodyImplTest {
         .isEqualTo(APPLICATION_JSON_UTF8);
 
     assertThat(bodyBoth.determineContentType("application/text")).isNull();
+
+    // With wildcard content type
+  }
+
+  @Test
+  void testDetermineContentTypeWithMediaTypeRange() {
+    String imageWildcard = "image/*";
+    MediaTypeRegistry registry = MediaTypeRegistry.createDefault()
+        .register(new DefaultMediaTypeRegistration(
+            MediaTypePredicate.ofRegexp("image/.*"), ContentAnalyserFactory.noop()));
+    RequestBody requestBody = buildWithContentAndRegistry(registry, imageWildcard);
+
+    assertThat(requestBody.determineContentType("image/png").getIdentifier()).isEqualTo(imageWildcard);
   }
 }
