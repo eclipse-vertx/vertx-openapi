@@ -32,19 +32,23 @@ import org.junit.jupiter.params.provider.ValueSource;
 class MultipartPartTest {
   private static final Path TEST_RESOURCE_PATH = getRelatedTestResourcePath(MultipartPartTest.class);
 
+  private static Buffer readResource(String file) throws IOException {
+    return Buffer.buffer(Files.readAllBytes(TEST_RESOURCE_PATH.resolve(file)));
+  }
+
   @Test
   void testParseParts() throws IOException {
-    String part1 = Files.readString(TEST_RESOURCE_PATH.resolve("part1.txt"));
-    String part2 = Files.readString(TEST_RESOURCE_PATH.resolve("part2.txt"));
+    Buffer part1 = readResource("part1.txt");
+    Buffer part2 = readResource("part2.txt");
 
-    String multipartBody = Files.readString(TEST_RESOURCE_PATH.resolve("multipart.txt"));
+    Buffer multipartBody = readResource("multipart.txt");
     Truth.assertThat(MultipartPart.parseParts(multipartBody, "abcde12345")).containsExactly(part1, part2);
   }
 
   @ParameterizedTest
   @ValueSource(strings = { "multipart_invalid_structure", "multipart_invalid_structure_2" })
   void testParsePartsInvalidStructure(String file) throws IOException {
-    String multipartBody = Files.readString(TEST_RESOURCE_PATH.resolve(file + ".txt"));
+    Buffer multipartBody = readResource(file + ".txt");
 
     ValidatorException exception =
         assertThrows(ValidatorException.class, () -> MultipartPart.parseParts(multipartBody, "abcde12345"));
@@ -56,13 +60,13 @@ class MultipartPartTest {
 
   @Test
   void testParsePart() throws IOException {
-    String part1 = Files.readString(TEST_RESOURCE_PATH.resolve("part1.txt"));
+    Buffer part1 = readResource("part1.txt");
     MultipartPart mpp1 = MultipartPart.parsePart(part1);
     assertThat(mpp1.getName()).isEqualTo("id");
     assertThat(mpp1.getContentType()).isEqualTo("text/plain");
     assertThat(mpp1.getBody()).isEqualTo(Buffer.buffer("123e4567-e89b-12d3-a456-426655440000"));
 
-    String part2 = Files.readString(TEST_RESOURCE_PATH.resolve("part2.txt"));
+    Buffer part2 = readResource("part2.txt");
     MultipartPart mpp2 = MultipartPart.parsePart(part2);
     assertThat(mpp2.getName()).isEqualTo("address");
     assertThat(mpp2.getContentType()).isEqualTo("application/json");
@@ -71,7 +75,7 @@ class MultipartPartTest {
         .put("city", "Hillsbery, UT");
     assertThat(mpp2.getBody().toJsonObject()).isEqualTo(body);
 
-    String part3 = Files.readString(TEST_RESOURCE_PATH.resolve("part3.txt"));
+    Buffer part3 = readResource("part3.txt");
     MultipartPart mpp3 = MultipartPart.parsePart(part3);
     assertThat(mpp3.getName()).isEqualTo("randomBinary");
     assertThat(mpp3.getContentType()).isEqualTo("application/octet-stream");
@@ -80,7 +84,7 @@ class MultipartPartTest {
 
   @Test
   void testParsePartWithoutName() throws IOException {
-    String part = Files.readString(TEST_RESOURCE_PATH.resolve("part_without_name.txt"));
+    Buffer part = readResource("part_without_name.txt");
 
     ValidatorException exception =
         assertThrows(ValidatorException.class, () -> MultipartPart.parsePart(part));
@@ -92,7 +96,7 @@ class MultipartPartTest {
 
   @Test
   void testParsePartWithoutContentType() throws IOException {
-    String part = Files.readString(TEST_RESOURCE_PATH.resolve("part_without_contenttype.txt"));
+    Buffer part = readResource("part_without_contenttype.txt");
 
     MultipartPart mpp = MultipartPart.parsePart(part);
     assertThat(mpp.getName()).isEqualTo("id");
@@ -102,7 +106,7 @@ class MultipartPartTest {
 
   @Test
   void testParsePartWithoutBody() throws IOException {
-    String part = Files.readString(TEST_RESOURCE_PATH.resolve("part_without_body.txt"));
+    Buffer part = readResource("part_without_body.txt");
     MultipartPart mpp = MultipartPart.parsePart(part);
     assertThat(mpp.getName()).isEqualTo("id");
     assertThat(mpp.getContentType()).isEqualTo("text/plain");
