@@ -111,6 +111,29 @@ class MultipartFormAnalyserTest {
   }
 
   @Test
+  void testTransformOctetStreamWithBinaryContent() {
+    // Contains bytes that are invalid in UTF-8 (e.g. 0x89, 0xFF) and whitespace bytes at the edges,
+    // which must survive the transformation unmodified.
+    byte[] binaryContent = { 0x0A, 0x20, (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00,
+        (byte) 0xFF, (byte) 0xFE, 0x42, 0x09, 0x20, 0x0D, 0x0A };
+
+    Buffer multipartBody = Buffer.buffer()
+        .appendString("--abcde12345\r\n")
+        .appendString("Content-Disposition: form-data; name=\"file\"; filename=\"blob.bin\"\r\n")
+        .appendString("Content-Type: application/octet-stream\r\n")
+        .appendString("\r\n")
+        .appendBytes(binaryContent)
+        .appendString("\r\n--abcde12345--");
+    String contentType = "multipart/form-data; boundary=abcde12345";
+
+    MultipartFormAnalyser analyser = new MultipartFormAnalyser(contentType, multipartBody, REQUEST);
+    analyser.checkSyntacticalCorrectness(); // must always be executed before transform
+
+    JsonObject result = (JsonObject) analyser.transform();
+    assertThat(result.getBuffer("file")).isEqualTo(Buffer.buffer(binaryContent));
+  }
+
+  @Test
   void testTransformContinueWhenBodyEmpty() throws IOException {
     Buffer multipartBody = Buffer.buffer(Files.readString(TEST_RESOURCE_PATH.resolve("multipart_id_no_body.txt")));
     String contentType = "multipart/form-data; boundary=abcde12345";
