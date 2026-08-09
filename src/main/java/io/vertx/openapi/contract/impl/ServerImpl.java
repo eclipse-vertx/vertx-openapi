@@ -18,7 +18,8 @@ import static io.vertx.openapi.contract.OpenAPIContractException.createUnsupport
 import io.vertx.core.json.JsonObject;
 import io.vertx.openapi.contract.Server;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class ServerImpl implements Server {
 
@@ -37,8 +38,11 @@ public class ServerImpl implements Server {
       throw createUnsupportedFeature("Server Variables");
     }
     try {
-      this.basePath = new URL(url.endsWith("/") ? url.substring(0, url.length() - 1) : url).getPath();
-    } catch (MalformedURLException e) {
+      URI uri = new URI(url.endsWith("/") ? url.substring(0, url.length() - 1) : url);
+      // The URL may be relative, to indicate that the host location is relative to the location where
+      // the document containing the Server Object is being served.
+      this.basePath = uri.isAbsolute() ? uri.toURL().getPath() : uri.getPath();
+    } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
       throw createInvalidContract("The specified URL is malformed: " + url, e);
     }
   }
