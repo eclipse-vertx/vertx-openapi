@@ -45,7 +45,11 @@ public class ServerImplTest {
         Arguments.of("https://example.com/", ""),
         Arguments.of("https://example.com/foo", "/foo"),
         Arguments.of("https://example.com/foo/", "/foo"),
-        Arguments.of("https://example.com/foo/bar", "/foo/bar"));
+        Arguments.of("https://example.com/foo/bar", "/foo/bar"),
+        Arguments.of("/", ""),
+        Arguments.of("/v1/api", "/v1/api"),
+        Arguments.of("/v1/api/", "/v1/api"),
+        Arguments.of("//example.com/foo", "/foo"));
   }
 
   @ParameterizedTest(name = "{index} BasePath extraction: {0} should result into {1}")
@@ -54,6 +58,17 @@ public class ServerImplTest {
     JsonObject model = new JsonObject().put("url", url);
     Server server = new ServerImpl(model);
     assertThat(server.getBasePath()).isEqualTo(basePath);
+  }
+
+  @Test
+  void testRelativeUrlGetters() {
+    String url = "/v1/api";
+    JsonObject model = new JsonObject().put("url", url);
+    Server server = new ServerImpl(model);
+
+    assertThat(server.getOpenAPIModel()).isEqualTo(model);
+    assertThat(server.getURL()).isEqualTo(url);
+    assertThat(server.getBasePath()).isEqualTo("/v1/api");
   }
 
   @Test
@@ -72,5 +87,12 @@ public class ServerImplTest {
             () -> new ServerImpl(new JsonObject().put("url", "http://foo.bar:-80")));
     assertThat(exceptionInvalid.type()).isEqualTo(ContractErrorType.INVALID_SPEC);
     assertThat(exceptionInvalid).hasMessageThat().isEqualTo(msgInvalid);
+
+    String msgInvalidRelative = "The passed OpenAPI contract is invalid: The specified URL is malformed: /v1/ api";
+    OpenAPIContractException exceptionInvalidRelative =
+        assertThrows(OpenAPIContractException.class,
+            () -> new ServerImpl(new JsonObject().put("url", "/v1/ api")));
+    assertThat(exceptionInvalidRelative.type()).isEqualTo(ContractErrorType.INVALID_SPEC);
+    assertThat(exceptionInvalidRelative).hasMessageThat().isEqualTo(msgInvalidRelative);
   }
 }
