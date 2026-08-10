@@ -64,7 +64,7 @@ public class MultipartFormAnalyser extends AbstractContentAnalyser {
       throw new ValidatorException(msg, MISSING_REQUIRED_PARAMETER);
     }
 
-    parts = MultipartPart.fromMultipartBody(content.toString(), boundary);
+    parts = MultipartPart.fromMultipartBody(content, boundary);
   }
 
   @Override

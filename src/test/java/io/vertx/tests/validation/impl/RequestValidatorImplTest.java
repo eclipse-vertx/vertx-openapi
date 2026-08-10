@@ -178,6 +178,18 @@ class RequestValidatorImplTest {
         Arguments.of("Double", numberSchema().toJson().put("format", "double"), "71" + Double.MAX_VALUE,
             "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
         Arguments.of("Float", numberSchema().toJson().put("format", "float"), "71" + Float.MAX_VALUE,
+            "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\""),
+        Arguments.of("Double", numberSchema().toJson().put("format", "double"), 9007199254740993L,
+            "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+        Arguments.of("Double", numberSchema().toJson().put("format", "double"), -9007199254740993L,
+            "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+        Arguments.of("Double", numberSchema().toJson().put("format", "double"), Long.MAX_VALUE,
+            "The value of path parameter Double is invalid. Reason: Number does not match the format \"double\""),
+        Arguments.of("Float", numberSchema().toJson().put("format", "float"), 16777217,
+            "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\""),
+        Arguments.of("Float", numberSchema().toJson().put("format", "float"), -16777217,
+            "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\""),
+        Arguments.of("Float", numberSchema().toJson().put("format", "float"), Integer.MAX_VALUE,
             "The value of path parameter Float is invalid. Reason: Number does not match the format \"float\""));
   }
 
@@ -195,9 +207,17 @@ class RequestValidatorImplTest {
         Arguments.of("Double min double", numberSchema().toJson().put("format", "double"), Double.MIN_VALUE),
         Arguments.of("Double max float", numberSchema().toJson().put("format", "double"), Float.MAX_VALUE),
         Arguments.of("Double normal", numberSchema().toJson().put("format", "double"), 123.456),
+        Arguments.of("Double without decimal part", numberSchema().toJson().put("format", "double"), 10),
+        Arguments.of("Double max exact integer", numberSchema().toJson().put("format", "double"),
+            9007199254740992L),
+        Arguments.of("Double min exact integer", numberSchema().toJson().put("format", "double"),
+            -9007199254740992L),
         Arguments.of("Float max float", numberSchema().toJson().put("format", "float"), Float.MAX_VALUE),
         Arguments.of("Float min float", numberSchema().toJson().put("format", "float"), Float.MIN_VALUE),
-        Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456));
+        Arguments.of("Float normal", numberSchema().toJson().put("format", "float"), 123.456),
+        Arguments.of("Float without decimal part", numberSchema().toJson().put("format", "float"), 10),
+        Arguments.of("Float max exact integer", numberSchema().toJson().put("format", "float"), 16777216),
+        Arguments.of("Float min exact integer", numberSchema().toJson().put("format", "float"), -16777216));
   }
 
   @BeforeEach
