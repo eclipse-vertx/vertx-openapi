@@ -79,8 +79,9 @@ public class RequestUtils {
           headers.put(param.getName(), extractHeaders(request, param));
           break;
         case PATH:
-          int segment = findPathSegment(operation.getAbsoluteOpenAPIPath(), param.getName());
-          pathParams.put(param.getName(), extractPathParameters(param, request, segment));
+          String templatePath = operation.getAbsoluteOpenAPIPath();
+          int segment = findPathSegment(templatePath, param.getName());
+          pathParams.put(param.getName(), extractPathParameters(request, segment, countPathSegments(templatePath)));
           break;
         case QUERY:
           query.put(param.getName(), extractQuery(request, param));
@@ -119,12 +120,17 @@ public class RequestUtils {
     return new RequestParameterImpl(urlDecodeIfRequired(parameter, headerValue));
   }
 
-  private static RequestParameter extractPathParameters(Parameter param, HttpServerRequest request, int segment) {
+  private static RequestParameter extractPathParameters(HttpServerRequest request, int segment,
+      int templatePathSegments) {
     String[] pathSegments = request.path().substring(1).split("/");
-    if (pathSegments.length < segment) {
+    // The router the operation is attached to may be mounted as a subrouter. In that case the request path
+    // contains additional leading segments that are not part of the OpenAPI path template.
+    int mountOffset = Math.max(0, pathSegments.length - templatePathSegments);
+    int index = mountOffset + segment;
+    if (pathSegments.length < index) {
       return EMPTY;
     }
-    return new RequestParameterImpl(decodeUrl(pathSegments[segment - 1]));
+    return new RequestParameterImpl(decodeUrl(pathSegments[index - 1]));
   }
 
   /**
@@ -170,6 +176,10 @@ public class RequestUtils {
   public static int findPathSegment(String templatePath, String parameterName) {
     int idx = templatePath.indexOf("{" + parameterName + "}");
     return (int) templatePath.subSequence(0, idx).chars().filter(c -> c == '/').count();
+  }
+
+  private static int countPathSegments(String templatePath) {
+    return (int) templatePath.chars().filter(c -> c == '/').count();
   }
 
   static String urlDecodeIfRequired(Parameter param, String value) {
