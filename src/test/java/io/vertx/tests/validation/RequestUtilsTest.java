@@ -231,6 +231,29 @@ class RequestUtilsTest extends HttpServerTestBase {
     Truth.assertThat(RequestUtils.findPathSegment(templatePath, parameterName)).isEqualTo(expected);
   }
 
+  private static Stream<Arguments> testExtractPathFromMountedRouter() {
+    return Stream.of(
+        Arguments.of("/my-service", "/test/5.7"),
+        Arguments.of("/my-service", "/test/5.7/"),
+        Arguments.of("/deeply/nested/mount/point", "/test/5.7"));
+  }
+
+  @ParameterizedTest(name = "{index} Path parameter should be extracted from {0}{1}")
+  @MethodSource
+  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  void testExtractPathFromMountedRouter(String mountPoint, String path, VertxTestContext testContext) {
+    Parameter parameter = mockParameter("foo", PATH, NUMBER, false);
+    Operation mockedOperation = mockOperation(parameter);
+    when(mockedOperation.getAbsoluteOpenAPIPath()).thenReturn("/test/{foo}");
+
+    createValidationHandler(params -> {
+      Truth.assertThat(params.getPathParameters().get(parameter.getName()).getString()).isEqualTo("5.7");
+      testContext.completeNow();
+    }, mockedOperation, testContext).compose(
+        v -> createRequest(HttpMethod.GET, mountPoint + path).map(HttpClientRequest::send))
+        .onFailure(testContext::failNow);
+  }
+
   @Test
   @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
   void testBodySupplier(VertxTestContext testContext) {
