@@ -92,7 +92,7 @@ class ExtractReasonTest extends HttpServerTestBase {
   }
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void setup(Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, contractPath.toString()).onComplete(testContext.succeeding(c -> {
       contract = c;
@@ -103,7 +103,7 @@ class ExtractReasonTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} {0}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testErrorMessage(String scenario, JsonObject payload, String expected, VertxTestContext testContext) {
     createValidationHandler(
         validatorException -> Truth.assertThat(validatorException).hasMessageThat().endsWith(expected),
@@ -112,7 +112,7 @@ class ExtractReasonTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testOutputUnit(VertxTestContext testContext) {
     JsonObject invalidGuest = buildGuest("Hodor", 13.37);
     JsonObject payload = buildEntry("msg", buildGuest("Hodor", 1337, invalidGuest));

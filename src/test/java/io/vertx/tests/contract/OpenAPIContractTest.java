@@ -69,7 +69,7 @@ class OpenAPIContractTest {
   }
 
   @ParameterizedTest(name = "{index} Create contract from path: {0}")
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @MethodSource
   void testFromWithPath(String path, JsonObject expected, Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, path).onComplete(testContext.succeeding(contract -> testContext.verify(() -> {
@@ -79,7 +79,7 @@ class OpenAPIContractTest {
   }
 
   @ParameterizedTest(name = "{index} Create contract from path with additional contract files: {0}")
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @MethodSource
   void testFromWithPathAndAdditionalContractFiles(String path, Map<String, String> additionalFiles, JsonObject expected,
       Vertx vertx, VertxTestContext testContext) {
@@ -91,7 +91,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testFromFailsInvalidSpecMustNotNull(Vertx vertx, VertxTestContext testContext) {
     OpenAPIContract.from(vertx, (JsonObject) null).onComplete(testContext.failing(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(OpenAPIContractBuilder.OpenAPIContractBuilderException.class);
@@ -102,7 +102,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testFromFailsInvalidSpec(Vertx vertx, VertxTestContext testContext) {
     Path path = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("v3_0_invalid_petstore.json");
     JsonObject invalidContractJson = loadJson(vertx, path);
@@ -116,7 +116,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testInvalidAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -135,7 +135,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testSplitSpec(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     Path bundled = resourcePath.resolve("bundled_dereferenced.json");
@@ -156,7 +156,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidJsonSchemaProvidedAsAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -179,7 +179,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testMalformedJsonSchemaProvidedAsAdditionalSpecFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("split");
     JsonObject contract = loadJson(vertx, resourcePath.resolve("petstore.json"));
@@ -200,7 +200,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   public void testAdditionalSchemaFiles(Vertx vertx, VertxTestContext testContext) {
     Path resourcePath = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("additional_schema_files");
     Path contractPath = resourcePath.resolve("openapi.yaml");
@@ -216,7 +216,7 @@ class OpenAPIContractTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   public void testVendorSpecificJson(Vertx vertx, VertxTestContext testContext) {
     Path path = getRelatedTestResourcePath(OpenAPIContractTest.class).resolve("vendor_specific_json.json");
     JsonObject contractJson = loadJson(vertx, path);

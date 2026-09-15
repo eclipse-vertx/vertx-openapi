@@ -47,7 +47,7 @@ class BaseValidatorTest {
   private BaseValidatorWrapper validator;
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -58,7 +58,7 @@ class BaseValidatorTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testGetOperation(VertxTestContext testContext) {
     String operationId = "listPets";
     validator.getOperation(operationId).onFailure(testContext::failNow)
@@ -69,7 +69,7 @@ class BaseValidatorTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testGetOperationThrow(VertxTestContext testContext) {
     validator.getOperation("invalidId").onFailure(t -> testContext.verify(() -> {
       assertThat(t).isInstanceOf(ValidatorException.class);

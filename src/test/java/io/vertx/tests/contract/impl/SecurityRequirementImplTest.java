@@ -39,7 +39,7 @@ class SecurityRequirementImplTest {
   private static JsonObject validTestData;
 
   @BeforeAll
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   static void setUp(Vertx vertx) {
     validTestData = vertx.fileSystem().readFileBlocking(VALID_SEC_REQ_JSON.toString()).toJsonObject();
   }

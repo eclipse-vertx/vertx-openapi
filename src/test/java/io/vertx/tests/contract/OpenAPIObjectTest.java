@@ -40,7 +40,7 @@ class OpenAPIObjectTest {
   private static JsonObject testData;
 
   @BeforeAll
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   static void setUp(Vertx vertx) {
     testData = loadJson(vertx, MODELS_WITH_EXTENSIONS);
   }

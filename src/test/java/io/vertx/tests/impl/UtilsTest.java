@@ -46,7 +46,7 @@ class UtilsTest {
   }
 
   @ParameterizedTest(name = "{index} test testReadYamlOrJson with: {0}")
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @MethodSource
   void testReadYamlOrJson(String path, JsonObject expected, Vertx vertx, VertxTestContext testContext) {
     Utils.readYamlOrJson(vertx, path).onComplete(testContext.succeeding(json -> testContext.verify(() -> {

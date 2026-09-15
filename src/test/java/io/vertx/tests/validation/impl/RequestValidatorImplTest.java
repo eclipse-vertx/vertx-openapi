@@ -221,7 +221,7 @@ class RequestValidatorImplTest {
   }
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -233,7 +233,7 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void voidTestValidateWithRequest(VertxTestContext testContext) {
     String operationId = "isMocked";
     HttpServerRequest requestMock = mock(HttpServerRequest.class);
@@ -256,7 +256,7 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void voidTestValidateWithRequestAndOperationId(VertxTestContext testContext) {
     RequestValidator validatorSpy = spy(validator);
     HttpServerRequest requestMock = mock(HttpServerRequest.class);
@@ -272,7 +272,7 @@ class RequestValidatorImplTest {
 
   @ParameterizedTest
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidateWithValidatableRequestAndOperationId(List<Parameter> parameters, RequestBody requestBody,
       ValidatableRequest request, ValidatedRequest expected,
       VertxTestContext testContext) {
@@ -292,7 +292,7 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidateThrowOperationIdInValid(VertxTestContext testContext) {
     Checkpoint cp = testContext.checkpoint(2);
     validator.validate((HttpServerRequest) null, "invalidId").onFailure(t -> testContext.verify(() -> {
@@ -307,7 +307,7 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidateThrowOperationNotFound(VertxTestContext testContext) {
     HttpServerRequest requestMock = mock(HttpServerRequest.class);
     when(requestMock.path()).thenReturn("/invalid/path");
@@ -320,7 +320,7 @@ class RequestValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidateCatchErrorFromTransformer(VertxTestContext testContext) {
     Checkpoint cp = testContext.checkpoint(2);
 

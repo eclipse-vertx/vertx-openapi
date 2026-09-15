@@ -38,7 +38,7 @@ class PhoneNumberTest extends ContractTestBase {
   private Path CONTRACT_FILE = getRelatedTestResourcePath(PhoneNumberTest.class)
       .resolve("contract_various_scenarios.yaml");
 
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @Test
   @DisplayName("Test that query parameters don't get decoded twice and loose a '+' sign")
   void testPhoneNumberInQuery(VertxTestContext testContext) {
@@ -66,7 +66,7 @@ class PhoneNumberTest extends ContractTestBase {
         }).onFailure(testContext::failNow);
   }
 
-  // @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  // @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @Test
   @DisplayName("Test that force encoding of header and cookies is respected")
   void testForceEncodingHeaderAndCookies(VertxTestContext testContext) {

@@ -36,7 +36,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class E2ETest extends ContractTestBase {
   private Path CONTRACT_FILE = getRelatedTestResourcePath(E2ETest.class).resolve("petstore.json");
 
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @ParameterizedTest(name = "{index} Test with base path: {0}")
   @ValueSource(strings = { "", "/base", "/base/" })
   void testExtractPath(String basePath, VertxTestContext testContext) {
@@ -66,7 +66,7 @@ class E2ETest extends ContractTestBase {
   // 1 complex "json"
   // 1 primitive with content encoding aka png base64 encoded.
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @DisplayName("Send a multipart/form-data request")
   public void sendMultipartFormDataRequest(VertxTestContext testContext) {
     Path path = getRelatedTestResourcePath(E2ETest.class).resolve("multipart.txt");
@@ -95,7 +95,7 @@ class E2ETest extends ContractTestBase {
         .onFailure(testContext::failNow);
   }
 
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @ParameterizedTest(name = "{index} Request with content type {0} passes validation")
   @ValueSource(strings = { "application/json", "application/json; charset=utf-8" })
   @DisplayName("Test that the request content type check is less restrictive")

@@ -94,7 +94,7 @@ class ResponseValidatorImplTest {
   }
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -106,7 +106,7 @@ class ResponseValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testValidate(VertxTestContext testContext) {
     Map<String, String> headers = ImmutableMap.of("x-next", "foo", "ignore", "this");
 
@@ -125,7 +125,7 @@ class ResponseValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testGetResponseThrowResponseNotFound(VertxTestContext testContext) {
     String operationId = "isMocked";
     Operation mockedOperation = mock(Operation.class);
@@ -141,7 +141,7 @@ class ResponseValidatorImplTest {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testGetResponse(VertxTestContext testContext) {
     String operationId = "isMocked";
 

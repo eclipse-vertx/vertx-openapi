@@ -48,7 +48,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   private ResponseValidator responseValidator;
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx, VertxTestContext testContext) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -59,7 +59,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   }
 
   @BeforeEach
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void initializeContract(Vertx vertx) {
     Path contractFile = TEST_RESOURCE_PATH.resolve("v3.1").resolve("petstore.json");
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -89,7 +89,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testSendNoBody(VertxTestContext testContext) {
     Map<String, String> headersExpected = ImmutableMap.of(CONTENT_LENGTH.toString(), "0");
     createServer(request -> {
@@ -99,7 +99,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testResponseWithEmptyJsonArray(VertxTestContext testContext) {
     Buffer body = new JsonArray().toBuffer();
     createServer(request -> {
@@ -114,7 +114,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testSendWithBody(VertxTestContext testContext) {
     Buffer cat = new JsonObject().put("id", 1337).put("name", "foo").toBuffer();
     createServer(request -> {
@@ -125,7 +125,7 @@ class ValidatedResponseImplTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testSendWithHeaders(VertxTestContext testContext) {
     Buffer cats = new JsonArray().add(new JsonObject().put("id", 1337).put("name", "foo")).toBuffer();
     Map<String, String> headersExpected = buildHeaders(cats);

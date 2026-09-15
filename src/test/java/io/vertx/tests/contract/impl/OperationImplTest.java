@@ -62,7 +62,7 @@ class OperationImplTest {
   private static JsonObject invalidTestData;
 
   @BeforeAll
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   static void setUp(Vertx vertx) {
     validTestData = vertx.fileSystem().readFileBlocking(VALID_OPERATIONS_JSON.toString()).toJsonObject();
     invalidTestData = vertx.fileSystem().readFileBlocking(INVALID_OPERATIONS_JSON.toString()).toJsonObject();

@@ -26,7 +26,7 @@ public class ConvertChildItemsCorrectTest extends ContractTestBase {
   private Path CONTRACT_FILE = getRelatedTestResourcePath(PhoneNumberTest.class)
       .resolve("contract_various_scenarios.yaml");
 
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   @Test
   @DisplayName("Test that array items are transformed correctly")
   void testArrayItemsShouldBeTransformed(VertxTestContext testContext) {

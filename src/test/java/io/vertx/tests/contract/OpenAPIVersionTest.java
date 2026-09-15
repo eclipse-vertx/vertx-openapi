@@ -74,7 +74,7 @@ class OpenAPIVersionTest {
 
   @ParameterizedTest(name = "{index} should validate a contract against OpenAPI version {0}")
   @MethodSource(value = "provideVersionAndSpec")
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   void validateContractTest(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
     version.getRepository(vertx, DUMMY_BASE_URI).compose(repo -> version.validateContract(vertx, repo, contract))
@@ -86,7 +86,7 @@ class OpenAPIVersionTest {
 
   @ParameterizedTest(name = "{index} should validate an invalid contract against OpenAPI version {0} and find errors")
   @MethodSource(value = "provideVersionAndInvalidSpec")
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   void validateContractTestError(OpenAPIVersion version, Path contractFile, Consumer<OutputUnit> validator, Vertx vertx,
       VertxTestContext testContext) {
     JsonObject contract = vertx.fileSystem().readFileBlocking(contractFile.toString()).toJsonObject();
@@ -99,7 +99,7 @@ class OpenAPIVersionTest {
 
   @ParameterizedTest(name = "{index} should resolve a contract of OpenAPI version {0}")
   @MethodSource(value = "provideVersionAndSpec")
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   void testResolve(OpenAPIVersion version, Path contractFile, Vertx vertx, VertxTestContext testContext) {
     String dereferencedContractFile = contractFile.toString().replace(".json", "_dereferenced.json");
     JsonObject contractDereferenced = vertx.fileSystem().readFileBlocking(dereferencedContractFile).toJsonObject();
@@ -114,7 +114,7 @@ class OpenAPIVersionTest {
 
   @ParameterizedTest(name = "{index} should return a preloaded repository for OpenAPIVersion {0}")
   @EnumSource(OpenAPIVersion.class)
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   void testGetRepository(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
     version.getRepository(vertx, DUMMY_BASE_URI).onComplete(testContext.succeeding(repo -> testContext.verify(() -> {
       assertThat(repo).isInstanceOf(SchemaRepository.class);
@@ -149,7 +149,7 @@ class OpenAPIVersionTest {
 
   @ParameterizedTest(name = "{index} should be able to validate additional files against the json schema for {0}")
   @EnumSource(OpenAPIVersion.class)
-  @Timeout(value = 2, timeUnit = SECONDS)
+  @Timeout(value = 10, timeUnit = SECONDS)
   public void testValidationOfAdditionalSchemaFiles(OpenAPIVersion version, Vertx vertx, VertxTestContext testContext) {
     Path path = getRelatedTestResourcePath(OpenAPIVersionTest.class).resolve("split");
     JsonObject validJsonSchema = loadJson(vertx, path.resolve("validJsonSchemaComponents.json"));

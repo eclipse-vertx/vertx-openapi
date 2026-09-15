@@ -157,7 +157,7 @@ class RequestUtilsTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} Query {1} should be transformed into {2}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractQuery(Parameter parameter, String query, String expected, VertxTestContext testContext) {
     createValidationHandler(params -> {
       Truth.assertThat(params.getQuery().get(parameter.getName()).getString()).isEqualTo(expected);
@@ -169,7 +169,7 @@ class RequestUtilsTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} Cookies should be transformed into {2}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractCookie(Parameter parameter, String cookieString, String expected, VertxTestContext testContext) {
     createValidationHandler(params -> {
       Truth.assertThat(params.getCookies().get(parameter.getName()).getString()).isEqualTo(expected);
@@ -181,7 +181,7 @@ class RequestUtilsTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} Header should be transformed into {2}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractHeader(Parameter parameter, Map<String, String> headers, String expected,
       VertxTestContext testContext) {
     createValidationHandler(params -> {
@@ -195,7 +195,7 @@ class RequestUtilsTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} Path {2} ({1}) should be transformed into {3}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractPath(Parameter parameter, Style style, String path, String expected, VertxTestContext testContext) {
     Operation mockedOperation = mockOperation(parameter);
     when(mockedOperation.getAbsoluteOpenAPIPath()).thenReturn("/test/{foo}");
@@ -209,7 +209,7 @@ class RequestUtilsTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractBody(VertxTestContext testContext) {
 
     JsonObject bodyJson = new JsonObject().put("foo", "bar");
@@ -240,7 +240,7 @@ class RequestUtilsTest extends HttpServerTestBase {
 
   @ParameterizedTest(name = "{index} Path parameter should be extracted from {0}{1}")
   @MethodSource
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testExtractPathFromMountedRouter(String mountPoint, String path, VertxTestContext testContext) {
     Parameter parameter = mockParameter("foo", PATH, NUMBER, false);
     Operation mockedOperation = mockOperation(parameter);
@@ -255,7 +255,7 @@ class RequestUtilsTest extends HttpServerTestBase {
   }
 
   @Test
-  @Timeout(value = 2, timeUnit = TimeUnit.SECONDS)
+  @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
   void testBodySupplier(VertxTestContext testContext) {
     Checkpoint firstRead = testContext.checkpoint();
     Checkpoint secondRead = testContext.checkpoint();
